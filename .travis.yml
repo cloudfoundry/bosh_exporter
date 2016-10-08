@@ -1,0 +1,7 @@
+language: go
+
+go_import_path: github.com/cloudfoundry-community/bosh_exporter
+
+install: make deps
+
+script: make test

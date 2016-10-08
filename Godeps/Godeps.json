@@ -2,9 +2,6 @@
 	"ImportPath": "github.com/cloudfoundry-community/bosh_exporter",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -99,6 +96,18 @@
 		{
 			"ImportPath": "github.com/prometheus/procfs",
 			"Rev": "abf152e5f3e97f2fafac028d2cc06c1feb87ffa5"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/curve25519",
+			"Rev": "8e06e8ddd9629eb88639aba897641bff8031f1d3"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ed25519",
+			"Rev": "8e06e8ddd9629eb88639aba897641bff8031f1d3"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ed25519/internal/edwards25519",
+			"Rev": "8e06e8ddd9629eb88639aba897641bff8031f1d3"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh",

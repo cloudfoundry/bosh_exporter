@@ -10,7 +10,7 @@ import (
 
 type processesCollector struct {
 	namespace             string
-	directorClient        director.Director
+	boshClient            director.Director
 	processHealthyDesc    *prometheus.Desc
 	processUptimeDesc     *prometheus.Desc
 	processCPUTotalDesc   *prometheus.Desc
@@ -20,7 +20,7 @@ type processesCollector struct {
 
 func NewProcessesCollector(
 	namespace string,
-	directorClient director.Director,
+	boshClient director.Director,
 ) *processesCollector {
 	processHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_healthy"),
@@ -59,7 +59,7 @@ func NewProcessesCollector(
 
 	collector := &processesCollector{
 		namespace:             namespace,
-		directorClient:        directorClient,
+		boshClient:            boshClient,
 		processHealthyDesc:    processHealthyDesc,
 		processUptimeDesc:     processUptimeDesc,
 		processCPUTotalDesc:   processCPUTotalDesc,
@@ -70,7 +70,7 @@ func NewProcessesCollector(
 }
 
 func (c processesCollector) Collect(ch chan<- prometheus.Metric) {
-	deployments, err := c.directorClient.Deployments()
+	deployments, err := c.boshClient.Deployments()
 	if err != nil {
 		log.Errorf("Error while reading deployments: %v", err)
 		return

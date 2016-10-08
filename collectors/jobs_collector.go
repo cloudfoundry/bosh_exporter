@@ -10,7 +10,7 @@ import (
 
 type jobsCollector struct {
 	namespace                         string
-	directorClient                    director.Director
+	boshClient                        director.Director
 	jobHealthyDesc                    *prometheus.Desc
 	jobLoadAvg01Desc                  *prometheus.Desc
 	jobLoadAvg05Desc                  *prometheus.Desc
@@ -32,7 +32,7 @@ type jobsCollector struct {
 
 func NewJobsCollector(
 	namespace string,
-	directorClient director.Director,
+	boshClient director.Director,
 ) *jobsCollector {
 	jobHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_healthy"),
@@ -155,7 +155,7 @@ func NewJobsCollector(
 
 	collector := &jobsCollector{
 		namespace:                         namespace,
-		directorClient:                    directorClient,
+		boshClient:                        boshClient,
 		jobHealthyDesc:                    jobHealthyDesc,
 		jobLoadAvg01Desc:                  jobLoadAvg01Desc,
 		jobLoadAvg05Desc:                  jobLoadAvg05Desc,
@@ -178,7 +178,7 @@ func NewJobsCollector(
 }
 
 func (c jobsCollector) Collect(ch chan<- prometheus.Metric) {
-	deployments, err := c.directorClient.Deployments()
+	deployments, err := c.boshClient.Deployments()
 	if err != nil {
 		log.Errorf("Error while reading deployments: %v", err)
 		return

@@ -38,14 +38,14 @@ make
 
 | Flag / Environment Variable | Required | Default | Description
 | --------------------------- | -------- | ------- | -----------
-| metrics.namespace<br>BOSH_EXPORTER_METRICS_NAMESPACE | No | bosh_exporter | Metrics Namespace
-| web.listen-address<br>BOSH_EXPORTER_WEB_LISTEN_ADDRESS | No | :9190 | Address to listen on for web interface and telemetry
-| web.telemetry-path<br>BOSH_EXPORTER_WEB_TELEMETRY_PATH | No | /metrics | Path under which to expose Prometheus metrics
 | bosh.host<br>BOSH_EXPORTER_BOSH_HOST | Yes | | Cloud Foundry UAA URL
 | bosh.port<br>BOSH_EXPORTER_BOSH_PORT | No | 25555 | Cloud Foundry UAA URL
 | bosh.username<br>BOSH_EXPORTER_BOSH_USERNAME | Yes | | Cloud Foundry UAA Client ID
 | bosh.password<br>BOSH_EXPORTER_BOSH_PASSWORD | Yes | | Cloud Foundry UAA Client Secret
+| metrics.namespace<br>BOSH_EXPORTER_METRICS_NAMESPACE | No | bosh_exporter | Metrics Namespace
 | skip-ssl-verify<br>BOSH_EXPORTER_SKIP_SSL_VERIFY | No | false | Disable SSL Verify |
+| web.listen-address<br>BOSH_EXPORTER_WEB_LISTEN_ADDRESS | No | :9190 | Address to listen on for web interface and telemetry
+| web.telemetry-path<br>BOSH_EXPORTER_WEB_TELEMETRY_PATH | No | /metrics | Path under which to expose Prometheus metrics
 
 ## Running tests
 

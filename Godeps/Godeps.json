@@ -1,0 +1,128 @@
+{
+	"ImportPath": "github.com/cloudfoundry-community/bosh_exporter",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.10.0-38-g3ec0642",
+			"Rev": "3ec0642a7fb6488f65b06f9040adc67e3990296a"
+		},
+		{
+			"ImportPath": "github.com/beorn7/perks/quantile",
+			"Rev": "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9"
+		},
+		{
+			"ImportPath": "github.com/bmatcuk/doublestar",
+			"Comment": "v1.0.9-1-gdd6a6f0",
+			"Rev": "dd6a6f0a8cdfaaa88b08cf26cf1bc7d69003ee13"
+		},
+		{
+			"ImportPath": "github.com/charlievieth/fs",
+			"Rev": "85d13508c8e9fdaf4c9fcd52a4c3241341566346"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/bosh-cli/director",
+			"Comment": "v0.0.67",
+			"Rev": "281ef97040c00319c9b4588483e9434184f83ba6"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/bosh-utils/errors",
+			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/bosh-utils/httpclient",
+			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/bosh-utils/logger",
+			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/bosh-utils/system",
+			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/bosh-utils/uuid",
+			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+		},
+		{
+			"ImportPath": "github.com/cppforlife/go-semi-semantic/version",
+			"Rev": "576b6af77ae4f3ccef356902fb3b9a9ae22e0b11"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a"
+		},
+		{
+			"ImportPath": "github.com/matttproud/golang_protobuf_extensions/pbutil",
+			"Comment": "v1.0.0-2-gc12348c",
+			"Rev": "c12348ce28de40eed0136aa2b644d0ee0650e56c"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
+			"ImportPath": "github.com/prometheus/client_golang/prometheus",
+			"Comment": "v0.8.0-5-g8aae34f",
+			"Rev": "8aae34f3ffc9a93c75efeaad87bb192aa7750900"
+		},
+		{
+			"ImportPath": "github.com/prometheus/client_model/go",
+			"Comment": "model-0.0.2-12-gfa8ad6f",
+			"Rev": "fa8ad6fec33561be4280a8f0514318c79d7f6cb6"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/expfmt",
+			"Rev": "76316eadbb7895a0310c6098559b975216dc33bf"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg",
+			"Rev": "76316eadbb7895a0310c6098559b975216dc33bf"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/log",
+			"Rev": "76316eadbb7895a0310c6098559b975216dc33bf"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/model",
+			"Rev": "76316eadbb7895a0310c6098559b975216dc33bf"
+		},
+		{
+			"ImportPath": "github.com/prometheus/common/version",
+			"Rev": "76316eadbb7895a0310c6098559b975216dc33bf"
+		},
+		{
+			"ImportPath": "github.com/prometheus/procfs",
+			"Rev": "abf152e5f3e97f2fafac028d2cc06c1feb87ffa5"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh",
+			"Rev": "8e06e8ddd9629eb88639aba897641bff8031f1d3"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows",
+			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows/registry",
+			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows/svc/eventlog",
+			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "e4d366fc3c7938e2958e662b4258c7a89e1f0e3e"
+		}
+	]
+}

@@ -38,6 +38,11 @@ var (
 		"BOSH CA Certificate file ($BOSH_EXPORTER_BOSH_CA_CERT_FILE).",
 	)
 
+	boshLogLevel = flag.String(
+		"bosh.log-level", "ERROR",
+		"BOSH Log Level ($BOSH_EXPORTER_BOSH_LOG_LEVEL).",
+	)
+
 	uaaURL = flag.String(
 		"uaa.url", "",
 		"BOSH UAA Url ($BOSH_EXPORTER_UAA_URL).",
@@ -82,6 +87,7 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_URL", boshURL)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_USERNAME", boshUsername)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_PASSWORD", boshPassword)
+	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_URL", uaaURL)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_ID", uaaClientID)
@@ -119,7 +125,12 @@ func readCACert(CACertFile string, logger logger.Logger) (string, error) {
 }
 
 func buildBOSHClient() (director.Director, error) {
-	logger := logger.NewLogger(logger.LevelError)
+	logLevel, err := logger.Levelify(*boshLogLevel)
+	if err != nil {
+		return nil, err
+	}
+
+	logger := logger.NewLogger(logLevel)
 
 	directorConfig, err := director.NewConfigFromURL(*boshURL)
 	if err != nil {

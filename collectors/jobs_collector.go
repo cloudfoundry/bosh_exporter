@@ -10,6 +10,7 @@ import (
 
 type jobsCollector struct {
 	namespace                         string
+	boshDeployments                   []string
 	boshClient                        director.Director
 	jobHealthyDesc                    *prometheus.Desc
 	jobLoadAvg01Desc                  *prometheus.Desc
@@ -32,6 +33,7 @@ type jobsCollector struct {
 
 func NewJobsCollector(
 	namespace string,
+	boshDeployments []string,
 	boshClient director.Director,
 ) *jobsCollector {
 	jobHealthyDesc := prometheus.NewDesc(
@@ -155,6 +157,7 @@ func NewJobsCollector(
 
 	collector := &jobsCollector{
 		namespace:                         namespace,
+		boshDeployments:                   boshDeployments,
 		boshClient:                        boshClient,
 		jobHealthyDesc:                    jobHealthyDesc,
 		jobLoadAvg01Desc:                  jobLoadAvg01Desc,
@@ -178,10 +181,24 @@ func NewJobsCollector(
 }
 
 func (c jobsCollector) Collect(ch chan<- prometheus.Metric) {
-	deployments, err := c.boshClient.Deployments()
-	if err != nil {
-		log.Errorf("Error while reading deployments: %v", err)
-		return
+	var err error
+	var deployments []director.Deployment
+
+	if len(c.boshDeployments) > 0 {
+		for _, deploymentName := range c.boshDeployments {
+			deployment, err := c.boshClient.FindDeployment(deploymentName)
+			if err != nil {
+				log.Errorf("Error while reading deployment `%s`: %v", deploymentName, err)
+				continue
+			}
+			deployments = append(deployments, deployment)
+		}
+	} else {
+		deployments, err = c.boshClient.Deployments()
+		if err != nil {
+			log.Errorf("Error while reading deployments: %v", err)
+			return
+		}
 	}
 
 	for _, deployment := range deployments {

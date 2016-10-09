@@ -10,6 +10,7 @@ import (
 
 type processesCollector struct {
 	namespace             string
+	boshDeployments       []string
 	boshClient            director.Director
 	processHealthyDesc    *prometheus.Desc
 	processUptimeDesc     *prometheus.Desc
@@ -20,6 +21,7 @@ type processesCollector struct {
 
 func NewProcessesCollector(
 	namespace string,
+	boshDeployments []string,
 	boshClient director.Director,
 ) *processesCollector {
 	processHealthyDesc := prometheus.NewDesc(
@@ -59,6 +61,7 @@ func NewProcessesCollector(
 
 	collector := &processesCollector{
 		namespace:             namespace,
+		boshDeployments:       boshDeployments,
 		boshClient:            boshClient,
 		processHealthyDesc:    processHealthyDesc,
 		processUptimeDesc:     processUptimeDesc,
@@ -70,10 +73,24 @@ func NewProcessesCollector(
 }
 
 func (c processesCollector) Collect(ch chan<- prometheus.Metric) {
-	deployments, err := c.boshClient.Deployments()
-	if err != nil {
-		log.Errorf("Error while reading deployments: %v", err)
-		return
+	var err error
+	var deployments []director.Deployment
+
+	if len(c.boshDeployments) > 0 {
+		for _, deploymentName := range c.boshDeployments {
+			deployment, err := c.boshClient.FindDeployment(deploymentName)
+			if err != nil {
+				log.Errorf("Error while reading deployment `%s`: %v", deploymentName, err)
+				continue
+			}
+			deployments = append(deployments, deployment)
+		}
+	} else {
+		deployments, err = c.boshClient.Deployments()
+		if err != nil {
+			log.Errorf("Error while reading deployments: %v", err)
+			return
+		}
 	}
 
 	for _, deployment := range deployments {

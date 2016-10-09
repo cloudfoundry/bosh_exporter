@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/uaa"
@@ -33,15 +34,17 @@ var (
 		"BOSH Password ($BOSH_EXPORTER_BOSH_PASSWORD).",
 	)
 
+	boshLogLevel = flag.String(
+		"bosh.log-level", "ERROR",
+		"BOSH Log Level ($BOSH_EXPORTER_BOSH_LOG_LEVEL).",
+	)
+
 	boshCACertFile = flag.String(
 		"bosh.ca-cert-file", "",
 		"BOSH CA Certificate file ($BOSH_EXPORTER_BOSH_CA_CERT_FILE).",
 	)
 
-	boshLogLevel = flag.String(
-		"bosh.log-level", "ERROR",
-		"BOSH Log Level ($BOSH_EXPORTER_BOSH_LOG_LEVEL).",
-	)
+	boshDeployments sliceString
 
 	uaaURL = flag.String(
 		"uaa.url", "",
@@ -79,7 +82,24 @@ var (
 	)
 )
 
+type sliceString []string
+
+func (bd *sliceString) String() string {
+	return fmt.Sprint(*bd)
+}
+
+func (bd *sliceString) Set(value string) error {
+	*bd = append(*bd, value)
+
+	return nil
+}
+
 func init() {
+	flag.Var(
+		&boshDeployments, "bosh.deployment",
+		"Filter metrics to an specific BOSH deployment (this flag can be specified multiple times)",
+	)
+
 	prometheus.MustRegister(version.NewCollector(*metricsNamespace))
 }
 
@@ -89,6 +109,7 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_PASSWORD", boshPassword)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
+	overrideWithEnvSliceString("BOSH_EXPORTER_BOSH_DEPLOYMENTS", &boshDeployments)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_URL", uaaURL)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_ID", uaaClientID)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_SECRET", uaaClientSecret)
@@ -101,6 +122,15 @@ func overrideWithEnvVar(name string, value *string) {
 	envValue := os.Getenv(name)
 	if envValue != "" {
 		*value = envValue
+	}
+}
+
+func overrideWithEnvSliceString(name string, value *sliceString) {
+	envValue := os.Getenv(name)
+	if envValue != "" {
+		for _, val := range strings.Split(envValue, ",") {
+			*value = append(*value, val)
+		}
 	}
 }
 
@@ -199,10 +229,10 @@ func main() {
 	}
 	log.Infof("Using BOSH Director `%s` (%s)", boshInfo.Name, boshInfo.UUID)
 
-	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, boshClient)
+	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, boshDeployments, boshClient)
 	prometheus.MustRegister(jobsCollector)
 
-	processesCollector := collectors.NewProcessesCollector(*metricsNamespace, boshClient)
+	processesCollector := collectors.NewProcessesCollector(*metricsNamespace, boshDeployments, boshClient)
 	prometheus.MustRegister(processesCollector)
 
 	http.Handle(*metricsPath, prometheus.Handler())

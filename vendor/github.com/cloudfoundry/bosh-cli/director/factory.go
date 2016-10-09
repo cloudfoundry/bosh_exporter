@@ -49,8 +49,7 @@ func (f Factory) httpClient(config Config, taskReporter TaskReporter, fileReport
 		f.logger.Debug(f.logTag, "Using custom root CAs")
 	}
 
-	//rawClient := boshhttp.CreateDefaultClient(certPool)
-        rawClient := boshhttp.CreateDefaultClientInsecureSkipVerify()
+	rawClient := boshhttp.CreateDefaultClient(certPool)
 
 	authAdjustment := NewAuthRequestAdjustment(
 		config.TokenFunc, config.Username, config.Password)

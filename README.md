@@ -38,12 +38,14 @@ make
 
 | Flag / Environment Variable | Required | Default | Description
 | --------------------------- | -------- | ------- | -----------
-| bosh.host<br>BOSH_EXPORTER_BOSH_HOST | Yes | | BOSH Host
-| bosh.port<br>BOSH_EXPORTER_BOSH_PORT | No | 25555 | BOSH Port
-| bosh.username<br>BOSH_EXPORTER_BOSH_USERNAME | Yes | | BOSH Username
-| bosh.password<br>BOSH_EXPORTER_BOSH_PASSWORD | Yes | | BOSH Password
+| bosh.url<br>BOSH_EXPORTER_BOSH_URL | Yes | | BOSH URL
+| bosh.username<br>BOSH_EXPORTER_BOSH_USERNAME | No | | BOSH Username
+| bosh.password<br>BOSH_EXPORTER_BOSH_PASSWORD | No | | BOSH Password
+| bosh.ca-cert-file<br>BOSH_EXPORTER_BOSH_CA_CERT_FILE | No | | BOSH CA Certificate file
+| uaa.url<br>BOSH_EXPORTER_UAA_URL | No | | BOSH UAA URL
+| uaa.client-id<br>BOSH_EXPORTER_UAA_CLIENT_ID | No | | BOSH UAA Client ID
+| uaa.client-secret<br>BOSH_EXPORTER_UAA_CLIENT_SECRET | No | | BOSH UAA Client Secret
 | metrics.namespace<br>BOSH_EXPORTER_METRICS_NAMESPACE | No | bosh_exporter | Metrics Namespace
-| skip-ssl-verify<br>BOSH_EXPORTER_SKIP_SSL_VERIFY | No | false | Disable SSL Verify |
 | web.listen-address<br>BOSH_EXPORTER_WEB_LISTEN_ADDRESS | No | :9190 | Address to listen on for web interface and telemetry
 | web.telemetry-path<br>BOSH_EXPORTER_WEB_TELEMETRY_PATH | No | /metrics | Path under which to expose Prometheus metrics
 

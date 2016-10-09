@@ -27,35 +27,35 @@ func NewProcessesCollector(
 	processHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_healthy"),
 		"BOSH Job Process Healthy.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process_name"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
 		nil,
 	)
 
 	processUptimeDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_uptime_seconds"),
 		"BOSH Job Process Uptime in seconds.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process_name"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
 		nil,
 	)
 
 	processCPUTotalDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_cpu_total"),
 		"BOSH Job Process CPU Total.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process_name"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
 		nil,
 	)
 
 	processMemKBDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_mem_kb"),
 		"BOSH Job Process Memory KB.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process_name"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
 		nil,
 	)
 
 	processMemPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_mem_percent"),
 		"BOSH Job Process Memory Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process_name"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
 		nil,
 	)
 

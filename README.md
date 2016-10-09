@@ -21,11 +21,11 @@ A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics. It exports the fol
 | *namespace*_bosh_job_ephemeral_disk_percent | BOSH Job Ephemeral Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az
 | *namespace*_bosh_job_persistent_disk_inode_percent | BOSH Job Persistent Disk Inode Percent | bosh_deployment, bosh_job, bosh_index, bosh_az
 | *namespace*_bosh_job_persistent_disk_percent | BOSH Job Persistent Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az
-| *namespace*_bosh_job_process_healthy | BOSH Job Process Healthy | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process_name
-| *namespace*_bosh_job_process_uptime_seconds | BOSH Job Process Uptime in seconds | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process_name
-| *namespace*_bosh_job_process_cpu_total | BOSH Job Process CPU Total | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process_name
-| *namespace*_bosh_job_process_mem_kb | BOSH Job Process Memory KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process_name
-| *namespace*_bosh_job_process_mem_percent | BOSH Job Process Memory Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process_name
+| *namespace*_bosh_job_process_healthy | BOSH Job Process Healthy | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process
+| *namespace*_bosh_job_process_uptime_seconds | BOSH Job Process Uptime in seconds | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process
+| *namespace*_bosh_job_process_cpu_total | BOSH Job Process CPU Total | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process
+| *namespace*_bosh_job_process_mem_kb | BOSH Job Process Memory KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process
+| *namespace*_bosh_job_process_mem_percent | BOSH Job Process Memory Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process
 
 ## Building and running
 

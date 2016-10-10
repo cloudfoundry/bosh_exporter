@@ -1,0 +1,9 @@
+---
+applications:
+  - name: bosh-exporter
+    buildpack: go_buildpack
+    env:
+      BOSH_EXPORTER_BOSH_URL: "Your BOSH URL"
+      BOSH_EXPORTER_BOSH_USERNAME: "Your BOSH Username"
+      BOSH_EXPORTER_BOSH_PASSWORD: "Your BOSH Password"
+      BOSH_EXPORTER_BOSH_CA_CERT_FILE: "bosh-lite-ca.crt"

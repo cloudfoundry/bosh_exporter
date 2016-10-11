@@ -22,13 +22,13 @@ $ git clone https://github.com/cloudfoundry-community/bosh_exporter.git
 $ cd bosh_exporter
 ```
 
-Modify the included [application manifest file][manifest.yml] to include your BOSH properties. Then you can push the exporter to your Cloud Foundry environment:
+Modify the included [application manifest file][manifest] to include your BOSH properties. Then you can push the exporter to your Cloud Foundry environment:
 
 ```bash
 $ cf push
 ```
 
-## Using Docker
+### Using Docker
 
 You can deploy this exporter using the [frodenas/bosh-exporter][hub] Docker image:
 

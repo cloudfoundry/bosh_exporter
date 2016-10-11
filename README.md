@@ -15,7 +15,7 @@ $ bosh_exporter <flags>
 
 ### Cloud Foundry
 
-The broker can be deployed to an already existing [Cloud Foundry][cloudfoundry] environment:
+The exporter can be deployed to an already existing [Cloud Foundry][cloudfoundry] environment:
 
 ```bash
 $ git clone https://github.com/cloudfoundry-community/bosh_exporter.git
@@ -28,14 +28,9 @@ Modify the included [application manifest file][manifest] to include your BOSH p
 $ cf push
 ```
 
-### Using Docker
+### BOSH
 
-You can deploy this exporter using the [frodenas/bosh-exporter][hub] Docker image:
-
-```bash
-$ docker pull frodenas/bosh-exporter
-$ docker run -d -p 9190:9190 frodenas/bosh-exporter <flags>
-```
+This exporter can be deployed using the [Prometheus BOSH Release][prometheus-boshrelease].
 
 ## Usage
 
@@ -88,6 +83,6 @@ The exporter returns the following metrics for every BOSH `deployment`:
 [bosh]: https://bosh.io
 [cloudfoundry]: https://www.cloudfoundry.org/
 [golang]: https://golang.org/
-[hub]: https://hub.docker.com/r/frodenas/bosh-exporter/
 [manifest]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/manifest.yml
 [prometheus]: https://prometheus.io/
+[prometheus-boshrelease]: https://github.com/cloudfoundry-community/prometheus-boshrelease

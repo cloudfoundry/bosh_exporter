@@ -86,8 +86,8 @@ The exporter returns the following metrics for every BOSH `deployment`:
 | *namespace*_bosh_job_process_mem_percent | BOSH Job Process Memory Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_process
 
 [bosh]: https://bosh.io
-[cloudfoundry] https://www.cloudfoundry.org/
-[golang] https://golang.org/
+[cloudfoundry]: https://www.cloudfoundry.org/
+[golang]: https://golang.org/
 [hub]: https://hub.docker.com/r/frodenas/bosh-exporter/
 [manifest]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/manifest.yml
 [prometheus]: https://prometheus.io/

@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-type jobsCollector struct {
+type JobsCollector struct {
 	namespace                         string
 	boshDeployments                   []string
 	boshClient                        director.Director
@@ -35,7 +35,7 @@ func NewJobsCollector(
 	namespace string,
 	boshDeployments []string,
 	boshClient director.Director,
-) *jobsCollector {
+) *JobsCollector {
 	jobHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_healthy"),
 		"BOSH Job Healthy.",
@@ -155,7 +155,7 @@ func NewJobsCollector(
 		nil,
 	)
 
-	collector := &jobsCollector{
+	collector := &JobsCollector{
 		namespace:                         namespace,
 		boshDeployments:                   boshDeployments,
 		boshClient:                        boshClient,
@@ -180,7 +180,7 @@ func NewJobsCollector(
 	return collector
 }
 
-func (c jobsCollector) Collect(ch chan<- prometheus.Metric) {
+func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 	var err error
 	var deployments []director.Deployment
 
@@ -226,7 +226,7 @@ func (c jobsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (c jobsCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c JobsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.jobHealthyDesc
 	ch <- c.jobLoadAvg01Desc
 	ch <- c.jobLoadAvg05Desc
@@ -246,7 +246,7 @@ func (c jobsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.jobPersistentDiskPercentDesc
 }
 
-func (c jobsCollector) jobHealthyMetrics(
+func (c JobsCollector) jobHealthyMetrics(
 	ch chan<- prometheus.Metric,
 	vmRunning bool,
 	deploymentName string,
@@ -270,7 +270,7 @@ func (c jobsCollector) jobHealthyMetrics(
 	)
 }
 
-func (c jobsCollector) jobLoadAvgMetrics(
+func (c JobsCollector) jobLoadAvgMetrics(
 	ch chan<- prometheus.Metric,
 	loadAvg []string,
 	deploymentName string,
@@ -332,7 +332,7 @@ func (c jobsCollector) jobLoadAvgMetrics(
 	}
 }
 
-func (c jobsCollector) jobCPUMetrics(
+func (c JobsCollector) jobCPUMetrics(
 	ch chan<- prometheus.Metric,
 	cpuMetrics director.VMInfoVitalsCPU,
 	deploymentName string,
@@ -392,7 +392,7 @@ func (c jobsCollector) jobCPUMetrics(
 	}
 }
 
-func (c jobsCollector) jobMemMetrics(
+func (c JobsCollector) jobMemMetrics(
 	ch chan<- prometheus.Metric,
 	memMetrics director.VMInfoVitalsMemSize,
 	deploymentName string,
@@ -435,7 +435,7 @@ func (c jobsCollector) jobMemMetrics(
 	}
 }
 
-func (c jobsCollector) jobSwapMetrics(
+func (c JobsCollector) jobSwapMetrics(
 	ch chan<- prometheus.Metric,
 	swapMetrics director.VMInfoVitalsMemSize,
 	deploymentName string,
@@ -478,7 +478,7 @@ func (c jobsCollector) jobSwapMetrics(
 	}
 }
 
-func (c jobsCollector) jobSystemDiskMetrics(
+func (c JobsCollector) jobSystemDiskMetrics(
 	ch chan<- prometheus.Metric,
 	systemDiskMetrics director.VMInfoVitalsDiskSize,
 	deploymentName string,
@@ -521,7 +521,7 @@ func (c jobsCollector) jobSystemDiskMetrics(
 	}
 }
 
-func (c jobsCollector) jobEphemeralDiskMetrics(
+func (c JobsCollector) jobEphemeralDiskMetrics(
 	ch chan<- prometheus.Metric,
 	ephemeralDiskMetrics director.VMInfoVitalsDiskSize,
 	deploymentName string,
@@ -565,7 +565,7 @@ func (c jobsCollector) jobEphemeralDiskMetrics(
 	}
 }
 
-func (c jobsCollector) jobPersistentDiskMetrics(
+func (c JobsCollector) jobPersistentDiskMetrics(
 	ch chan<- prometheus.Metric,
 	persistentDiskMetrics director.VMInfoVitalsDiskSize,
 	deploymentName string,

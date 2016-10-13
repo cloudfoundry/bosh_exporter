@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-type processesCollector struct {
+type ProcessesCollector struct {
 	namespace             string
 	boshDeployments       []string
 	boshClient            director.Director
@@ -23,7 +23,7 @@ func NewProcessesCollector(
 	namespace string,
 	boshDeployments []string,
 	boshClient director.Director,
-) *processesCollector {
+) *ProcessesCollector {
 	processHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_healthy"),
 		"BOSH Job Process Healthy.",
@@ -59,7 +59,7 @@ func NewProcessesCollector(
 		nil,
 	)
 
-	collector := &processesCollector{
+	collector := &ProcessesCollector{
 		namespace:             namespace,
 		boshDeployments:       boshDeployments,
 		boshClient:            boshClient,
@@ -72,7 +72,7 @@ func NewProcessesCollector(
 	return collector
 }
 
-func (c processesCollector) Collect(ch chan<- prometheus.Metric) {
+func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
 	var err error
 	var deployments []director.Deployment
 
@@ -118,7 +118,7 @@ func (c processesCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (c processesCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c ProcessesCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.processHealthyDesc
 	ch <- c.processUptimeDesc
 	ch <- c.processCPUTotalDesc
@@ -126,7 +126,7 @@ func (c processesCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.processMemPercentDesc
 }
 
-func (c processesCollector) processHealthyMetrics(
+func (c ProcessesCollector) processHealthyMetrics(
 	ch chan<- prometheus.Metric,
 	processRunning bool,
 	deploymentName string,
@@ -152,7 +152,7 @@ func (c processesCollector) processHealthyMetrics(
 	)
 }
 
-func (c processesCollector) processUptimeMetrics(
+func (c ProcessesCollector) processUptimeMetrics(
 	ch chan<- prometheus.Metric,
 	uptime director.VMInfoVitalsUptime,
 	deploymentName string,
@@ -175,7 +175,7 @@ func (c processesCollector) processUptimeMetrics(
 	}
 }
 
-func (c processesCollector) processCPUMetrics(
+func (c ProcessesCollector) processCPUMetrics(
 	ch chan<- prometheus.Metric,
 	cpuMetrics director.VMInfoVitalsCPU,
 	deploymentName string,
@@ -198,7 +198,7 @@ func (c processesCollector) processCPUMetrics(
 	}
 }
 
-func (c processesCollector) processMemMetrics(
+func (c ProcessesCollector) processMemMetrics(
 	ch chan<- prometheus.Metric,
 	memMetrics director.VMInfoVitalsMemIntSize,
 	deploymentName string,

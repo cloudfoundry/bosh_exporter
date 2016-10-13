@@ -26,13 +26,18 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-cli/director",
-			"Comment": "v0.0.67",
-			"Rev": "281ef97040c00319c9b4588483e9434184f83ba6"
+			"Comment": "v0.0.70",
+			"Rev": "0a106fb6fe8e69fecb9cda9b40771aa01c8e178d"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/bosh-cli/director/fakes",
+			"Comment": "v0.0.70",
+			"Rev": "0a106fb6fe8e69fecb9cda9b40771aa01c8e178d"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-cli/uaa",
-			"Comment": "v0.0.67",
-			"Rev": "281ef97040c00319c9b4588483e9434184f83ba6"
+			"Comment": "v0.0.70",
+			"Rev": "0a106fb6fe8e69fecb9cda9b40771aa01c8e178d"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-utils/errors",

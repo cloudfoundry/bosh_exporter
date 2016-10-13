@@ -132,7 +132,7 @@ var _ = Describe("ProcessesCollector", func() {
 				float64(1),
 				deploymentName,
 				jobName,
-				strconv.Itoa(int(jobIndex)),
+				strconv.Itoa(jobIndex),
 				jobAZ,
 				processName,
 			)
@@ -143,7 +143,7 @@ var _ = Describe("ProcessesCollector", func() {
 				float64(processUptimeSeconds),
 				deploymentName,
 				jobName,
-				strconv.Itoa(int(jobIndex)),
+				strconv.Itoa(jobIndex),
 				jobAZ,
 				processName,
 			)
@@ -154,7 +154,7 @@ var _ = Describe("ProcessesCollector", func() {
 				processCPUTotal,
 				deploymentName,
 				jobName,
-				strconv.Itoa(int(jobIndex)),
+				strconv.Itoa(jobIndex),
 				jobAZ,
 				processName,
 			)
@@ -165,7 +165,7 @@ var _ = Describe("ProcessesCollector", func() {
 				float64(processMemKB),
 				deploymentName,
 				jobName,
-				strconv.Itoa(int(jobIndex)),
+				strconv.Itoa(jobIndex),
 				jobAZ,
 				processName,
 			)
@@ -176,7 +176,7 @@ var _ = Describe("ProcessesCollector", func() {
 				processMemPercent,
 				deploymentName,
 				jobName,
-				strconv.Itoa(int(jobIndex)),
+				strconv.Itoa(jobIndex),
 				jobAZ,
 				processName,
 			)
@@ -229,7 +229,7 @@ var _ = Describe("ProcessesCollector", func() {
 					float64(0),
 					deploymentName,
 					jobName,
-					strconv.Itoa(int(jobIndex)),
+					strconv.Itoa(jobIndex),
 					jobAZ,
 					processName,
 				)

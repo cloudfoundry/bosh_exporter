@@ -220,8 +220,8 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 			c.jobMemMetrics(ch, vmInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ)
 			c.jobSwapMetrics(ch, vmInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ)
 			c.jobSystemDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ)
-			c.jobEphemeralDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ)
-			c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ)
+			c.jobEphemeralDiskMetrics(ch, vmInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ)
+			c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ)
 		}
 	}
 }

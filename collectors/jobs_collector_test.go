@@ -1,6 +1,7 @@
 package collectors_test
 
 import (
+	"errors"
 	"strconv"
 
 	. "github.com/onsi/ginkgo"
@@ -43,7 +44,6 @@ var _ = Describe("JobsCollector", func() {
 		namespace = "test_exporter"
 		boshDeployments = []string{}
 		boshClient = &fakes.FakeDirector{}
-		jobsCollector = collectors.NewJobsCollector(namespace, boshDeployments, boshClient)
 
 		jobHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "bosh", "job_healthy"),
@@ -165,6 +165,10 @@ var _ = Describe("JobsCollector", func() {
 		)
 	})
 
+	JustBeforeEach(func() {
+		jobsCollector = collectors.NewJobsCollector(namespace, boshDeployments, boshClient)
+	})
+
 	Describe("Describe", func() {
 		var (
 			descriptions chan *prometheus.Desc
@@ -172,6 +176,9 @@ var _ = Describe("JobsCollector", func() {
 
 		BeforeEach(func() {
 			descriptions = make(chan *prometheus.Desc)
+		})
+
+		JustBeforeEach(func() {
 			go jobsCollector.Describe(descriptions)
 		})
 
@@ -268,6 +275,7 @@ var _ = Describe("JobsCollector", func() {
 			jobPersistentDiskInodePercent = 50
 			jobPersistentDiskPercent      = 60
 
+			deployment  director.Deployment
 			deployments []director.Deployment
 			vmInfos     []director.VMInfo
 			vmVitals    director.VMInfoVitals
@@ -510,12 +518,12 @@ var _ = Describe("JobsCollector", func() {
 				},
 			}
 
-			deployments = []director.Deployment{
-				&fakes.FakeDeployment{
-					NameStub:    func() string { return deploymentName },
-					VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
-				},
+			deployment = &fakes.FakeDeployment{
+				NameStub:    func() string { return deploymentName },
+				VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
 			}
+
+			deployments = []director.Deployment{deployment}
 
 			boshClient.DeploymentsReturns(deployments, nil)
 
@@ -609,6 +617,93 @@ var _ = Describe("JobsCollector", func() {
 
 		It("returns a bosh_job_persistent_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobPersistentDiskPercentMetric)))
+		})
+
+		Context("when there is a bosh deployment filter", func() {
+			BeforeEach(func() {
+				processState = "running"
+				boshDeployments = []string{"fake-deployment-name"}
+				boshClient.FindDeploymentReturns(deployment, nil)
+			})
+
+			It("returns a bosh_job_process_healthy metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobHealthyMetric)))
+			})
+
+			It("returns a bosh_job_load_avg01 metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobLoadAvg01Metric)))
+			})
+
+			It("returns a bosh_job_load_avg05 metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobLoadAvg05Metric)))
+			})
+
+			It("returns a bosh_job_load_avg15 metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobLoadAvg15Metric)))
+			})
+
+			It("returns a bosh_job_cpu_sys metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobCPUSysMetric)))
+			})
+
+			It("returns a bosh_job_cpu_user metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobCPUUserMetric)))
+			})
+
+			It("returns a bosh_job_cpu_wait metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobCPUWaitMetric)))
+			})
+
+			It("returns a bosh_job_mem_kb metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobMemKBMetric)))
+			})
+
+			It("returns a bosh_job_mem_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobMemPercentMetric)))
+			})
+
+			It("returns a bosh_job_swap_kb metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobSwapKBMetric)))
+			})
+
+			It("returns a bosh_job_swap_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobSwapPercentMetric)))
+			})
+
+			It("returns a bosh_job_system_disk_inode_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobSystemDiskInodePercentMetric)))
+			})
+
+			It("returns a bosh_job_system_disk_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobSystemDiskPercentMetric)))
+			})
+
+			It("returns a bosh_job_ephemeral_disk_inode_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskInodePercentMetric)))
+			})
+
+			It("returns a bosh_job_ephemeral_disk_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskPercentMetric)))
+			})
+
+			It("returns a bosh_job_persistent_disk_inode_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobPersistentDiskInodePercentMetric)))
+			})
+
+			It("returns a bosh_job_persistent_disk_percent metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobPersistentDiskPercentMetric)))
+			})
+
+			Context("and no deployment matches", func() {
+				BeforeEach(func() {
+					boshDeployments = []string{"fake-unexisting-deployment-name"}
+					boshClient.FindDeploymentReturns(nil, errors.New("does not exists"))
+				})
+
+				It("does not return any metric", func() {
+					Consistently(metrics).ShouldNot(Receive())
+				})
+			})
 		})
 	})
 })

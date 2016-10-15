@@ -16,6 +16,11 @@ import (
 
 var _ = Describe("JobsCollector", func() {
 	var (
+		namespace       string
+		boshDeployments []string
+		boshClient      *fakes.FakeDirector
+		jobsCollector   *collectors.JobsCollector
+
 		jobHealthyDesc                    *prometheus.Desc
 		jobLoadAvg01Desc                  *prometheus.Desc
 		jobLoadAvg05Desc                  *prometheus.Desc
@@ -33,11 +38,6 @@ var _ = Describe("JobsCollector", func() {
 		jobEphemeralDiskPercentDesc       *prometheus.Desc
 		jobPersistentDiskInodePercentDesc *prometheus.Desc
 		jobPersistentDiskPercentDesc      *prometheus.Desc
-
-		namespace       string
-		boshDeployments []string
-		boshClient      *fakes.FakeDirector
-		jobsCollector   *collectors.JobsCollector
 	)
 
 	BeforeEach(func() {
@@ -275,13 +275,14 @@ var _ = Describe("JobsCollector", func() {
 			jobPersistentDiskInodePercent = 50
 			jobPersistentDiskPercent      = 60
 
-			deployment  director.Deployment
-			deployments []director.Deployment
-			vmInfos     []director.VMInfo
 			vmVitals    director.VMInfoVitals
+			vmInfos     []director.VMInfo
+			deployments []director.Deployment
+			deployment  director.Deployment
 
 			metrics                             chan prometheus.Metric
 			jobHealthyMetric                    prometheus.Metric
+			jobUnHealthyMetric                  prometheus.Metric
 			jobLoadAvg01Metric                  prometheus.Metric
 			jobLoadAvg05Metric                  prometheus.Metric
 			jobLoadAvg15Metric                  prometheus.Metric
@@ -301,10 +302,75 @@ var _ = Describe("JobsCollector", func() {
 		)
 
 		BeforeEach(func() {
+			vmVitals = director.VMInfoVitals{
+				CPU: director.VMInfoVitalsCPU{
+					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
+					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
+					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
+				},
+				Mem: director.VMInfoVitalsMemSize{
+					KB:      strconv.Itoa(jobMemKB),
+					Percent: strconv.Itoa(jobMemPercent),
+				},
+				Swap: director.VMInfoVitalsMemSize{
+					KB:      strconv.Itoa(jobSwapKB),
+					Percent: strconv.Itoa(jobSwapPercent),
+				},
+				Load: []string{
+					strconv.FormatFloat(jobLoadAvg01, 'E', -1, 64),
+					strconv.FormatFloat(jobLoadAvg05, 'E', -1, 64),
+					strconv.FormatFloat(jobLoadAvg15, 'E', -1, 64),
+				},
+				Disk: map[string]director.VMInfoVitalsDiskSize{
+					"system": director.VMInfoVitalsDiskSize{
+						InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
+						Percent:      strconv.Itoa(int(jobSystemDiskPercent)),
+					},
+					"ephemeral": director.VMInfoVitalsDiskSize{
+						InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
+						Percent:      strconv.Itoa(int(jobEphemeralDiskPercent)),
+					},
+					"persistent": director.VMInfoVitalsDiskSize{
+						InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
+						Percent:      strconv.Itoa(int(jobPersistentDiskPercent)),
+					},
+				},
+			}
+
+			vmInfos = []director.VMInfo{
+				{
+					JobName:      jobName,
+					Index:        &jobIndex,
+					ProcessState: processState,
+					AZ:           jobAZ,
+					Vitals:       vmVitals,
+				},
+			}
+
+			deployment = &fakes.FakeDeployment{
+				NameStub:    func() string { return deploymentName },
+				VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
+			}
+
+			deployments = []director.Deployment{deployment}
+			boshClient.DeploymentsReturns(deployments, nil)
+
+			metrics = make(chan prometheus.Metric)
+
 			jobHealthyMetric = prometheus.MustNewConstMetric(
 				jobHealthyDesc,
 				prometheus.GaugeValue,
 				float64(1),
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+			)
+
+			jobUnHealthyMetric = prometheus.MustNewConstMetric(
+				jobHealthyDesc,
+				prometheus.GaugeValue,
+				float64(0),
 				deploymentName,
 				jobName,
 				strconv.Itoa(jobIndex),
@@ -473,61 +539,6 @@ var _ = Describe("JobsCollector", func() {
 		})
 
 		JustBeforeEach(func() {
-			vmVitals = director.VMInfoVitals{
-				CPU: director.VMInfoVitalsCPU{
-					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
-					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
-					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
-				},
-				Mem: director.VMInfoVitalsMemSize{
-					KB:      strconv.Itoa(jobMemKB),
-					Percent: strconv.Itoa(jobMemPercent),
-				},
-				Swap: director.VMInfoVitalsMemSize{
-					KB:      strconv.Itoa(jobSwapKB),
-					Percent: strconv.Itoa(jobSwapPercent),
-				},
-				Load: []string{
-					strconv.FormatFloat(jobLoadAvg01, 'E', -1, 64),
-					strconv.FormatFloat(jobLoadAvg05, 'E', -1, 64),
-					strconv.FormatFloat(jobLoadAvg15, 'E', -1, 64),
-				},
-				Disk: map[string]director.VMInfoVitalsDiskSize{
-					"system": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobSystemDiskPercent)),
-					},
-					"ephemeral": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobEphemeralDiskPercent)),
-					},
-					"persistent": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobPersistentDiskPercent)),
-					},
-				},
-			}
-
-			vmInfos = []director.VMInfo{
-				{
-					JobName:      jobName,
-					Index:        &jobIndex,
-					ProcessState: processState,
-					AZ:           jobAZ,
-					Vitals:       vmVitals,
-				},
-			}
-
-			deployment = &fakes.FakeDeployment{
-				NameStub:    func() string { return deploymentName },
-				VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
-			}
-
-			deployments = []director.Deployment{deployment}
-
-			boshClient.DeploymentsReturns(deployments, nil)
-
-			metrics = make(chan prometheus.Metric)
 			go jobsCollector.Collect(metrics)
 		})
 
@@ -537,21 +548,11 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when the process is not running", func() {
 			BeforeEach(func() {
-				processState = "failing"
-
-				jobHealthyMetric = prometheus.MustNewConstMetric(
-					jobHealthyDesc,
-					prometheus.GaugeValue,
-					float64(0),
-					deploymentName,
-					jobName,
-					strconv.Itoa(int(jobIndex)),
-					jobAZ,
-				)
+				vmInfos[0].ProcessState = "failing"
 			})
 
 			It("returns a bosh_job_process_healthy metric", func() {
-				Eventually(metrics).Should(Receive(Equal(jobHealthyMetric)))
+				Eventually(metrics).Should(Receive(Equal(jobUnHealthyMetric)))
 			})
 		})
 
@@ -567,61 +568,281 @@ var _ = Describe("JobsCollector", func() {
 			Eventually(metrics).Should(Receive(Equal(jobLoadAvg15Metric)))
 		})
 
+		Context("when there is no load avg values", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Load = []string{}
+			})
+
+			It("does not return any bosh_job_load_avg metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg01Metric)))
+				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg05Metric)))
+				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg15Metric)))
+			})
+		})
+
 		It("returns a bosh_job_cpu_sys metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUSysMetric)))
+		})
+
+		Context("when there is no cpu sys value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
+					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
+				}
+			})
+
+			It("does not return a bosh_job_cpu_sys metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUSysMetric)))
+			})
 		})
 
 		It("returns a bosh_job_cpu_user metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUUserMetric)))
 		})
 
+		Context("when there is no cpu user value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
+					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
+				}
+			})
+
+			It("does not return a bosh_job_cpu_user metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUUserMetric)))
+			})
+		})
+
 		It("returns a bosh_job_cpu_wait metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUWaitMetric)))
+		})
+
+		Context("when there is no cpu wait value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
+					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
+				}
+			})
+
+			It("does not return a bosh_job_cpu_wait metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUWaitMetric)))
+			})
 		})
 
 		It("returns a bosh_job_mem_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobMemKBMetric)))
 		})
 
+		Context("when there is no mem kb value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
+					Percent: strconv.Itoa(jobMemPercent),
+				}
+			})
+
+			It("does not return a bosh_job_mem_kb metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobMemKBMetric)))
+			})
+		})
+
 		It("returns a bosh_job_mem_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobMemPercentMetric)))
+		})
+
+		Context("when there is no mem percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
+					KB: strconv.Itoa(jobMemKB),
+				}
+			})
+
+			It("does not return a bosh_job_mem_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobMemPercentMetric)))
+			})
 		})
 
 		It("returns a bosh_job_swap_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSwapKBMetric)))
 		})
 
+		Context("when there is no swap kb value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
+					Percent: strconv.Itoa(jobSwapPercent),
+				}
+			})
+
+			It("does not return a bosh_job_swap_kb metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobSwapKBMetric)))
+			})
+		})
+
 		It("returns a bosh_job_swap_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSwapPercentMetric)))
+		})
+
+		Context("when there is no swap percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
+					KB: strconv.Itoa(jobSwapKB),
+				}
+			})
+
+			It("does not return a bosh_job_swap_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobSwapPercentMetric)))
+			})
 		})
 
 		It("returns a bosh_job_system_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSystemDiskInodePercentMetric)))
 		})
 
+		Context("when there is no system disk inode percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
+					Percent: strconv.Itoa(int(jobSystemDiskPercent)),
+				}
+			})
+
+			It("does not return a bosh_job_system_disk_inode_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobSystemDiskInodePercentMetric)))
+			})
+		})
+
 		It("returns a bosh_job_system_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSystemDiskPercentMetric)))
+		})
+
+		Context("when there is no system disk percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
+					InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
+				}
+			})
+
+			It("does not return a bosh_job_system_disk_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobSystemDiskPercentMetric)))
+			})
 		})
 
 		It("returns a bosh_job_ephemeral_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskInodePercentMetric)))
 		})
 
+		Context("when there is no ephemeral disk inode percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
+					Percent: strconv.Itoa(int(jobEphemeralDiskPercent)),
+				}
+			})
+
+			It("does not return a bosh_job_ephemeral_disk_inode_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobEphemeralDiskInodePercentMetric)))
+			})
+		})
+
 		It("returns a bosh_job_ephemeral_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskPercentMetric)))
+		})
+
+		Context("when there is no ephemeral disk percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
+					InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
+				}
+			})
+
+			It("does not return a bosh_job_Ephemeral_disk_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobEphemeralDiskPercentMetric)))
+			})
 		})
 
 		It("returns a bosh_job_persistent_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobPersistentDiskInodePercentMetric)))
 		})
 
+		Context("when there is no persistent disk inode percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
+					Percent: strconv.Itoa(int(jobPersistentDiskPercent)),
+				}
+			})
+
+			It("does not return a bosh_job_persistent_disk_inode_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobPersistentDiskInodePercentMetric)))
+			})
+		})
+
 		It("returns a bosh_job_persistent_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobPersistentDiskPercentMetric)))
 		})
 
+		Context("when there is no persistent disk percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
+					InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
+				}
+			})
+
+			It("does not return a bosh_job_persistent_disk_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobPersistentDiskPercentMetric)))
+			})
+		})
+
+		Context("when there are no deployments", func() {
+			BeforeEach(func() {
+				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when it fails to get the deployments", func() {
+			BeforeEach(func() {
+				boshClient.DeploymentsReturns(nil, errors.New("no deployments"))
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when it dos not return any VMInfos", func() {
+			BeforeEach(func() {
+				deployment = &fakes.FakeDeployment{
+					NameStub:    func() string { return deploymentName },
+					VMInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
+				}
+				deployments = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(deployments, nil)
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when it fails to get the VMInfos for a deployment", func() {
+			BeforeEach(func() {
+				deployment = &fakes.FakeDeployment{
+					NameStub:    func() string { return deploymentName },
+					VMInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no VMInfo") },
+				}
+				deployments = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(deployments, nil)
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
 		Context("when there is a bosh deployment filter", func() {
 			BeforeEach(func() {
-				processState = "running"
 				boshDeployments = []string{"fake-deployment-name"}
 				boshClient.FindDeploymentReturns(deployment, nil)
 			})
@@ -696,7 +917,6 @@ var _ = Describe("JobsCollector", func() {
 
 			Context("and no deployment matches", func() {
 				BeforeEach(func() {
-					boshDeployments = []string{"fake-unexisting-deployment-name"}
 					boshClient.FindDeploymentReturns(nil, errors.New("does not exists"))
 				})
 

@@ -16,16 +16,16 @@ import (
 
 var _ = Describe("ProcessesCollector", func() {
 	var (
+		namespace          string
+		boshDeployments    []string
+		boshClient         *fakes.FakeDirector
+		processesCollector *collectors.ProcessesCollector
+
 		processHealthyDesc    *prometheus.Desc
 		processUptimeDesc     *prometheus.Desc
 		processCPUTotalDesc   *prometheus.Desc
 		processMemKBDesc      *prometheus.Desc
 		processMemPercentDesc *prometheus.Desc
-
-		namespace          string
-		boshDeployments    []string
-		boshClient         *fakes.FakeDirector
-		processesCollector *collectors.ProcessesCollector
 	)
 
 	BeforeEach(func() {
@@ -120,13 +120,14 @@ var _ = Describe("ProcessesCollector", func() {
 			processMemKB         = uint64(2000)
 			processMemPercent    = float64(20)
 
+			vmProcesses []director.VMInfoProcess
+			vmInfos     []director.VMInfo
 			deployment  director.Deployment
 			deployments []director.Deployment
-			vmInfos     []director.VMInfo
-			vmProcesses []director.VMInfoProcess
 
 			metrics                 chan prometheus.Metric
 			processHealthyMetric    prometheus.Metric
+			processUnHealthyMetric  prometheus.Metric
 			processUptimeMetric     prometheus.Metric
 			processCPUTotalMetric   prometheus.Metric
 			processMemKBMetric      prometheus.Metric
@@ -134,10 +135,49 @@ var _ = Describe("ProcessesCollector", func() {
 		)
 
 		BeforeEach(func() {
+			vmProcesses = []director.VMInfoProcess{
+				{
+					Name:   processName,
+					State:  processState,
+					CPU:    director.VMInfoVitalsCPU{Total: &processCPUTotal},
+					Mem:    director.VMInfoVitalsMemIntSize{KB: &processMemKB, Percent: &processMemPercent},
+					Uptime: director.VMInfoVitalsUptime{Seconds: &processUptimeSeconds},
+				},
+			}
+
+			vmInfos = []director.VMInfo{
+				{
+					JobName:   jobName,
+					Index:     &jobIndex,
+					AZ:        jobAZ,
+					Processes: vmProcesses,
+				},
+			}
+
+			deployment = &fakes.FakeDeployment{
+				NameStub:    func() string { return deploymentName },
+				VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
+			}
+			deployments = []director.Deployment{deployment}
+			boshClient.DeploymentsReturns(deployments, nil)
+
+			metrics = make(chan prometheus.Metric)
+
 			processHealthyMetric = prometheus.MustNewConstMetric(
 				processHealthyDesc,
 				prometheus.GaugeValue,
 				float64(1),
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+				processName,
+			)
+
+			processUnHealthyMetric = prometheus.MustNewConstMetric(
+				processHealthyDesc,
+				prometheus.GaugeValue,
+				float64(0),
 				deploymentName,
 				jobName,
 				strconv.Itoa(jobIndex),
@@ -191,60 +231,20 @@ var _ = Describe("ProcessesCollector", func() {
 		})
 
 		JustBeforeEach(func() {
-			vmProcesses = []director.VMInfoProcess{
-				{
-					Name:   processName,
-					State:  processState,
-					CPU:    director.VMInfoVitalsCPU{Total: &processCPUTotal},
-					Mem:    director.VMInfoVitalsMemIntSize{KB: &processMemKB, Percent: &processMemPercent},
-					Uptime: director.VMInfoVitalsUptime{Seconds: &processUptimeSeconds},
-				},
-			}
-
-			vmInfos = []director.VMInfo{
-				{
-					JobName:   jobName,
-					Index:     &jobIndex,
-					AZ:        jobAZ,
-					Processes: vmProcesses,
-				},
-			}
-
-			deployment = &fakes.FakeDeployment{
-				NameStub:    func() string { return deploymentName },
-				VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
-			}
-
-			deployments = []director.Deployment{deployment}
-
-			boshClient.DeploymentsReturns(deployments, nil)
-
-			metrics = make(chan prometheus.Metric)
 			go processesCollector.Collect(metrics)
 		})
 
-		It("returns a bosh_job_process_healthy metric", func() {
+		It("returns a healthy bosh_job_process_healthy metric", func() {
 			Eventually(metrics).Should(Receive(Equal(processHealthyMetric)))
 		})
 
-		Context("when the process is not running", func() {
+		Context("when a process is not running", func() {
 			BeforeEach(func() {
-				processState = "failing"
-
-				processHealthyMetric = prometheus.MustNewConstMetric(
-					processHealthyDesc,
-					prometheus.GaugeValue,
-					float64(0),
-					deploymentName,
-					jobName,
-					strconv.Itoa(jobIndex),
-					jobAZ,
-					processName,
-				)
+				vmInfos[0].Processes[0].State = "failing"
 			})
 
-			It("returns a bosh_job_process_healthy metric", func() {
-				Eventually(metrics).Should(Receive(Equal(processHealthyMetric)))
+			It("returns an unhealthy bosh_job_process_healthy metric", func() {
+				Eventually(metrics).Should(Receive(Equal(processUnHealthyMetric)))
 			})
 		})
 
@@ -252,26 +252,115 @@ var _ = Describe("ProcessesCollector", func() {
 			Eventually(metrics).Should(Receive(Equal(processUptimeMetric)))
 		})
 
+		Context("when there is no process uptime value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].Uptime = director.VMInfoVitalsUptime{}
+			})
+
+			It("does not return a bosh_job_process_uptime_seconds metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(processUptimeMetric)))
+			})
+		})
+
 		It("returns a bosh_job_process_cpu_total metric", func() {
 			Eventually(metrics).Should(Receive(Equal(processCPUTotalMetric)))
 		})
 
-		It("returns a bosh_job_process_mem_kb metric metric", func() {
+		Context("when there is no process cpu total value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].CPU = director.VMInfoVitalsCPU{}
+			})
+
+			It("does not return a bosh_job_process_cpu_total metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(processCPUTotalMetric)))
+			})
+		})
+
+		It("returns a bosh_job_process_mem_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(processMemKBMetric)))
+		})
+
+		Context("when there is no process mem kb value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{Percent: &processMemPercent}
+			})
+
+			It("does not return a bosh_job_process_mem_kb metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(processMemKBMetric)))
+			})
 		})
 
 		It("returns a bosh_job_process_mem_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(processMemPercentMetric)))
 		})
 
+		Context("when there is no process mem percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{KB: &processMemKB}
+			})
+
+			It("does not return a bosh_job_process_mem_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(processMemPercentMetric)))
+			})
+		})
+
+		Context("when there are no deployments", func() {
+			BeforeEach(func() {
+				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when it fails to get the deployments", func() {
+			BeforeEach(func() {
+				boshClient.DeploymentsReturns(nil, errors.New("no deployments"))
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when it dos not return any VMInfos", func() {
+			BeforeEach(func() {
+				deployment = &fakes.FakeDeployment{
+					NameStub:    func() string { return deploymentName },
+					VMInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
+				}
+				deployments = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(deployments, nil)
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when it fails to get the VMInfos for a deployment", func() {
+			BeforeEach(func() {
+				deployment = &fakes.FakeDeployment{
+					NameStub:    func() string { return deploymentName },
+					VMInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no VMInfo") },
+				}
+				deployments = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(deployments, nil)
+			})
+
+			It("does not return any metric", func() {
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
+
 		Context("when there is a bosh deployment filter", func() {
 			BeforeEach(func() {
-				processState = "running"
 				boshDeployments = []string{"fake-deployment-name"}
 				boshClient.FindDeploymentReturns(deployment, nil)
 			})
 
-			It("returns a bosh_job_process_healthy metric", func() {
+			It("returns a helathy bosh_job_process_healthy metric", func() {
 				Eventually(metrics).Should(Receive(Equal(processHealthyMetric)))
 			})
 
@@ -291,9 +380,8 @@ var _ = Describe("ProcessesCollector", func() {
 				Eventually(metrics).Should(Receive(Equal(processMemPercentMetric)))
 			})
 
-			Context("and no deployment matches", func() {
+			Context("and the deployment does not exists", func() {
 				BeforeEach(func() {
-					boshDeployments = []string{"fake-unexisting-deployment-name"}
 					boshClient.FindDeploymentReturns(nil, errors.New("does not exists"))
 				})
 

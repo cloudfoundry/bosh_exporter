@@ -27,35 +27,35 @@ func NewProcessesCollector(
 	processHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_healthy"),
 		"BOSH Job Process Healthy.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	processUptimeDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_uptime_seconds"),
 		"BOSH Job Process Uptime in seconds.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	processCPUTotalDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_cpu_total"),
 		"BOSH Job Process CPU Total.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	processMemKBDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_mem_kb"),
 		"BOSH Job Process Memory KB.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	processMemPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_mem_percent"),
 		"BOSH Job Process Memory Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
@@ -105,14 +105,15 @@ func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
 			jobName := vmInfo.JobName
 			jobIndex := strconv.Itoa(int(*vmInfo.Index))
 			jobAZ := vmInfo.AZ
+			jobIP := vmInfo.IPs[0]
 
 			for _, processInfo := range vmInfo.Processes {
 				processName := processInfo.Name
 
-				c.processHealthyMetrics(ch, processInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, processName)
-				c.processUptimeMetrics(ch, processInfo.Uptime, deploymentName, jobName, jobIndex, jobAZ, processName)
-				c.processCPUMetrics(ch, processInfo.CPU, deploymentName, jobName, jobIndex, jobAZ, processName)
-				c.processMemMetrics(ch, processInfo.Mem, deploymentName, jobName, jobIndex, jobAZ, processName)
+				c.processHealthyMetrics(ch, processInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+				c.processUptimeMetrics(ch, processInfo.Uptime, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+				c.processCPUMetrics(ch, processInfo.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+				c.processMemMetrics(ch, processInfo.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
 			}
 		}
 	}
@@ -133,6 +134,7 @@ func (c ProcessesCollector) processHealthyMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 	processName string,
 ) {
 	var runningMetric float64
@@ -148,6 +150,7 @@ func (c ProcessesCollector) processHealthyMetrics(
 		jobName,
 		jobIndex,
 		jobAZ,
+		jobIP,
 		processName,
 	)
 }
@@ -159,6 +162,7 @@ func (c ProcessesCollector) processUptimeMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 	processName string,
 ) {
 	if uptime.Seconds != nil {
@@ -170,6 +174,7 @@ func (c ProcessesCollector) processUptimeMetrics(
 			jobName,
 			jobIndex,
 			jobAZ,
+			jobIP,
 			processName,
 		)
 	}
@@ -182,6 +187,7 @@ func (c ProcessesCollector) processCPUMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 	processName string,
 ) {
 	if cpuMetrics.Total != nil {
@@ -193,6 +199,7 @@ func (c ProcessesCollector) processCPUMetrics(
 			jobName,
 			jobIndex,
 			jobAZ,
+			jobIP,
 			processName,
 		)
 	}
@@ -205,6 +212,7 @@ func (c ProcessesCollector) processMemMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 	processName string,
 ) {
 	if memMetrics.KB != nil {
@@ -216,6 +224,7 @@ func (c ProcessesCollector) processMemMetrics(
 			jobName,
 			jobIndex,
 			jobAZ,
+			jobIP,
 			processName,
 		)
 	}
@@ -229,6 +238,7 @@ func (c ProcessesCollector) processMemMetrics(
 			jobName,
 			jobIndex,
 			jobAZ,
+			jobIP,
 			processName,
 		)
 	}

@@ -36,35 +36,35 @@ var _ = Describe("ProcessesCollector", func() {
 		processHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "bosh", "job_process_healthy"),
 			"BOSH Job Process Healthy.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		processUptimeDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "bosh", "job_process_uptime_seconds"),
 			"BOSH Job Process Uptime in seconds.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		processCPUTotalDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "bosh", "job_process_cpu_total"),
 			"BOSH Job Process CPU Total.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		processMemKBDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "bosh", "job_process_mem_kb"),
 			"BOSH Job Process Memory KB.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		processMemPercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "bosh", "job_process_mem_percent"),
 			"BOSH Job Process Memory Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 	})
@@ -113,6 +113,7 @@ var _ = Describe("ProcessesCollector", func() {
 			jobName              = "fake-job-name"
 			jobIndex             = 0
 			jobAZ                = "fake-job-az"
+			jobIP                = "1.2.3.4"
 			processName          = "fake-process-name"
 			processState         = "running"
 			processUptimeSeconds = uint64(3600)
@@ -149,6 +150,7 @@ var _ = Describe("ProcessesCollector", func() {
 				{
 					JobName:   jobName,
 					Index:     &jobIndex,
+					IPs:       []string{jobIP},
 					AZ:        jobAZ,
 					Processes: vmProcesses,
 				},
@@ -171,6 +173,7 @@ var _ = Describe("ProcessesCollector", func() {
 				jobName,
 				strconv.Itoa(jobIndex),
 				jobAZ,
+				jobIP,
 				processName,
 			)
 
@@ -182,6 +185,7 @@ var _ = Describe("ProcessesCollector", func() {
 				jobName,
 				strconv.Itoa(jobIndex),
 				jobAZ,
+				jobIP,
 				processName,
 			)
 
@@ -193,6 +197,7 @@ var _ = Describe("ProcessesCollector", func() {
 				jobName,
 				strconv.Itoa(jobIndex),
 				jobAZ,
+				jobIP,
 				processName,
 			)
 
@@ -204,6 +209,7 @@ var _ = Describe("ProcessesCollector", func() {
 				jobName,
 				strconv.Itoa(jobIndex),
 				jobAZ,
+				jobIP,
 				processName,
 			)
 
@@ -215,6 +221,7 @@ var _ = Describe("ProcessesCollector", func() {
 				jobName,
 				strconv.Itoa(jobIndex),
 				jobAZ,
+				jobIP,
 				processName,
 			)
 
@@ -226,6 +233,7 @@ var _ = Describe("ProcessesCollector", func() {
 				jobName,
 				strconv.Itoa(jobIndex),
 				jobAZ,
+				jobIP,
 				processName,
 			)
 		})

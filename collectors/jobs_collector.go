@@ -39,119 +39,119 @@ func NewJobsCollector(
 	jobHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_healthy"),
 		"BOSH Job Healthy.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobLoadAvg01Desc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_load_avg01"),
 		"BOSH Job Load avg01.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobLoadAvg05Desc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_load_avg05"),
 		"BOSH Job Load avg05.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobLoadAvg15Desc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_load_avg15"),
 		"BOSH Job Load avg15.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobCPUSysDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_cpu_sys"),
 		"BOSH Job CPU System.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobCPUUserDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_cpu_user"),
 		"BOSH Job CPU User.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobCPUWaitDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_cpu_wait"),
 		"BOSH Job CPU Wait.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobMemKBDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_mem_kb"),
 		"BOSH Job Memory KB.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobMemPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_mem_percent"),
 		"BOSH Job Memory Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSwapKBDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_swap_kb"),
 		"BOSH Job Swap KB.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSwapPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_swap_percent"),
 		"BOSH Job Swap Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSystemDiskInodePercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_system_disk_inode_percent"),
 		"BOSH Job System Disk Inode Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSystemDiskPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_system_disk_percent"),
 		"BOSH Job System Disk Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobEphemeralDiskInodePercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_ephemeral_disk_inode_percent"),
 		"BOSH Job Ephemeral Disk Inode Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobEphemeralDiskPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_ephemeral_disk_percent"),
 		"BOSH Job Ephemeral Disk Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobPersistentDiskInodePercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_persistent_disk_inode_percent"),
 		"BOSH Job Persistent Disk Inode Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobPersistentDiskPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_persistent_disk_percent"),
 		"BOSH Job Persistent Disk Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
@@ -213,15 +213,16 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 			jobName := vmInfo.JobName
 			jobIndex := strconv.Itoa(int(*vmInfo.Index))
 			jobAZ := vmInfo.AZ
+			jobIP := vmInfo.IPs[0]
 
-			c.jobHealthyMetrics(ch, vmInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ)
-			c.jobLoadAvgMetrics(ch, vmInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ)
-			c.jobCPUMetrics(ch, vmInfo.Vitals.CPU, deploymentName, jobName, jobIndex, jobAZ)
-			c.jobMemMetrics(ch, vmInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ)
-			c.jobSwapMetrics(ch, vmInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ)
-			c.jobSystemDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ)
-			c.jobEphemeralDiskMetrics(ch, vmInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ)
-			c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ)
+			c.jobHealthyMetrics(ch, vmInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+			c.jobLoadAvgMetrics(ch, vmInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+			c.jobCPUMetrics(ch, vmInfo.Vitals.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+			c.jobMemMetrics(ch, vmInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+			c.jobSwapMetrics(ch, vmInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+			c.jobSystemDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+			c.jobEphemeralDiskMetrics(ch, vmInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+			c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
 		}
 	}
 }
@@ -253,6 +254,7 @@ func (c JobsCollector) jobHealthyMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	var runningMetric float64
 	if vmRunning {
@@ -267,6 +269,7 @@ func (c JobsCollector) jobHealthyMetrics(
 		jobName,
 		jobIndex,
 		jobAZ,
+		jobIP,
 	)
 }
 
@@ -277,6 +280,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	if len(loadAvg) == 3 {
 		if loadAvg[0] != "" {
@@ -292,6 +296,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 					jobName,
 					jobIndex,
 					jobAZ,
+					jobIP,
 				)
 			}
 		}
@@ -309,6 +314,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 					jobName,
 					jobIndex,
 					jobAZ,
+					jobIP,
 				)
 			}
 		}
@@ -326,6 +332,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 					jobName,
 					jobIndex,
 					jobAZ,
+					jobIP,
 				)
 			}
 		}
@@ -339,6 +346,7 @@ func (c JobsCollector) jobCPUMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	if cpuMetrics.Sys != "" {
 		cpuSys, err := strconv.ParseFloat(cpuMetrics.Sys, 64)
@@ -353,6 +361,7 @@ func (c JobsCollector) jobCPUMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -370,6 +379,7 @@ func (c JobsCollector) jobCPUMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -387,6 +397,7 @@ func (c JobsCollector) jobCPUMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -399,6 +410,7 @@ func (c JobsCollector) jobMemMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	if memMetrics.KB != "" {
 		memKB, err := strconv.ParseFloat(memMetrics.KB, 64)
@@ -413,6 +425,7 @@ func (c JobsCollector) jobMemMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -430,6 +443,7 @@ func (c JobsCollector) jobMemMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -442,6 +456,7 @@ func (c JobsCollector) jobSwapMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	if swapMetrics.KB != "" {
 		swapKB, err := strconv.ParseFloat(swapMetrics.KB, 64)
@@ -456,6 +471,7 @@ func (c JobsCollector) jobSwapMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -473,6 +489,7 @@ func (c JobsCollector) jobSwapMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -485,6 +502,7 @@ func (c JobsCollector) jobSystemDiskMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	if systemDiskMetrics.InodePercent != "" {
 		systemDiskInodePercent, err := strconv.ParseFloat(systemDiskMetrics.InodePercent, 64)
@@ -499,6 +517,7 @@ func (c JobsCollector) jobSystemDiskMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -516,6 +535,7 @@ func (c JobsCollector) jobSystemDiskMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -528,6 +548,7 @@ func (c JobsCollector) jobEphemeralDiskMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	if ephemeralDiskMetrics.InodePercent != "" {
 		ephemeralDiskInodePercent, err := strconv.ParseFloat(ephemeralDiskMetrics.InodePercent, 64)
@@ -543,6 +564,7 @@ func (c JobsCollector) jobEphemeralDiskMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -560,6 +582,7 @@ func (c JobsCollector) jobEphemeralDiskMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -572,6 +595,7 @@ func (c JobsCollector) jobPersistentDiskMetrics(
 	jobName string,
 	jobIndex string,
 	jobAZ string,
+	jobIP string,
 ) {
 	if persistentDiskMetrics.InodePercent != "" {
 		persistentDiskInodePercent, err := strconv.ParseFloat(persistentDiskMetrics.InodePercent, 64)
@@ -586,6 +610,7 @@ func (c JobsCollector) jobPersistentDiskMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}
@@ -603,6 +628,7 @@ func (c JobsCollector) jobPersistentDiskMetrics(
 				jobName,
 				jobIndex,
 				jobAZ,
+				jobIP,
 			)
 		}
 	}

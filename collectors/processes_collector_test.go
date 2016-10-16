@@ -2,6 +2,7 @@ package collectors_test
 
 import (
 	"errors"
+	"flag"
 	"strconv"
 
 	. "github.com/onsi/ginkgo"
@@ -13,6 +14,10 @@ import (
 
 	"github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
+
+func init() {
+	flag.Set("log.level", "fatal")
+}
 
 var _ = Describe("ProcessesCollector", func() {
 	var (

@@ -26,11 +26,12 @@ var _ = Describe("ProcessesCollector", func() {
 		boshClient         *fakes.FakeDirector
 		processesCollector *collectors.ProcessesCollector
 
-		processHealthyDesc    *prometheus.Desc
-		processUptimeDesc     *prometheus.Desc
-		processCPUTotalDesc   *prometheus.Desc
-		processMemKBDesc      *prometheus.Desc
-		processMemPercentDesc *prometheus.Desc
+		processHealthyDesc                     *prometheus.Desc
+		processUptimeDesc                      *prometheus.Desc
+		processCPUTotalDesc                    *prometheus.Desc
+		processMemKBDesc                       *prometheus.Desc
+		processMemPercentDesc                  *prometheus.Desc
+		lastProcessesScrapeDurationSecondsDesc *prometheus.Desc
 	)
 
 	BeforeEach(func() {
@@ -72,6 +73,13 @@ var _ = Describe("ProcessesCollector", func() {
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
+
+		lastProcessesScrapeDurationSecondsDesc = prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "last_job_processes_scrape_duration_seconds"),
+			"Duration of the last scrape of Job Processes metrics from BOSH.",
+			[]string{},
+			nil,
+		)
 	})
 
 	JustBeforeEach(func() {
@@ -109,6 +117,10 @@ var _ = Describe("ProcessesCollector", func() {
 
 		It("returns a bosh_job_process_mem_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(processMemPercentDesc)))
+		})
+
+		It("returns a last_job_processes_scrape_duration_seconds metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(lastProcessesScrapeDurationSecondsDesc)))
 		})
 	})
 
@@ -322,7 +334,8 @@ var _ = Describe("ProcessesCollector", func() {
 				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
 			})
 
-			It("does not return any metric", func() {
+			It("returns only a last_job_processes_scrape_duration_seconds metric", func() {
+				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
 			})
 		})
@@ -337,7 +350,7 @@ var _ = Describe("ProcessesCollector", func() {
 			})
 		})
 
-		Context("when it dos not return any VMInfos", func() {
+		Context("when it does not return any VMInfos", func() {
 			BeforeEach(func() {
 				deployment = &fakes.FakeDeployment{
 					NameStub:    func() string { return deploymentName },
@@ -347,7 +360,8 @@ var _ = Describe("ProcessesCollector", func() {
 				boshClient.DeploymentsReturns(deployments, nil)
 			})
 
-			It("does not return any metric", func() {
+			It("returns only a last_job_processes_scrape_duration_seconds metric", func() {
+				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
 			})
 		})
@@ -362,7 +376,8 @@ var _ = Describe("ProcessesCollector", func() {
 				boshClient.DeploymentsReturns(deployments, nil)
 			})
 
-			It("does not return any metric", func() {
+			It("returns only a last_job_processes_scrape_duration_seconds metric", func() {
+				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
 			})
 		})
@@ -398,7 +413,8 @@ var _ = Describe("ProcessesCollector", func() {
 					boshClient.FindDeploymentReturns(nil, errors.New("does not exists"))
 				})
 
-				It("does not return any metric", func() {
+				It("returns only a last_job_processes_scrape_duration_seconds metric", func() {
+					Eventually(metrics).Should(Receive())
 					Consistently(metrics).ShouldNot(Receive())
 				})
 			})

@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,6 +30,7 @@ type JobsCollector struct {
 	jobEphemeralDiskPercentDesc       *prometheus.Desc
 	jobPersistentDiskInodePercentDesc *prometheus.Desc
 	jobPersistentDiskPercentDesc      *prometheus.Desc
+	lastJobsScrapeDurationSecondsDesc *prometheus.Desc
 }
 
 func NewJobsCollector(
@@ -155,6 +157,13 @@ func NewJobsCollector(
 		nil,
 	)
 
+	lastJobsScrapeDurationSecondsDesc := prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "last_jobs_scrape_duration_seconds"),
+		"Duration of the last scrape of Job metrics from BOSH.",
+		[]string{},
+		nil,
+	)
+
 	collector := &JobsCollector{
 		namespace:                         namespace,
 		boshDeployments:                   boshDeployments,
@@ -176,6 +185,7 @@ func NewJobsCollector(
 		jobEphemeralDiskPercentDesc:       jobEphemeralDiskPercentDesc,
 		jobPersistentDiskInodePercentDesc: jobPersistentDiskInodePercentDesc,
 		jobPersistentDiskPercentDesc:      jobPersistentDiskPercentDesc,
+		lastJobsScrapeDurationSecondsDesc: lastJobsScrapeDurationSecondsDesc,
 	}
 	return collector
 }
@@ -183,6 +193,7 @@ func NewJobsCollector(
 func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 	var err error
 	var deployments []director.Deployment
+	var begun = time.Now()
 
 	if len(c.boshDeployments) > 0 {
 		for _, deploymentName := range c.boshDeployments {
@@ -229,6 +240,12 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 			c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
 		}
 	}
+
+	ch <- prometheus.MustNewConstMetric(
+		c.lastJobsScrapeDurationSecondsDesc,
+		prometheus.GaugeValue,
+		time.Since(begun).Seconds(),
+	)
 }
 
 func (c JobsCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -249,6 +266,7 @@ func (c JobsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.jobEphemeralDiskPercentDesc
 	ch <- c.jobPersistentDiskInodePercentDesc
 	ch <- c.jobPersistentDiskPercentDesc
+	ch <- c.lastJobsScrapeDurationSecondsDesc
 }
 
 func (c JobsCollector) jobHealthyMetrics(

@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/client_golang/prometheus"
@@ -9,14 +10,15 @@ import (
 )
 
 type ProcessesCollector struct {
-	namespace             string
-	boshDeployments       []string
-	boshClient            director.Director
-	processHealthyDesc    *prometheus.Desc
-	processUptimeDesc     *prometheus.Desc
-	processCPUTotalDesc   *prometheus.Desc
-	processMemKBDesc      *prometheus.Desc
-	processMemPercentDesc *prometheus.Desc
+	namespace                              string
+	boshDeployments                        []string
+	boshClient                             director.Director
+	processHealthyDesc                     *prometheus.Desc
+	processUptimeDesc                      *prometheus.Desc
+	processCPUTotalDesc                    *prometheus.Desc
+	processMemKBDesc                       *prometheus.Desc
+	processMemPercentDesc                  *prometheus.Desc
+	lastProcessesScrapeDurationSecondsDesc *prometheus.Desc
 }
 
 func NewProcessesCollector(
@@ -59,15 +61,23 @@ func NewProcessesCollector(
 		nil,
 	)
 
+	lastProcessesScrapeDurationSecondsDesc := prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "last_job_processes_scrape_duration_seconds"),
+		"Duration of the last scrape of Job Processes metrics from BOSH.",
+		[]string{},
+		nil,
+	)
+
 	collector := &ProcessesCollector{
-		namespace:             namespace,
-		boshDeployments:       boshDeployments,
-		boshClient:            boshClient,
-		processHealthyDesc:    processHealthyDesc,
-		processUptimeDesc:     processUptimeDesc,
-		processCPUTotalDesc:   processCPUTotalDesc,
-		processMemKBDesc:      processMemKBDesc,
-		processMemPercentDesc: processMemPercentDesc,
+		namespace:                              namespace,
+		boshDeployments:                        boshDeployments,
+		boshClient:                             boshClient,
+		processHealthyDesc:                     processHealthyDesc,
+		processUptimeDesc:                      processUptimeDesc,
+		processCPUTotalDesc:                    processCPUTotalDesc,
+		processMemKBDesc:                       processMemKBDesc,
+		processMemPercentDesc:                  processMemPercentDesc,
+		lastProcessesScrapeDurationSecondsDesc: lastProcessesScrapeDurationSecondsDesc,
 	}
 	return collector
 }
@@ -75,6 +85,7 @@ func NewProcessesCollector(
 func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
 	var err error
 	var deployments []director.Deployment
+	var begun = time.Now()
 
 	if len(c.boshDeployments) > 0 {
 		for _, deploymentName := range c.boshDeployments {
@@ -121,6 +132,12 @@ func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
 			}
 		}
 	}
+
+	ch <- prometheus.MustNewConstMetric(
+		c.lastProcessesScrapeDurationSecondsDesc,
+		prometheus.GaugeValue,
+		time.Since(begun).Seconds(),
+	)
 }
 
 func (c ProcessesCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -129,6 +146,7 @@ func (c ProcessesCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.processCPUTotalDesc
 	ch <- c.processMemKBDesc
 	ch <- c.processMemPercentDesc
+	ch <- c.lastProcessesScrapeDurationSecondsDesc
 }
 
 func (c ProcessesCollector) processHealthyMetrics(

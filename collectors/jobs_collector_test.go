@@ -43,6 +43,7 @@ var _ = Describe("JobsCollector", func() {
 		jobEphemeralDiskPercentDesc       *prometheus.Desc
 		jobPersistentDiskInodePercentDesc *prometheus.Desc
 		jobPersistentDiskPercentDesc      *prometheus.Desc
+		lastJobsScrapeDurationSecondsDesc *prometheus.Desc
 	)
 
 	BeforeEach(func() {
@@ -168,6 +169,13 @@ var _ = Describe("JobsCollector", func() {
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
+
+		lastJobsScrapeDurationSecondsDesc = prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "last_jobs_scrape_duration_seconds"),
+			"Duration of the last scrape of Job metrics from BOSH.",
+			[]string{},
+			nil,
+		)
 	})
 
 	JustBeforeEach(func() {
@@ -253,6 +261,10 @@ var _ = Describe("JobsCollector", func() {
 
 		It("returns a bosh_job_persistent_disk_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobPersistentDiskPercentDesc)))
+		})
+
+		It("returns a last_jobs_scrape_duration_seconds metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(lastJobsScrapeDurationSecondsDesc)))
 		})
 	})
 
@@ -821,7 +833,8 @@ var _ = Describe("JobsCollector", func() {
 				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
 			})
 
-			It("does not return any metric", func() {
+			It("returns only a last_jobs_scrape_duration_seconds metric", func() {
+				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
 			})
 		})
@@ -836,7 +849,7 @@ var _ = Describe("JobsCollector", func() {
 			})
 		})
 
-		Context("when it dos not return any VMInfos", func() {
+		Context("when it does not return any VMInfos", func() {
 			BeforeEach(func() {
 				deployment = &fakes.FakeDeployment{
 					NameStub:    func() string { return deploymentName },
@@ -846,7 +859,8 @@ var _ = Describe("JobsCollector", func() {
 				boshClient.DeploymentsReturns(deployments, nil)
 			})
 
-			It("does not return any metric", func() {
+			It("returns only a last_jobs_scrape_duration_seconds metric", func() {
+				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
 			})
 		})
@@ -861,7 +875,8 @@ var _ = Describe("JobsCollector", func() {
 				boshClient.DeploymentsReturns(deployments, nil)
 			})
 
-			It("does not return any metric", func() {
+			It("returns only a last_jobs_scrape_duration_seconds metric", func() {
+				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
 			})
 		})
@@ -945,7 +960,8 @@ var _ = Describe("JobsCollector", func() {
 					boshClient.FindDeploymentReturns(nil, errors.New("does not exists"))
 				})
 
-				It("does not return any metric", func() {
+				It("returns only a last_jobs_scrape_duration_seconds metric", func() {
+					Eventually(metrics).Should(Receive())
 					Consistently(metrics).ShouldNot(Receive())
 				})
 			})

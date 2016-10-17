@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/cloudfoundry/bosh-cli/director"
@@ -88,6 +89,7 @@ func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
 	var begun = time.Now()
 
 	if len(c.boshDeployments) > 0 {
+		log.Debugf("Filtering deployments by `%v`...", c.boshDeployments)
 		for _, deploymentName := range c.boshDeployments {
 			deployment, err := c.boshClient.FindDeployment(deploymentName)
 			if err != nil {
@@ -97,6 +99,7 @@ func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
 			deployments = append(deployments, deployment)
 		}
 	} else {
+		log.Debugf("Reading deployments...")
 		deployments, err = c.boshClient.Deployments()
 		if err != nil {
 			log.Errorf("Error while reading deployments: %v", err)
@@ -104,34 +107,15 @@ func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
+	var wg sync.WaitGroup
 	for _, deployment := range deployments {
-		log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
-		vmInfos, err := deployment.VMInfos()
-		if err != nil {
-			log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
-			continue
-		}
-
-		for _, vmInfo := range vmInfos {
-			deploymentName := deployment.Name()
-			jobName := vmInfo.JobName
-			jobIndex := strconv.Itoa(int(*vmInfo.Index))
-			jobAZ := vmInfo.AZ
-			jobIP := ""
-			if len(vmInfo.IPs) > 0 {
-				jobIP = vmInfo.IPs[0]
-			}
-
-			for _, processInfo := range vmInfo.Processes {
-				processName := processInfo.Name
-
-				c.processHealthyMetrics(ch, processInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
-				c.processUptimeMetrics(ch, processInfo.Uptime, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
-				c.processCPUMetrics(ch, processInfo.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
-				c.processMemMetrics(ch, processInfo.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
-			}
-		}
+		wg.Add(1)
+		go func(deployment director.Deployment, ch chan<- prometheus.Metric) {
+			defer wg.Done()
+			c.reportProcessesMetrics(deployment, ch)
+		}(deployment, ch)
 	}
+	wg.Wait()
 
 	ch <- prometheus.MustNewConstMetric(
 		c.lastProcessesScrapeDurationSecondsDesc,
@@ -147,6 +131,38 @@ func (c ProcessesCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.processMemKBDesc
 	ch <- c.processMemPercentDesc
 	ch <- c.lastProcessesScrapeDurationSecondsDesc
+}
+
+func (c ProcessesCollector) reportProcessesMetrics(
+	deployment director.Deployment,
+	ch chan<- prometheus.Metric,
+) {
+	log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
+	vmInfos, err := deployment.VMInfos()
+	if err != nil {
+		log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
+		return
+	}
+
+	for _, vmInfo := range vmInfos {
+		deploymentName := deployment.Name()
+		jobName := vmInfo.JobName
+		jobIndex := strconv.Itoa(int(*vmInfo.Index))
+		jobAZ := vmInfo.AZ
+		jobIP := ""
+		if len(vmInfo.IPs) > 0 {
+			jobIP = vmInfo.IPs[0]
+		}
+
+		for _, processInfo := range vmInfo.Processes {
+			processName := processInfo.Name
+
+			c.processHealthyMetrics(ch, processInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+			c.processUptimeMetrics(ch, processInfo.Uptime, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+			c.processCPUMetrics(ch, processInfo.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+			c.processMemMetrics(ch, processInfo.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+		}
+	}
 }
 
 func (c ProcessesCollector) processHealthyMetrics(

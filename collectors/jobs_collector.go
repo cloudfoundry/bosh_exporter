@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/cloudfoundry/bosh-cli/director"
@@ -196,6 +197,7 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 	var begun = time.Now()
 
 	if len(c.boshDeployments) > 0 {
+		log.Debugf("Filtering deployments by `%v`...", c.boshDeployments)
 		for _, deploymentName := range c.boshDeployments {
 			deployment, err := c.boshClient.FindDeployment(deploymentName)
 			if err != nil {
@@ -205,6 +207,7 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 			deployments = append(deployments, deployment)
 		}
 	} else {
+		log.Debugf("Reading deployments...")
 		deployments, err = c.boshClient.Deployments()
 		if err != nil {
 			log.Errorf("Error while reading deployments: %v", err)
@@ -212,34 +215,15 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
+	var wg sync.WaitGroup
 	for _, deployment := range deployments {
-		log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
-		vmInfos, err := deployment.VMInfos()
-		if err != nil {
-			log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
-			continue
-		}
-
-		for _, vmInfo := range vmInfos {
-			deploymentName := deployment.Name()
-			jobName := vmInfo.JobName
-			jobIndex := strconv.Itoa(int(*vmInfo.Index))
-			jobAZ := vmInfo.AZ
-			jobIP := ""
-			if len(vmInfo.IPs) > 0 {
-				jobIP = vmInfo.IPs[0]
-			}
-
-			c.jobHealthyMetrics(ch, vmInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-			c.jobLoadAvgMetrics(ch, vmInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-			c.jobCPUMetrics(ch, vmInfo.Vitals.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-			c.jobMemMetrics(ch, vmInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-			c.jobSwapMetrics(ch, vmInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-			c.jobSystemDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-			c.jobEphemeralDiskMetrics(ch, vmInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-			c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		}
+		wg.Add(1)
+		go func(deployment director.Deployment, ch chan<- prometheus.Metric) {
+			defer wg.Done()
+			c.reportJobMetrics(deployment, ch)
+		}(deployment, ch)
 	}
+	wg.Wait()
 
 	ch <- prometheus.MustNewConstMetric(
 		c.lastJobsScrapeDurationSecondsDesc,
@@ -267,6 +251,38 @@ func (c JobsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.jobPersistentDiskInodePercentDesc
 	ch <- c.jobPersistentDiskPercentDesc
 	ch <- c.lastJobsScrapeDurationSecondsDesc
+}
+
+func (c JobsCollector) reportJobMetrics(
+	deployment director.Deployment,
+	ch chan<- prometheus.Metric,
+) {
+	log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
+	vmInfos, err := deployment.VMInfos()
+	if err != nil {
+		log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
+		return
+	}
+
+	for _, vmInfo := range vmInfos {
+		deploymentName := deployment.Name()
+		jobName := vmInfo.JobName
+		jobIndex := strconv.Itoa(int(*vmInfo.Index))
+		jobAZ := vmInfo.AZ
+		jobIP := ""
+		if len(vmInfo.IPs) > 0 {
+			jobIP = vmInfo.IPs[0]
+		}
+
+		c.jobHealthyMetrics(ch, vmInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobLoadAvgMetrics(ch, vmInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobCPUMetrics(ch, vmInfo.Vitals.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobMemMetrics(ch, vmInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobSwapMetrics(ch, vmInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobSystemDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobEphemeralDiskMetrics(ch, vmInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+	}
 }
 
 func (c JobsCollector) jobHealthyMetrics(

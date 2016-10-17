@@ -202,6 +202,7 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	for _, deployment := range deployments {
+		log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
 		vmInfos, err := deployment.VMInfos()
 		if err != nil {
 			log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
@@ -213,7 +214,10 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 			jobName := vmInfo.JobName
 			jobIndex := strconv.Itoa(int(*vmInfo.Index))
 			jobAZ := vmInfo.AZ
-			jobIP := vmInfo.IPs[0]
+			jobIP := ""
+			if len(vmInfo.IPs) > 0 {
+				jobIP = vmInfo.IPs[0]
+			}
 
 			c.jobHealthyMetrics(ch, vmInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
 			c.jobLoadAvgMetrics(ch, vmInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ, jobIP)

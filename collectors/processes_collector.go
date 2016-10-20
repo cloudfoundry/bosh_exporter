@@ -8,12 +8,13 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
+
+	"github.com/cloudfoundry-community/bosh_exporter/filters"
 )
 
 type ProcessesCollector struct {
 	namespace                              string
-	boshDeployments                        []string
-	boshClient                             director.Director
+	deploymentsFilter                      filters.DeploymentsFilter
 	processHealthyDesc                     *prometheus.Desc
 	processUptimeDesc                      *prometheus.Desc
 	processCPUTotalDesc                    *prometheus.Desc
@@ -24,8 +25,7 @@ type ProcessesCollector struct {
 
 func NewProcessesCollector(
 	namespace string,
-	boshDeployments []string,
-	boshClient director.Director,
+	deploymentsFilter filters.DeploymentsFilter,
 ) *ProcessesCollector {
 	processHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "bosh", "job_process_healthy"),
@@ -71,8 +71,7 @@ func NewProcessesCollector(
 
 	collector := &ProcessesCollector{
 		namespace:                              namespace,
-		boshDeployments:                        boshDeployments,
-		boshClient:                             boshClient,
+		deploymentsFilter:                      deploymentsFilter,
 		processHealthyDesc:                     processHealthyDesc,
 		processUptimeDesc:                      processUptimeDesc,
 		processCPUTotalDesc:                    processCPUTotalDesc,
@@ -84,28 +83,9 @@ func NewProcessesCollector(
 }
 
 func (c ProcessesCollector) Collect(ch chan<- prometheus.Metric) {
-	var err error
-	var deployments []director.Deployment
 	var begun = time.Now()
 
-	if len(c.boshDeployments) > 0 {
-		log.Debugf("Filtering deployments by `%v`...", c.boshDeployments)
-		for _, deploymentName := range c.boshDeployments {
-			deployment, err := c.boshClient.FindDeployment(deploymentName)
-			if err != nil {
-				log.Errorf("Error while reading deployment `%s`: %v", deploymentName, err)
-				continue
-			}
-			deployments = append(deployments, deployment)
-		}
-	} else {
-		log.Debugf("Reading deployments...")
-		deployments, err = c.boshClient.Deployments()
-		if err != nil {
-			log.Errorf("Error while reading deployments: %v", err)
-			return
-		}
-	}
+	deployments := c.deploymentsFilter.GetDeployments()
 
 	var wg sync.WaitGroup
 	for _, deployment := range deployments {

@@ -12,7 +12,9 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director/fakes"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cloudfoundry-community/bosh_exporter/collectors"
+	"github.com/cloudfoundry-community/bosh_exporter/filters"
+
+	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
 
 func init() {
@@ -23,8 +25,9 @@ var _ = Describe("ProcessesCollector", func() {
 	var (
 		namespace          string
 		boshDeployments    []string
+		deploymentsFilter  *filters.DeploymentsFilter
 		boshClient         *fakes.FakeDirector
-		processesCollector *collectors.ProcessesCollector
+		processesCollector *ProcessesCollector
 
 		processHealthyDesc                     *prometheus.Desc
 		processUptimeDesc                      *prometheus.Desc
@@ -83,7 +86,8 @@ var _ = Describe("ProcessesCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		processesCollector = collectors.NewProcessesCollector(namespace, boshDeployments, boshClient)
+		deploymentsFilter = filters.NewDeploymentsFilter(boshDeployments, boshClient)
+		processesCollector = NewProcessesCollector(namespace, *deploymentsFilter)
 	})
 
 	Describe("Describe", func() {
@@ -340,16 +344,6 @@ var _ = Describe("ProcessesCollector", func() {
 			})
 		})
 
-		Context("when it fails to get the deployments", func() {
-			BeforeEach(func() {
-				boshClient.DeploymentsReturns(nil, errors.New("no deployments"))
-			})
-
-			It("does not return any metric", func() {
-				Consistently(metrics).ShouldNot(Receive())
-			})
-		})
-
 		Context("when it does not return any VMInfos", func() {
 			BeforeEach(func() {
 				deployment = &fakes.FakeDeployment{
@@ -379,44 +373,6 @@ var _ = Describe("ProcessesCollector", func() {
 			It("returns only a last_job_processes_scrape_duration_seconds metric", func() {
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
-			})
-		})
-
-		Context("when there is a bosh deployment filter", func() {
-			BeforeEach(func() {
-				boshDeployments = []string{"fake-deployment-name"}
-				boshClient.FindDeploymentReturns(deployment, nil)
-			})
-
-			It("returns a helathy bosh_job_process_healthy metric", func() {
-				Eventually(metrics).Should(Receive(Equal(processHealthyMetric)))
-			})
-
-			It("returns a bosh_job_process_uptime_seconds metric", func() {
-				Eventually(metrics).Should(Receive(Equal(processUptimeMetric)))
-			})
-
-			It("returns a bosh_job_process_cpu_total metric", func() {
-				Eventually(metrics).Should(Receive(Equal(processCPUTotalMetric)))
-			})
-
-			It("returns a bosh_job_process_mem_kb metric metric", func() {
-				Eventually(metrics).Should(Receive(Equal(processMemKBMetric)))
-			})
-
-			It("returns a bosh_job_process_mem_percent metric", func() {
-				Eventually(metrics).Should(Receive(Equal(processMemPercentMetric)))
-			})
-
-			Context("and the deployment does not exists", func() {
-				BeforeEach(func() {
-					boshClient.FindDeploymentReturns(nil, errors.New("does not exists"))
-				})
-
-				It("returns only a last_job_processes_scrape_duration_seconds metric", func() {
-					Eventually(metrics).Should(Receive())
-					Consistently(metrics).ShouldNot(Receive())
-				})
 			})
 		})
 	})

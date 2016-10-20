@@ -16,6 +16,7 @@ import (
 	"github.com/prometheus/common/version"
 
 	"github.com/cloudfoundry-community/bosh_exporter/collectors"
+	"github.com/cloudfoundry-community/bosh_exporter/filters"
 )
 
 var (
@@ -229,10 +230,12 @@ func main() {
 	}
 	log.Infof("Using BOSH Director `%s` (%s)", boshInfo.Name, boshInfo.UUID)
 
-	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, boshDeployments, boshClient)
+	deploymentsFilter := filters.NewDeploymentsFilter(boshDeployments, boshClient)
+
+	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
 	prometheus.MustRegister(jobsCollector)
 
-	processesCollector := collectors.NewProcessesCollector(*metricsNamespace, boshDeployments, boshClient)
+	processesCollector := collectors.NewProcessesCollector(*metricsNamespace, *deploymentsFilter)
 	prometheus.MustRegister(processesCollector)
 
 	http.Handle(*metricsPath, prometheus.Handler())

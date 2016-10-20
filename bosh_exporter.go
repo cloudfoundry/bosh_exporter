@@ -235,9 +235,6 @@ func main() {
 	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
 	prometheus.MustRegister(jobsCollector)
 
-	processesCollector := collectors.NewProcessesCollector(*metricsNamespace, *deploymentsFilter)
-	prometheus.MustRegister(processesCollector)
-
 	http.Handle(*metricsPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>

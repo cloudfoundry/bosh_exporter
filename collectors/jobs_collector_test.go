@@ -46,6 +46,11 @@ var _ = Describe("JobsCollector", func() {
 		jobEphemeralDiskPercentDesc       *prometheus.Desc
 		jobPersistentDiskInodePercentDesc *prometheus.Desc
 		jobPersistentDiskPercentDesc      *prometheus.Desc
+		jobProcessHealthyDesc             *prometheus.Desc
+		jobProcessUptimeDesc              *prometheus.Desc
+		jobProcessCPUTotalDesc            *prometheus.Desc
+		jobProcessMemKBDesc               *prometheus.Desc
+		jobProcessMemPercentDesc          *prometheus.Desc
 		lastJobsScrapeDurationSecondsDesc *prometheus.Desc
 	)
 
@@ -55,121 +60,156 @@ var _ = Describe("JobsCollector", func() {
 		boshClient = &fakes.FakeDirector{}
 
 		jobHealthyDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_healthy"),
+			prometheus.BuildFQName(namespace, "job", "healthy"),
 			"BOSH Job Healthy.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobLoadAvg01Desc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_load_avg01"),
+			prometheus.BuildFQName(namespace, "job", "load_avg01"),
 			"BOSH Job Load avg01.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobLoadAvg05Desc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_load_avg05"),
+			prometheus.BuildFQName(namespace, "job", "load_avg05"),
 			"BOSH Job Load avg05.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobLoadAvg15Desc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_load_avg15"),
+			prometheus.BuildFQName(namespace, "job", "load_avg15"),
 			"BOSH Job Load avg15.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobCPUSysDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_cpu_sys"),
+			prometheus.BuildFQName(namespace, "job", "cpu_sys"),
 			"BOSH Job CPU System.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobCPUUserDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_cpu_user"),
+			prometheus.BuildFQName(namespace, "job", "cpu_user"),
 			"BOSH Job CPU User.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobCPUWaitDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_cpu_wait"),
+			prometheus.BuildFQName(namespace, "job", "cpu_wait"),
 			"BOSH Job CPU Wait.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobMemKBDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_mem_kb"),
+			prometheus.BuildFQName(namespace, "job", "mem_kb"),
 			"BOSH Job Memory KB.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobMemPercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_mem_percent"),
+			prometheus.BuildFQName(namespace, "job", "mem_percent"),
 			"BOSH Job Memory Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSwapKBDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_swap_kb"),
+			prometheus.BuildFQName(namespace, "job", "swap_kb"),
 			"BOSH Job Swap KB.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSwapPercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_swap_percent"),
+			prometheus.BuildFQName(namespace, "job", "swap_percent"),
 			"BOSH Job Swap Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSystemDiskInodePercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_system_disk_inode_percent"),
+			prometheus.BuildFQName(namespace, "job", "system_disk_inode_percent"),
 			"BOSH Job System Disk Inode Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSystemDiskPercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_system_disk_percent"),
+			prometheus.BuildFQName(namespace, "job", "system_disk_percent"),
 			"BOSH Job System Disk Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobEphemeralDiskInodePercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_ephemeral_disk_inode_percent"),
+			prometheus.BuildFQName(namespace, "job", "ephemeral_disk_inode_percent"),
 			"BOSH Job Ephemeral Disk Inode Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobEphemeralDiskPercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_ephemeral_disk_percent"),
+			prometheus.BuildFQName(namespace, "job", "ephemeral_disk_percent"),
 			"BOSH Job Ephemeral Disk Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobPersistentDiskInodePercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_persistent_disk_inode_percent"),
+			prometheus.BuildFQName(namespace, "job", "persistent_disk_inode_percent"),
 			"BOSH Job Persistent Disk Inode Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobPersistentDiskPercentDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "bosh", "job_persistent_disk_percent"),
+			prometheus.BuildFQName(namespace, "job", "persistent_disk_percent"),
 			"BOSH Job Persistent Disk Percent.",
 			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			nil,
+		)
+
+		jobProcessHealthyDesc = prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "job_process", "healthy"),
+			"BOSH Job Process Healthy.",
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			nil,
+		)
+
+		jobProcessUptimeDesc = prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "job_process", "uptime_seconds"),
+			"BOSH Job Process Uptime in seconds.",
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			nil,
+		)
+
+		jobProcessCPUTotalDesc = prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "job_process", "cpu_total"),
+			"BOSH Job Process CPU Total.",
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			nil,
+		)
+
+		jobProcessMemKBDesc = prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "job_process", "mem_kb"),
+			"BOSH Job Process Memory KB.",
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			nil,
+		)
+
+		jobProcessMemPercentDesc = prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "job_process", "mem_percent"),
+			"BOSH Job Process Memory Percent.",
+			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
@@ -199,72 +239,92 @@ var _ = Describe("JobsCollector", func() {
 			go jobsCollector.Describe(descriptions)
 		})
 
-		It("returns a bosh_job_healthy metric description", func() {
+		It("returns a job_healthy metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobHealthyDesc)))
 		})
 
-		It("returns a bosh_job_load_avg01 metric description", func() {
+		It("returns a job_load_avg01 metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobLoadAvg01Desc)))
 		})
 
-		It("returns a bosh_job_load_avg05 metric description", func() {
+		It("returns a job_load_avg05 metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobLoadAvg05Desc)))
 		})
 
-		It("returns a bosh_job_load_avg15 metric description", func() {
+		It("returns a job_load_avg15 metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobLoadAvg15Desc)))
 		})
 
-		It("returns a bosh_job_cpu_sys metric description", func() {
+		It("returns a job_cpu_sys metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobCPUSysDesc)))
 		})
 
-		It("returns a bosh_job_cpu_user metric description", func() {
+		It("returns a job_cpu_user metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobCPUUserDesc)))
 		})
 
-		It("returns a bosh_job_cpu_wait metric description", func() {
+		It("returns a job_cpu_wait metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobCPUWaitDesc)))
 		})
 
-		It("returns a bosh_job_mem_kb metric description", func() {
+		It("returns a job_mem_kb metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobMemKBDesc)))
 		})
 
-		It("returns a bosh_job_mem_percent metric description", func() {
+		It("returns a job_mem_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobMemPercentDesc)))
 		})
 
-		It("returns a bosh_job_swap_kb metric description", func() {
+		It("returns a job_swap_kb metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobSwapKBDesc)))
 		})
 
-		It("returns a bosh_job_swap_percent metric description", func() {
+		It("returns a job_swap_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobSwapPercentDesc)))
 		})
 
-		It("returns a bosh_job_system_disk_inode_percent metric description", func() {
+		It("returns a job_system_disk_inode_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobSystemDiskInodePercentDesc)))
 		})
 
-		It("returns a bosh_job_system_disk_percent metric description", func() {
+		It("returns a job_system_disk_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobSystemDiskPercentDesc)))
 		})
 
-		It("returns a bosh_job_ephemeral_disk_inode_percent metric description", func() {
+		It("returns a job_ephemeral_disk_inode_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobEphemeralDiskInodePercentDesc)))
 		})
 
-		It("returns a bosh_job_ephemeral_disk_percent metric description", func() {
+		It("returns a job_ephemeral_disk_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobEphemeralDiskPercentDesc)))
 		})
 
-		It("returns a bosh_job_persistent_disk_inode_percent metric description", func() {
+		It("returns a job_persistent_disk_inode_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobPersistentDiskInodePercentDesc)))
 		})
 
-		It("returns a bosh_job_persistent_disk_percent metric description", func() {
+		It("returns a job_persistent_disk_percent metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(jobPersistentDiskPercentDesc)))
+		})
+
+		It("returns a job_process_healthy metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(jobProcessHealthyDesc)))
+		})
+
+		It("returns a job_process_uptime_seconds metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(jobProcessUptimeDesc)))
+		})
+
+		It("returns a job_process_cpu_total metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(jobProcessCPUTotalDesc)))
+		})
+
+		It("returns a job_process_mem_kb metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(jobProcessMemKBDesc)))
+		})
+
+		It("returns a job_process_mem_percent metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(jobProcessMemPercentDesc)))
 		})
 
 		It("returns a last_jobs_scrape_duration_seconds metric description", func() {
@@ -296,7 +356,14 @@ var _ = Describe("JobsCollector", func() {
 			jobEphemeralDiskPercent       = 40
 			jobPersistentDiskInodePercent = 50
 			jobPersistentDiskPercent      = 60
+			jobProcessName                = "fake-process-name"
+			jobProcessState               = "running"
+			jobProcessUptimeSeconds       = uint64(3600)
+			jobProcessCPUTotal            = float64(0.5)
+			jobProcessMemKB               = uint64(2000)
+			jobProcessMemPercent          = float64(20)
 
+			vmProcesses []director.VMInfoProcess
 			vmVitals    director.VMInfoVitals
 			vmInfos     []director.VMInfo
 			deployments []director.Deployment
@@ -321,9 +388,25 @@ var _ = Describe("JobsCollector", func() {
 			jobEphemeralDiskPercentMetric       prometheus.Metric
 			jobPersistentDiskInodePercentMetric prometheus.Metric
 			jobPersistentDiskPercentMetric      prometheus.Metric
+			jobProcessHealthyMetric             prometheus.Metric
+			jobProcessUnHealthyMetric           prometheus.Metric
+			jobProcessUptimeMetric              prometheus.Metric
+			jobProcessCPUTotalMetric            prometheus.Metric
+			jobProcessMemKBMetric               prometheus.Metric
+			jobProcessMemPercentMetric          prometheus.Metric
 		)
 
 		BeforeEach(func() {
+			vmProcesses = []director.VMInfoProcess{
+				{
+					Name:   jobProcessName,
+					State:  jobProcessState,
+					CPU:    director.VMInfoVitalsCPU{Total: &jobProcessCPUTotal},
+					Mem:    director.VMInfoVitalsMemIntSize{KB: &jobProcessMemKB, Percent: &jobProcessMemPercent},
+					Uptime: director.VMInfoVitalsUptime{Seconds: &jobProcessUptimeSeconds},
+				},
+			}
+
 			vmVitals = director.VMInfoVitals{
 				CPU: director.VMInfoVitalsCPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
@@ -367,6 +450,7 @@ var _ = Describe("JobsCollector", func() {
 					IPs:          []string{jobIP},
 					AZ:           jobAZ,
 					Vitals:       vmVitals,
+					Processes:    vmProcesses,
 				},
 			}
 
@@ -577,13 +661,85 @@ var _ = Describe("JobsCollector", func() {
 				jobAZ,
 				jobIP,
 			)
+
+			jobProcessHealthyMetric = prometheus.MustNewConstMetric(
+				jobProcessHealthyDesc,
+				prometheus.GaugeValue,
+				float64(1),
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+				jobIP,
+				jobProcessName,
+			)
+
+			jobProcessUnHealthyMetric = prometheus.MustNewConstMetric(
+				jobProcessHealthyDesc,
+				prometheus.GaugeValue,
+				float64(0),
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+				jobIP,
+				jobProcessName,
+			)
+
+			jobProcessUptimeMetric = prometheus.MustNewConstMetric(
+				jobProcessUptimeDesc,
+				prometheus.GaugeValue,
+				float64(jobProcessUptimeSeconds),
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+				jobIP,
+				jobProcessName,
+			)
+
+			jobProcessCPUTotalMetric = prometheus.MustNewConstMetric(
+				jobProcessCPUTotalDesc,
+				prometheus.GaugeValue,
+				jobProcessCPUTotal,
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+				jobIP,
+				jobProcessName,
+			)
+
+			jobProcessMemKBMetric = prometheus.MustNewConstMetric(
+				jobProcessMemKBDesc,
+				prometheus.GaugeValue,
+				float64(jobProcessMemKB),
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+				jobIP,
+				jobProcessName,
+			)
+
+			jobProcessMemPercentMetric = prometheus.MustNewConstMetric(
+				jobProcessMemPercentDesc,
+				prometheus.GaugeValue,
+				jobProcessMemPercent,
+				deploymentName,
+				jobName,
+				strconv.Itoa(jobIndex),
+				jobAZ,
+				jobIP,
+				jobProcessName,
+			)
 		})
 
 		JustBeforeEach(func() {
 			go jobsCollector.Collect(metrics)
 		})
 
-		It("returns a bosh_job_process_healthy metric", func() {
+		It("returns a job_process_healthy metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobHealthyMetric)))
 		})
 
@@ -592,20 +748,20 @@ var _ = Describe("JobsCollector", func() {
 				vmInfos[0].ProcessState = "failing"
 			})
 
-			It("returns a bosh_job_process_healthy metric", func() {
+			It("returns a job_process_healthy metric", func() {
 				Eventually(metrics).Should(Receive(Equal(jobUnHealthyMetric)))
 			})
 		})
 
-		It("returns a bosh_job_load_avg01 metric", func() {
+		It("returns a job_load_avg01 metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobLoadAvg01Metric)))
 		})
 
-		It("returns a bosh_job_load_avg05 metric", func() {
+		It("returns a job_load_avg05 metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobLoadAvg05Metric)))
 		})
 
-		It("returns a bosh_job_load_avg15 metric", func() {
+		It("returns a job_load_avg15 metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobLoadAvg15Metric)))
 		})
 
@@ -614,14 +770,14 @@ var _ = Describe("JobsCollector", func() {
 				vmInfos[0].Vitals.Load = []string{}
 			})
 
-			It("does not return any bosh_job_load_avg metric", func() {
+			It("does not return any job_load_avg metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg01Metric)))
 				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg05Metric)))
 				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg15Metric)))
 			})
 		})
 
-		It("returns a bosh_job_cpu_sys metric", func() {
+		It("returns a job_cpu_sys metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUSysMetric)))
 		})
 
@@ -633,12 +789,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_cpu_sys metric", func() {
+			It("does not return a job_cpu_sys metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUSysMetric)))
 			})
 		})
 
-		It("returns a bosh_job_cpu_user metric", func() {
+		It("returns a job_cpu_user metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUUserMetric)))
 		})
 
@@ -650,12 +806,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_cpu_user metric", func() {
+			It("does not return a job_cpu_user metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUUserMetric)))
 			})
 		})
 
-		It("returns a bosh_job_cpu_wait metric", func() {
+		It("returns a job_cpu_wait metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUWaitMetric)))
 		})
 
@@ -667,12 +823,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_cpu_wait metric", func() {
+			It("does not return a job_cpu_wait metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUWaitMetric)))
 			})
 		})
 
-		It("returns a bosh_job_mem_kb metric", func() {
+		It("returns a job_mem_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobMemKBMetric)))
 		})
 
@@ -683,12 +839,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_mem_kb metric", func() {
+			It("does not return a job_mem_kb metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobMemKBMetric)))
 			})
 		})
 
-		It("returns a bosh_job_mem_percent metric", func() {
+		It("returns a job_mem_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobMemPercentMetric)))
 		})
 
@@ -699,12 +855,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_mem_percent metric", func() {
+			It("does not return a job_mem_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobMemPercentMetric)))
 			})
 		})
 
-		It("returns a bosh_job_swap_kb metric", func() {
+		It("returns a job_swap_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSwapKBMetric)))
 		})
 
@@ -715,12 +871,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_swap_kb metric", func() {
+			It("does not return a job_swap_kb metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSwapKBMetric)))
 			})
 		})
 
-		It("returns a bosh_job_swap_percent metric", func() {
+		It("returns a job_swap_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSwapPercentMetric)))
 		})
 
@@ -731,12 +887,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_swap_percent metric", func() {
+			It("does not return a job_swap_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSwapPercentMetric)))
 			})
 		})
 
-		It("returns a bosh_job_system_disk_inode_percent metric", func() {
+		It("returns a job_system_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSystemDiskInodePercentMetric)))
 		})
 
@@ -747,12 +903,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_system_disk_inode_percent metric", func() {
+			It("does not return a job_system_disk_inode_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSystemDiskInodePercentMetric)))
 			})
 		})
 
-		It("returns a bosh_job_system_disk_percent metric", func() {
+		It("returns a job_system_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSystemDiskPercentMetric)))
 		})
 
@@ -763,12 +919,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_system_disk_percent metric", func() {
+			It("does not return a job_system_disk_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSystemDiskPercentMetric)))
 			})
 		})
 
-		It("returns a bosh_job_ephemeral_disk_inode_percent metric", func() {
+		It("returns a job_ephemeral_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskInodePercentMetric)))
 		})
 
@@ -779,12 +935,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_ephemeral_disk_inode_percent metric", func() {
+			It("does not return a job_ephemeral_disk_inode_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobEphemeralDiskInodePercentMetric)))
 			})
 		})
 
-		It("returns a bosh_job_ephemeral_disk_percent metric", func() {
+		It("returns a job_ephemeral_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskPercentMetric)))
 		})
 
@@ -795,12 +951,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_Ephemeral_disk_percent metric", func() {
+			It("does not return a job_Ephemeral_disk_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobEphemeralDiskPercentMetric)))
 			})
 		})
 
-		It("returns a bosh_job_persistent_disk_inode_percent metric", func() {
+		It("returns a job_persistent_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobPersistentDiskInodePercentMetric)))
 		})
 
@@ -811,12 +967,12 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_persistent_disk_inode_percent metric", func() {
+			It("does not return a job_persistent_disk_inode_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobPersistentDiskInodePercentMetric)))
 			})
 		})
 
-		It("returns a bosh_job_persistent_disk_percent metric", func() {
+		It("returns a job_persistent_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobPersistentDiskPercentMetric)))
 		})
 
@@ -827,8 +983,78 @@ var _ = Describe("JobsCollector", func() {
 				}
 			})
 
-			It("does not return a bosh_job_persistent_disk_percent metric", func() {
+			It("does not return a job_persistent_disk_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobPersistentDiskPercentMetric)))
+			})
+		})
+
+		It("returns a healthy job_process_healthy metric", func() {
+			Eventually(metrics).Should(Receive(Equal(jobProcessHealthyMetric)))
+		})
+
+		Context("when a process is not running", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].State = "failing"
+			})
+
+			It("returns an unhealthy job_process_healthy metric", func() {
+				Eventually(metrics).Should(Receive(Equal(jobProcessUnHealthyMetric)))
+			})
+		})
+
+		It("returns a job_process_uptime_seconds metric", func() {
+			Eventually(metrics).Should(Receive(Equal(jobProcessUptimeMetric)))
+		})
+
+		Context("when there is no process uptime value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].Uptime = director.VMInfoVitalsUptime{}
+			})
+
+			It("does not return a job_process_uptime_seconds metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessUptimeMetric)))
+			})
+		})
+
+		It("returns a job_process_cpu_total metric", func() {
+			Eventually(metrics).Should(Receive(Equal(jobProcessCPUTotalMetric)))
+		})
+
+		Context("when there is no process cpu total value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].CPU = director.VMInfoVitalsCPU{}
+			})
+
+			It("does not return a job_process_cpu_total metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessCPUTotalMetric)))
+			})
+		})
+
+		It("returns a job_process_mem_kb metric", func() {
+			Eventually(metrics).Should(Receive(Equal(jobProcessMemKBMetric)))
+		})
+
+		Context("when there is no process mem kb value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{Percent: &jobProcessMemPercent}
+			})
+
+			It("does not return a job_process_mem_kb metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessMemKBMetric)))
+			})
+		})
+
+		It("returns a job_process_mem_percent metric", func() {
+			Eventually(metrics).Should(Receive(Equal(jobProcessMemPercentMetric)))
+		})
+
+		Context("when there is no process mem percent value", func() {
+			BeforeEach(func() {
+				vmInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{KB: &jobProcessMemKB}
+			})
+
+			It("does not return a job_process_mem_percent metric", func() {
+				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessMemPercentMetric)))
 			})
 		})
 

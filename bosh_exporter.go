@@ -207,7 +207,11 @@ func main() {
 	}
 	log.Infof("Using BOSH Director `%s` (%s)", boshInfo.Name, boshInfo.UUID)
 
-	deploymentsFilter := filters.NewDeploymentsFilter(strings.Split(*boshDeployments, ","), boshClient)
+	var deployments []string
+	if *boshDeployments != "" {
+		deployments = strings.Split(*boshDeployments, ",")
+	}
+	deploymentsFilter := filters.NewDeploymentsFilter(deployments, boshClient)
 
 	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
 	prometheus.MustRegister(jobsCollector)

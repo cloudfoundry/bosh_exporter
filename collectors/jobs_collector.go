@@ -37,6 +37,7 @@ type JobsCollector struct {
 	jobProcessCPUTotalDesc            *prometheus.Desc
 	jobProcessMemKBDesc               *prometheus.Desc
 	jobProcessMemPercentDesc          *prometheus.Desc
+	lastJobsScrapeTimestampDesc       *prometheus.Desc
 	lastJobsScrapeDurationSecondsDesc *prometheus.Desc
 }
 
@@ -198,6 +199,13 @@ func NewJobsCollector(
 		nil,
 	)
 
+	lastJobsScrapeTimestampDesc := prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "last_jobs_scrape_timestamp"),
+		"Number of seconds since 1970 since last scrape of Job metrics from BOSH.",
+		[]string{},
+		nil,
+	)
+
 	lastJobsScrapeDurationSecondsDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "last_jobs_scrape_duration_seconds"),
 		"Duration of the last scrape of Job metrics from BOSH.",
@@ -230,6 +238,7 @@ func NewJobsCollector(
 		jobProcessCPUTotalDesc:            jobProcessCPUTotalDesc,
 		jobProcessMemKBDesc:               jobProcessMemKBDesc,
 		jobProcessMemPercentDesc:          jobProcessMemPercentDesc,
+		lastJobsScrapeTimestampDesc:       lastJobsScrapeTimestampDesc,
 		lastJobsScrapeDurationSecondsDesc: lastJobsScrapeDurationSecondsDesc,
 	}
 	return collector
@@ -249,6 +258,12 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 		}(deployment, ch)
 	}
 	wg.Wait()
+
+	ch <- prometheus.MustNewConstMetric(
+		c.lastJobsScrapeTimestampDesc,
+		prometheus.GaugeValue,
+		float64(time.Now().UnixNano()),
+	)
 
 	ch <- prometheus.MustNewConstMetric(
 		c.lastJobsScrapeDurationSecondsDesc,
@@ -280,6 +295,7 @@ func (c JobsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.jobProcessCPUTotalDesc
 	ch <- c.jobProcessMemKBDesc
 	ch <- c.jobProcessMemPercentDesc
+	ch <- c.lastJobsScrapeTimestampDesc
 	ch <- c.lastJobsScrapeDurationSecondsDesc
 }
 

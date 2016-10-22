@@ -262,7 +262,7 @@ func (c JobsCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		c.lastJobsScrapeTimestampDesc,
 		prometheus.GaugeValue,
-		float64(time.Now().UnixNano()),
+		float64(time.Now().Unix()),
 	)
 
 	ch <- prometheus.MustNewConstMetric(

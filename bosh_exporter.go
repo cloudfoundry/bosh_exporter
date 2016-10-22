@@ -45,7 +45,10 @@ var (
 		"BOSH CA Certificate file ($BOSH_EXPORTER_BOSH_CA_CERT_FILE).",
 	)
 
-	boshDeployments sliceString
+	boshDeployments = flag.String(
+		"bosh.deployments", "",
+		"Comma separated deployments to filter ($BOSH_EXPORTER_BOSH_DEPLOYMENTS)",
+	)
 
 	uaaURL = flag.String(
 		"uaa.url", "",
@@ -83,24 +86,7 @@ var (
 	)
 )
 
-type sliceString []string
-
-func (bd *sliceString) String() string {
-	return fmt.Sprint(*bd)
-}
-
-func (bd *sliceString) Set(value string) error {
-	*bd = append(*bd, value)
-
-	return nil
-}
-
 func init() {
-	flag.Var(
-		&boshDeployments, "bosh.deployment",
-		"Filter metrics to an specific BOSH deployment (this flag can be specified multiple times)",
-	)
-
 	prometheus.MustRegister(version.NewCollector(*metricsNamespace))
 }
 
@@ -110,7 +96,7 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_PASSWORD", boshPassword)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
-	overrideWithEnvSliceString("BOSH_EXPORTER_BOSH_DEPLOYMENTS", &boshDeployments)
+	overrideWithEnvVar("BOSH_EXPORTER_BOSH_DEPLOYMENTS", boshDeployments)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_URL", uaaURL)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_ID", uaaClientID)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_SECRET", uaaClientSecret)
@@ -123,15 +109,6 @@ func overrideWithEnvVar(name string, value *string) {
 	envValue := os.Getenv(name)
 	if envValue != "" {
 		*value = envValue
-	}
-}
-
-func overrideWithEnvSliceString(name string, value *sliceString) {
-	envValue := os.Getenv(name)
-	if envValue != "" {
-		for _, val := range strings.Split(envValue, ",") {
-			*value = append(*value, val)
-		}
 	}
 }
 
@@ -230,7 +207,7 @@ func main() {
 	}
 	log.Infof("Using BOSH Director `%s` (%s)", boshInfo.Name, boshInfo.UUID)
 
-	deploymentsFilter := filters.NewDeploymentsFilter(boshDeployments, boshClient)
+	deploymentsFilter := filters.NewDeploymentsFilter(strings.Split(*boshDeployments, ","), boshClient)
 
 	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
 	prometheus.MustRegister(jobsCollector)

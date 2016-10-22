@@ -43,7 +43,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | bosh.password<br />BOSH_EXPORTER_BOSH_PASSWORD | No | | BOSH Password
 | bosh.log-level<br />BOSH_EXPORTER_BOSH_LOG_LEVEL | No | ERROR | BOSH Log Level ("DEBUG", "INFO", "WARN", "ERROR", "NONE")
 | bosh.ca-cert-file<br />BOSH_EXPORTER_BOSH_CA_CERT_FILE | No | | BOSH CA Certificate file
-| bosh.deployment<br />BOSH_EXPORTER_BOSH_DEPLOYMENTS | No | | Filter metrics to an specific BOSH deployment (this flag can be specified multiple times)
+| bosh.deployments<br />BOSH_EXPORTER_BOSH_DEPLOYMENTS | No | | Comma separated deployments to filter
 | uaa.url<br />BOSH_EXPORTER_UAA_URL | No | | BOSH UAA URL
 | uaa.client-id<br />BOSH_EXPORTER_UAA_CLIENT_ID | No | | BOSH UAA Client ID
 | uaa.client-secret<br />BOSH_EXPORTER_UAA_CLIENT_SECRET | No | | BOSH UAA Client Secret

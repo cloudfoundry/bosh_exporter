@@ -53,32 +53,34 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 
 ### Metrics
 
-The exporter returns the following metrics for every BOSH `deployment`:
+The exporter returns the following metrics:
 
 | Metric | Description | Labels |
 | ------ | ----------- | ------ |
-| *namespace*_job_healthy | BOSH Job Healthy | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_load_avg01 | BOSH Job Load avg01 | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_load_avg05 | BOSH Job Load avg05 | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_load_avg15 | BOSH Job Load avg15 | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_cpu_system | BOSH Job CPU System | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_cpu_user | BOSH Job CPU User | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_cpu_wait | BOSH Job CPU Wait | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_mem_kb | BOSH Job Memory KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_mem_percent | BOSH Job Memory Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_swap_kb | BOSH Job Swap KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_swap_percent | BOSH Job Swap Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_system_disk_inode_percent | BOSH Job System Disk Inode Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_system_disk_percent | BOSH Job System Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_ephemeral_disk_inode_percent | BOSH Job Ephemeral Disk Inode Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_ephemeral_disk_percent | BOSH Job Ephemeral Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_persistent_disk_inode_percent | BOSH Job Persistent Disk Inode Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_persistent_disk_percent | BOSH Job Persistent Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip
-| *namespace*_job_process_healthy | BOSH Job Process Healthy | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process
-| *namespace*_job_process_uptime_seconds | BOSH Job Process Uptime in seconds | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process
-| *namespace*_job_process_cpu_total | BOSH Job Process CPU Total | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process
-| *namespace*_job_process_mem_kb | BOSH Job Process Memory KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process
-| *namespace*_job_process_mem_percent | BOSH Job Process Memory Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process
+| *namespace*_job_healthy | BOSH Job Healthy | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_load_avg01 | BOSH Job Load avg01 | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_load_avg05 | BOSH Job Load avg05 | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_load_avg15 | BOSH Job Load avg15 | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_cpu_sys | BOSH Job CPU System | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_cpu_user | BOSH Job CPU User | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_cpu_wait | BOSH Job CPU Wait | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_mem_kb | BOSH Job Memory KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_mem_percent | BOSH Job Memory Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_swap_kb | BOSH Job Swap KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_swap_percent | BOSH Job Swap Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_system_disk_inode_percent | BOSH Job System Disk Inode Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_system_disk_percent | BOSH Job System Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_ephemeral_disk_inode_percent | BOSH Job Ephemeral Disk Inode Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_ephemeral_disk_percent | BOSH Job Ephemeral Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_persistent_disk_inode_percent | BOSH Job Persistent Disk Inode Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_persistent_disk_percent | BOSH Job Persistent Disk Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip |
+| *namespace*_job_process_healthy | BOSH Job Process Healthy | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process |
+| *namespace*_job_process_uptime_seconds | BOSH Job Process Uptime in seconds | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process |
+| *namespace*_job_process_cpu_total | BOSH Job Process CPU Total | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process |
+| *namespace*_job_process_mem_kb | BOSH Job Process Memory KB | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process |
+| *namespace*_job_process_mem_percent | BOSH Job Process Memory Percent | bosh_deployment, bosh_job, bosh_index, bosh_az, bosh_ip, bosh_process |
+| *namespace*_last_jobs_scrape_timestamp | Number of seconds since 1970 since last scrape of Job metrics from BOSH | |
+| *namespace*_last_jobs_scrape_duration_seconds | Duration of the last scrape of Job metrics from BOSH | |
 
 [bosh]: https://bosh.io
 [cloudfoundry]: https://www.cloudfoundry.org/

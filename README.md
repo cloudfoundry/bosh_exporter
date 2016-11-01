@@ -53,7 +53,16 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 
 ### Metrics
 
-The exporter returns the following metrics:
+The exporter returns the following `Deployments` metrics:
+
+| Metric | Description | Labels |
+| ------ | ----------- | ------ |
+| *namespace*_deployment_release_info | BOSH Deployment Release Info | bosh_deployment, bosh_release_name, bosh_release_version |
+| *namespace*_deployment_stemcell_info | BOSH Deployment Stemcell Info | bosh_deployment, bosh_stemcell_name, bosh_stemcell_version, bosh_stemcell_os_name |
+| *namespace*_last_deployments_scrape_timestamp | Number of seconds since 1970 since last scrape of Deployments metrics from BOSH | |
+| *namespace*_last_deployments_scrape_duration_seconds | Duration of the last scrape of Deployments metrics from BOSH | |
+
+The exporter returns the following `Jobs` metrics:
 
 | Metric | Description | Labels |
 | ------ | ----------- | ------ |

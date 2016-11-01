@@ -213,6 +213,9 @@ func main() {
 	}
 	deploymentsFilter := filters.NewDeploymentsFilter(deployments, boshClient)
 
+	deploymentsCollector := collectors.NewDeploymentsCollector(*metricsNamespace, *deploymentsFilter)
+	prometheus.MustRegister(deploymentsCollector)
+
 	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
 	prometheus.MustRegister(jobsCollector)
 

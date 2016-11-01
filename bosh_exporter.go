@@ -47,7 +47,12 @@ var (
 
 	boshDeployments = flag.String(
 		"bosh.deployments", "",
-		"Comma separated deployments to filter ($BOSH_EXPORTER_BOSH_DEPLOYMENTS)",
+		"Comma separated deployments to filter ($BOSH_EXPORTER_BOSH_DEPLOYMENTS).",
+	)
+
+	boshCollectors = flag.String(
+		"bosh.collectors", "",
+		"Comma separated collectors to filter (Deployments,Jobs) ($BOSH_EXPORTER_BOSH_COLLECTORS).",
 	)
 
 	uaaURL = flag.String(
@@ -97,6 +102,7 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_DEPLOYMENTS", boshDeployments)
+	overrideWithEnvVar("BOSH_EXPORTER_BOSH_COLLECTORS", boshCollectors)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_URL", uaaURL)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_ID", uaaClientID)
 	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_SECRET", uaaClientSecret)
@@ -207,17 +213,31 @@ func main() {
 	}
 	log.Infof("Using BOSH Director `%s` (%s)", boshInfo.Name, boshInfo.UUID)
 
-	var deployments []string
+	var deploymentsFilters []string
 	if *boshDeployments != "" {
-		deployments = strings.Split(*boshDeployments, ",")
+		deploymentsFilters = strings.Split(*boshDeployments, ",")
 	}
-	deploymentsFilter := filters.NewDeploymentsFilter(deployments, boshClient)
+	deploymentsFilter := filters.NewDeploymentsFilter(deploymentsFilters, boshClient)
 
-	deploymentsCollector := collectors.NewDeploymentsCollector(*metricsNamespace, *deploymentsFilter)
-	prometheus.MustRegister(deploymentsCollector)
+	var collectorsFilters []string
+	if *boshCollectors != "" {
+		collectorsFilters = strings.Split(*boshCollectors, ",")
+	}
+	collectorsFilter, err := filters.NewCollectorsFilter(collectorsFilters)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 
-	jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
-	prometheus.MustRegister(jobsCollector)
+	if collectorsFilter.Enabled(filters.DeploymentsCollector) {
+		deploymentsCollector := collectors.NewDeploymentsCollector(*metricsNamespace, *deploymentsFilter)
+		prometheus.MustRegister(deploymentsCollector)
+	}
+
+	if collectorsFilter.Enabled(filters.JobsCollector) {
+		jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
+		prometheus.MustRegister(jobsCollector)
+	}
 
 	http.Handle(*metricsPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

@@ -17,14 +17,14 @@ func init() {
 	flag.Set("log.level", "fatal")
 }
 
-var _ = Describe("GetDeployments", func() {
+var _ = Describe("DeploymentsFilter", func() {
 	var (
 		filter            []string
 		boshClient        *fakes.FakeDirector
 		deploymentsFilter *DeploymentsFilter
 	)
 
-	Describe("Collect", func() {
+	Describe("GetDeployments", func() {
 		var (
 			deployment1    director.Deployment
 			deployment2    director.Deployment

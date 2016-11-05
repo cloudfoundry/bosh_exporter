@@ -101,8 +101,34 @@ The exporter returns the following `ServiceDiscovery` metrics:
 | *namespace*_last_service_discovery_scrape_timestamp | Number of seconds since 1970 since last scrape of Service Discovery from BOSH | |
 | *namespace*_last_service_discovery_scrape_duration_seconds | Duration of the last scrape of Service Discovery from BOSH | |
 
+### Service Discovery
+
+If the `ServiceDiscovery` collector is enabled, the exporter will write a `json` file at the *sd.filename* location containing a list of static configs that can be used with the Prometheus [File-based service discovery][file_sd_config] mechanism:
+
+```json
+[
+  {
+    "targets": ["10.244.0.12"],
+    "labels":
+      {
+        "__meta_bosh_process": "bosh_exporter"
+      }
+  },
+  {
+    "targets": ["10.244.0.11", "10.244.0.12", "10.244.0.13", "10.244.0.14"],
+    "labels":
+      {
+        "__meta_bosh_process": "node_exporter"
+      }
+  }
+]
+```
+
+The list of targets can be filtered using the *sd.processes_regexp* flag.
+
 [bosh]: https://bosh.io
 [cloudfoundry]: https://www.cloudfoundry.org/
+[file_sd_config]: https://prometheus.io/docs/operating/configuration/#<file_sd_config>
 [golang]: https://golang.org/
 [manifest]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/manifest.yml
 [prometheus]: https://prometheus.io/

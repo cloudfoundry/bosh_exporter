@@ -4,7 +4,7 @@ go:
 repository:
     path: github.com/cloudfoundry-community/bosh_exporter
 build:
-    flags: -a -tags netgo
+    flags: -a -tags 'netgo static_build'
     ldflags: |
         -X {{repoPath}}/vendor/github.com/prometheus/common/version.Version={{.Version}}
         -X {{repoPath}}/vendor/github.com/prometheus/common/version.Revision={{.Revision}}
@@ -17,12 +17,13 @@ tarball:
         - NOTICE
 crossbuild:
     platforms:
-        - darwin/amd64
         - darwin/386
-        - linux/amd64
-        - linux/arm64
+        - darwin/amd64
         - linux/386
+        - linux/amd64
         - linux/arm
+        - linux/arm64
         - linux/ppc64
         - linux/ppc64le
-
+        - windows/386
+        - windows/amd64

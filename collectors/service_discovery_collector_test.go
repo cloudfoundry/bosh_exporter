@@ -105,10 +105,10 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			jobProcessState     = "running"
 			targetGroupsContent = "[{\"targets\":[\"1.2.3.4\"],\"labels\":{\"__meta_bosh_process\":\"fake-process-name\"}}]"
 
-			vmProcesses []director.VMInfoProcess
-			vmInfos     []director.VMInfo
-			deployments []director.Deployment
-			deployment  director.Deployment
+			vmProcesses   []director.VMInfoProcess
+			instanceInfos []director.VMInfo
+			deployments   []director.Deployment
+			deployment    director.Deployment
 
 			metrics chan prometheus.Metric
 		)
@@ -121,7 +121,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 				},
 			}
 
-			vmInfos = []director.VMInfo{
+			instanceInfos = []director.VMInfo{
 				{
 					JobName:      jobName,
 					Index:        &jobIndex,
@@ -133,8 +133,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			}
 
 			deployment = &fakes.FakeDeployment{
-				NameStub:    func() string { return deploymentName },
-				VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
+				NameStub:          func() string { return deploymentName },
+				InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
 			}
 
 			deployments = []director.Deployment{deployment}
@@ -179,11 +179,11 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			})
 		})
 
-		Context("when it does not return any VMInfos", func() {
+		Context("when it does not return any InstanceInfos", func() {
 			BeforeEach(func() {
 				deployment = &fakes.FakeDeployment{
-					NameStub:    func() string { return deploymentName },
-					VMInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
+					NameStub:          func() string { return deploymentName },
+					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
 				}
 				deployments = []director.Deployment{deployment}
 				boshClient.DeploymentsReturns(deployments, nil)
@@ -203,11 +203,11 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			})
 		})
 
-		Context("when it fails to get the VMInfos for a deployment", func() {
+		Context("when it fails to get the InstanceInfos for a deployment", func() {
 			BeforeEach(func() {
 				deployment = &fakes.FakeDeployment{
-					NameStub:    func() string { return deploymentName },
-					VMInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no VMInfo") },
+					NameStub:          func() string { return deploymentName },
+					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no InstanceInfo") },
 				}
 				deployments = []director.Deployment{deployment}
 				boshClient.DeploymentsReturns(deployments, nil)

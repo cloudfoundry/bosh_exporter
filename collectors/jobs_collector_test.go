@@ -375,11 +375,11 @@ var _ = Describe("JobsCollector", func() {
 			jobProcessMemKB               = uint64(2000)
 			jobProcessMemPercent          = float64(20)
 
-			vmProcesses []director.VMInfoProcess
-			vmVitals    director.VMInfoVitals
-			vmInfos     []director.VMInfo
-			deployments []director.Deployment
-			deployment  director.Deployment
+			vmProcesses   []director.VMInfoProcess
+			vmVitals      director.VMInfoVitals
+			instanceInfos []director.VMInfo
+			deployments   []director.Deployment
+			deployment    director.Deployment
 
 			metrics                             chan prometheus.Metric
 			jobHealthyMetric                    prometheus.Metric
@@ -454,7 +454,7 @@ var _ = Describe("JobsCollector", func() {
 				},
 			}
 
-			vmInfos = []director.VMInfo{
+			instanceInfos = []director.VMInfo{
 				{
 					JobName:      jobName,
 					Index:        &jobIndex,
@@ -467,8 +467,8 @@ var _ = Describe("JobsCollector", func() {
 			}
 
 			deployment = &fakes.FakeDeployment{
-				NameStub:    func() string { return deploymentName },
-				VMInfosStub: func() ([]director.VMInfo, error) { return vmInfos, nil },
+				NameStub:          func() string { return deploymentName },
+				InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
 			}
 
 			deployments = []director.Deployment{deployment}
@@ -757,7 +757,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when the process is not running", func() {
 			BeforeEach(func() {
-				vmInfos[0].ProcessState = "failing"
+				instanceInfos[0].ProcessState = "failing"
 			})
 
 			It("returns a job_process_healthy metric", func() {
@@ -779,7 +779,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no load avg values", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Load = []string{}
+				instanceInfos[0].Vitals.Load = []string{}
 			})
 
 			It("does not return any job_load_avg metric", func() {
@@ -795,7 +795,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no cpu sys value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+				instanceInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
 					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 				}
@@ -812,7 +812,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no cpu user value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+				instanceInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 				}
@@ -829,7 +829,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no cpu wait value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+				instanceInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 				}
@@ -846,7 +846,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no mem kb value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
+				instanceInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
 					Percent: strconv.Itoa(jobMemPercent),
 				}
 			})
@@ -862,7 +862,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no mem percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
+				instanceInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
 					KB: strconv.Itoa(jobMemKB),
 				}
 			})
@@ -878,7 +878,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no swap kb value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
+				instanceInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
 					Percent: strconv.Itoa(jobSwapPercent),
 				}
 			})
@@ -894,7 +894,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no swap percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
+				instanceInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
 					KB: strconv.Itoa(jobSwapKB),
 				}
 			})
@@ -910,7 +910,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no system disk inode percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
+				instanceInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
 					Percent: strconv.Itoa(int(jobSystemDiskPercent)),
 				}
 			})
@@ -926,7 +926,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no system disk percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
+				instanceInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
 					InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
 				}
 			})
@@ -942,7 +942,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no ephemeral disk inode percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
+				instanceInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
 					Percent: strconv.Itoa(int(jobEphemeralDiskPercent)),
 				}
 			})
@@ -958,7 +958,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no ephemeral disk percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
+				instanceInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
 					InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
 				}
 			})
@@ -974,7 +974,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no persistent disk inode percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
+				instanceInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
 					Percent: strconv.Itoa(int(jobPersistentDiskPercent)),
 				}
 			})
@@ -990,7 +990,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no persistent disk percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
+				instanceInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
 					InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
 				}
 			})
@@ -1006,7 +1006,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when a process is not running", func() {
 			BeforeEach(func() {
-				vmInfos[0].Processes[0].State = "failing"
+				instanceInfos[0].Processes[0].State = "failing"
 			})
 
 			It("returns an unhealthy job_process_healthy metric", func() {
@@ -1020,7 +1020,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process uptime value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Processes[0].Uptime = director.VMInfoVitalsUptime{}
+				instanceInfos[0].Processes[0].Uptime = director.VMInfoVitalsUptime{}
 			})
 
 			It("does not return a job_process_uptime_seconds metric", func() {
@@ -1034,7 +1034,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process cpu total value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Processes[0].CPU = director.VMInfoVitalsCPU{}
+				instanceInfos[0].Processes[0].CPU = director.VMInfoVitalsCPU{}
 			})
 
 			It("does not return a job_process_cpu_total metric", func() {
@@ -1048,7 +1048,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process mem kb value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{Percent: &jobProcessMemPercent}
+				instanceInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{Percent: &jobProcessMemPercent}
 			})
 
 			It("does not return a job_process_mem_kb metric", func() {
@@ -1062,7 +1062,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process mem percent value", func() {
 			BeforeEach(func() {
-				vmInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{KB: &jobProcessMemKB}
+				instanceInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{KB: &jobProcessMemKB}
 			})
 
 			It("does not return a job_process_mem_percent metric", func() {
@@ -1082,11 +1082,11 @@ var _ = Describe("JobsCollector", func() {
 			})
 		})
 
-		Context("when it does not return any VMInfos", func() {
+		Context("when it does not return any InstanceInfos", func() {
 			BeforeEach(func() {
 				deployment = &fakes.FakeDeployment{
-					NameStub:    func() string { return deploymentName },
-					VMInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
+					NameStub:          func() string { return deploymentName },
+					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
 				}
 				deployments = []director.Deployment{deployment}
 				boshClient.DeploymentsReturns(deployments, nil)
@@ -1099,11 +1099,11 @@ var _ = Describe("JobsCollector", func() {
 			})
 		})
 
-		Context("when it fails to get the VMInfos for a deployment", func() {
+		Context("when it fails to get the InstanceInfos for a deployment", func() {
 			BeforeEach(func() {
 				deployment = &fakes.FakeDeployment{
-					NameStub:    func() string { return deploymentName },
-					VMInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no VMInfo") },
+					NameStub:          func() string { return deploymentName },
+					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no InstanceInfo") },
 				}
 				deployments = []director.Deployment{deployment}
 				boshClient.DeploymentsReturns(deployments, nil)

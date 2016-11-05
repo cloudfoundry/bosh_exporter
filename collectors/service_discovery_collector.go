@@ -123,24 +123,24 @@ func (c ServiceDiscoveryCollector) Describe(ch chan<- *prometheus.Desc) {
 
 func (c ServiceDiscoveryCollector) getDeploymentProcesses(deployment director.Deployment, processes Processes) {
 	log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
-	vmInfos, err := deployment.VMInfos()
+	instanceInfos, err := deployment.InstanceInfos()
 	if err != nil {
 		log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
 		return
 	}
 
-	for _, vmInfo := range vmInfos {
-		if len(vmInfo.IPs) >= 0 {
-			for _, pi := range vmInfo.Processes {
+	for _, instanceInfos := range instanceInfos {
+		if len(instanceInfos.IPs) >= 0 {
+			for _, pi := range instanceInfos.Processes {
 				if !c.processesFilter.Enabled(pi.Name) {
 					continue
 				}
 
 				processInfo := &ProcessInfo{
 					DeploymentName: deployment.Name(),
-					JobName:        vmInfo.JobName,
-					JobAZ:          vmInfo.AZ,
-					JobIP:          vmInfo.IPs[0],
+					JobName:        instanceInfos.JobName,
+					JobAZ:          instanceInfos.AZ,
+					JobIP:          instanceInfos.IPs[0],
 				}
 
 				c.mu.Lock()

@@ -304,32 +304,32 @@ func (c JobsCollector) reportJobMetrics(
 	ch chan<- prometheus.Metric,
 ) {
 	log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
-	vmInfos, err := deployment.VMInfos()
+	instanceInfos, err := deployment.InstanceInfos()
 	if err != nil {
 		log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
 		return
 	}
 
-	for _, vmInfo := range vmInfos {
+	for _, instanceInfo := range instanceInfos {
 		deploymentName := deployment.Name()
-		jobName := vmInfo.JobName
-		jobIndex := strconv.Itoa(int(*vmInfo.Index))
-		jobAZ := vmInfo.AZ
+		jobName := instanceInfo.JobName
+		jobIndex := strconv.Itoa(int(*instanceInfo.Index))
+		jobAZ := instanceInfo.AZ
 		jobIP := ""
-		if len(vmInfo.IPs) > 0 {
-			jobIP = vmInfo.IPs[0]
+		if len(instanceInfo.IPs) > 0 {
+			jobIP = instanceInfo.IPs[0]
 		}
 
-		c.jobHealthyMetrics(ch, vmInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobLoadAvgMetrics(ch, vmInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobCPUMetrics(ch, vmInfo.Vitals.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobMemMetrics(ch, vmInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobSwapMetrics(ch, vmInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobSystemDiskMetrics(ch, vmInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobEphemeralDiskMetrics(ch, vmInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobPersistentDiskMetrics(ch, vmInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobHealthyMetrics(ch, instanceInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobLoadAvgMetrics(ch, instanceInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobCPUMetrics(ch, instanceInfo.Vitals.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobMemMetrics(ch, instanceInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobSwapMetrics(ch, instanceInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobSystemDiskMetrics(ch, instanceInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobEphemeralDiskMetrics(ch, instanceInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobPersistentDiskMetrics(ch, instanceInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
 
-		for _, processInfo := range vmInfo.Processes {
+		for _, processInfo := range instanceInfo.Processes {
 			processName := processInfo.Name
 
 			c.jobProcessHealthyMetrics(ch, processInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)

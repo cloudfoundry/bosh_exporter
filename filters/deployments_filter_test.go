@@ -19,7 +19,7 @@ func init() {
 
 var _ = Describe("DeploymentsFilter", func() {
 	var (
-		filter            []string
+		filters           []string
 		boshClient        *fakes.FakeDirector
 		deploymentsFilter *DeploymentsFilter
 	)
@@ -34,7 +34,7 @@ var _ = Describe("DeploymentsFilter", func() {
 		)
 
 		BeforeEach(func() {
-			filter = []string{}
+			filters = []string{}
 			boshClient = &fakes.FakeDirector{}
 
 			deployment1 = &fakes.FakeDeployment{
@@ -47,7 +47,7 @@ var _ = Describe("DeploymentsFilter", func() {
 		})
 
 		JustBeforeEach(func() {
-			deploymentsFilter = NewDeploymentsFilter(filter, boshClient)
+			deploymentsFilter = NewDeploymentsFilter(filters, boshClient)
 			deployments = deploymentsFilter.GetDeployments()
 		})
 
@@ -83,7 +83,7 @@ var _ = Describe("DeploymentsFilter", func() {
 
 		Context("when there are filters", func() {
 			BeforeEach(func() {
-				filter = []string{"fake-deployment-name-1"}
+				filters = []string{"fake-deployment-name-1"}
 				boshClient.FindDeploymentReturns(deployment1, nil)
 			})
 

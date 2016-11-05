@@ -103,7 +103,7 @@ The exporter returns the following `ServiceDiscovery` metrics:
 
 ### Service Discovery
 
-If the `ServiceDiscovery` collector is enabled, the exporter will write a `json` file at the *sd.filename* location containing a list of static configs that can be used with the Prometheus [File-based service discovery][file_sd_config] mechanism:
+If the `ServiceDiscovery` collector is enabled, the exporter will write a `json` file at the *sd.filename* location containing a list of static configs that can be used with the Prometheus [file-based service discovery][file_sd_config] mechanism:
 
 ```json
 [
@@ -128,7 +128,7 @@ The list of targets can be filtered using the *sd.processes_regexp* flag.
 
 [bosh]: https://bosh.io
 [cloudfoundry]: https://www.cloudfoundry.org/
-[file_sd_config]: https://prometheus.io/docs/operating/configuration/#<file_sd_config>
+[file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;
 [golang]: https://golang.org/
 [manifest]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/manifest.yml
 [prometheus]: https://prometheus.io/

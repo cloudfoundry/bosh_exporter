@@ -85,7 +85,7 @@ type Deployment interface {
 	Name() string
 	Manifest() (string, error)
 	CloudConfig() (string, error)
-	Diff([]byte, bool) (DiffLines, error)
+	Diff([]byte, bool) (DeploymentDiff, error)
 
 	Releases() ([]Release, error)
 	ExportRelease(ReleaseSlug, OSVersionSlug) (ExportReleaseResult, error)
@@ -104,12 +104,13 @@ type Deployment interface {
 	TakeSnapshots() error
 	DeleteSnapshot(string) error
 	DeleteSnapshots() error
+	DeleteVM(string) error
 
 	// Deployment, pool or instance specifics
-	Start(slug AllOrPoolOrInstanceSlug) error
-	Stop(slug AllOrPoolOrInstanceSlug, hard bool, sd SkipDrain, force bool) error
-	Restart(slug AllOrPoolOrInstanceSlug, sd SkipDrain, force bool) error
-	Recreate(slug AllOrPoolOrInstanceSlug, sd SkipDrain, force bool) error
+	Start(slug AllOrPoolOrInstanceSlug, opts StartOpts) error
+	Stop(slug AllOrPoolOrInstanceSlug, opts StopOpts) error
+	Restart(slug AllOrPoolOrInstanceSlug, opts RestartOpts) error
+	Recreate(slug AllOrPoolOrInstanceSlug, opts RecreateOpts) error
 
 	SetUpSSH(AllOrPoolOrInstanceSlug, SSHOpts) (SSHResult, error)
 	CleanUpSSH(AllOrPoolOrInstanceSlug, SSHOpts) error
@@ -123,10 +124,42 @@ type Deployment interface {
 	Delete(force bool) error
 }
 
+type StartOpts struct {
+	Canaries    string
+	MaxInFlight string
+}
+
+type StopOpts struct {
+	Canaries    string
+	MaxInFlight string
+	Force       bool
+	SkipDrain   SkipDrain
+	Hard        bool
+}
+
+type RestartOpts struct {
+	Canaries    string
+	MaxInFlight string
+	Force       bool
+	SkipDrain   SkipDrain
+}
+
+type RecreateOpts struct {
+	Canaries    string
+	MaxInFlight string
+	Force       bool
+	SkipDrain   SkipDrain
+	DryRun      bool
+}
+
 type UpdateOpts struct {
-	Recreate  bool
-	Fix       bool
-	SkipDrain SkipDrain
+	Recreate    bool
+	Fix         bool
+	SkipDrain   SkipDrain
+	Canaries    string
+	MaxInFlight string
+	DryRun      bool
+	Diff        DeploymentDiff
 }
 
 //go:generate counterfeiter . ReleaseSeries
@@ -185,7 +218,6 @@ type Task interface {
 	CPIOutput(TaskReporter) error
 	DebugOutput(TaskReporter) error
 	ResultOutput(TaskReporter) error
-	RawOutput(TaskReporter) error
 
 	Cancel() error
 }

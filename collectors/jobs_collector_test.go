@@ -63,154 +63,154 @@ var _ = Describe("JobsCollector", func() {
 		jobHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "healthy"),
 			"BOSH Job Healthy.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobLoadAvg01Desc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "load_avg01"),
 			"BOSH Job Load avg01.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobLoadAvg05Desc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "load_avg05"),
 			"BOSH Job Load avg05.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobLoadAvg15Desc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "load_avg15"),
 			"BOSH Job Load avg15.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobCPUSysDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "cpu_sys"),
 			"BOSH Job CPU System.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobCPUUserDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "cpu_user"),
 			"BOSH Job CPU User.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobCPUWaitDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "cpu_wait"),
 			"BOSH Job CPU Wait.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobMemKBDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "mem_kb"),
 			"BOSH Job Memory KB.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobMemPercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "mem_percent"),
 			"BOSH Job Memory Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSwapKBDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "swap_kb"),
 			"BOSH Job Swap KB.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSwapPercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "swap_percent"),
 			"BOSH Job Swap Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSystemDiskInodePercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "system_disk_inode_percent"),
 			"BOSH Job System Disk Inode Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobSystemDiskPercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "system_disk_percent"),
 			"BOSH Job System Disk Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobEphemeralDiskInodePercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "ephemeral_disk_inode_percent"),
 			"BOSH Job Ephemeral Disk Inode Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobEphemeralDiskPercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "ephemeral_disk_percent"),
 			"BOSH Job Ephemeral Disk Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobPersistentDiskInodePercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "persistent_disk_inode_percent"),
 			"BOSH Job Persistent Disk Inode Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobPersistentDiskPercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "persistent_disk_percent"),
 			"BOSH Job Persistent Disk Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 			nil,
 		)
 
 		jobProcessHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job_process", "healthy"),
 			"BOSH Job Process Healthy.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		jobProcessUptimeDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job_process", "uptime_seconds"),
 			"BOSH Job Process Uptime in seconds.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		jobProcessCPUTotalDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job_process", "cpu_total"),
 			"BOSH Job Process CPU Total.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		jobProcessMemKBDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job_process", "mem_kb"),
 			"BOSH Job Process Memory KB.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
 		jobProcessMemPercentDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job_process", "mem_percent"),
 			"BOSH Job Process Memory Percent.",
-			[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+			[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 			nil,
 		)
 
@@ -348,6 +348,7 @@ var _ = Describe("JobsCollector", func() {
 		var (
 			deploymentName                = "fake-deployment-name"
 			jobName                       = "fake-job-name"
+			jobID                         = "fake-job-id"
 			jobIndex                      = 0
 			jobAZ                         = "fake-job-az"
 			jobIP                         = "1.2.3.4"
@@ -457,6 +458,7 @@ var _ = Describe("JobsCollector", func() {
 			instanceInfos = []director.VMInfo{
 				{
 					JobName:      jobName,
+					ID:           jobID,
 					Index:        &jobIndex,
 					ProcessState: processState,
 					IPs:          []string{jobIP},
@@ -482,6 +484,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(1),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -493,6 +496,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(0),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -504,6 +508,7 @@ var _ = Describe("JobsCollector", func() {
 				jobLoadAvg01,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -515,6 +520,7 @@ var _ = Describe("JobsCollector", func() {
 				jobLoadAvg05,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -526,6 +532,7 @@ var _ = Describe("JobsCollector", func() {
 				jobLoadAvg15,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -537,6 +544,7 @@ var _ = Describe("JobsCollector", func() {
 				jobCPUSys,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -548,6 +556,7 @@ var _ = Describe("JobsCollector", func() {
 				jobCPUUser,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -559,6 +568,7 @@ var _ = Describe("JobsCollector", func() {
 				jobCPUWait,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -570,6 +580,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobMemKB),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -581,6 +592,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobMemPercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -592,6 +604,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobSwapKB),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -603,6 +616,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobSwapPercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -614,6 +628,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobSystemDiskInodePercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -625,6 +640,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobSystemDiskPercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -636,6 +652,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobEphemeralDiskInodePercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -647,6 +664,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobEphemeralDiskPercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -658,6 +676,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobPersistentDiskInodePercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -669,6 +688,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobPersistentDiskPercent),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -680,6 +700,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(1),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -692,6 +713,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(0),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -704,6 +726,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobProcessUptimeSeconds),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -716,6 +739,7 @@ var _ = Describe("JobsCollector", func() {
 				jobProcessCPUTotal,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -728,6 +752,7 @@ var _ = Describe("JobsCollector", func() {
 				float64(jobProcessMemKB),
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,
@@ -740,6 +765,7 @@ var _ = Describe("JobsCollector", func() {
 				jobProcessMemPercent,
 				deploymentName,
 				jobName,
+				jobID,
 				strconv.Itoa(jobIndex),
 				jobAZ,
 				jobIP,

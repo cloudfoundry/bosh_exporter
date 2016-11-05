@@ -27,6 +27,7 @@ type Processes map[string][]ProcessInfo
 type ProcessInfo struct {
 	DeploymentName string
 	JobName        string
+	JobID          string
 	JobIndex       int
 	JobAZ          string
 	JobIP          string
@@ -139,6 +140,8 @@ func (c ServiceDiscoveryCollector) getDeploymentProcesses(deployment director.De
 				processInfo := &ProcessInfo{
 					DeploymentName: deployment.Name(),
 					JobName:        instanceInfos.JobName,
+					JobID:          instanceInfos.ID,
+					JobIndex:       *instanceInfos.Index,
 					JobAZ:          instanceInfos.AZ,
 					JobIP:          instanceInfos.IPs[0],
 				}

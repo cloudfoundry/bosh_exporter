@@ -97,6 +97,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		var (
 			deploymentName      = "fake-deployment-name"
 			jobName             = "fake-job-name"
+			jobID               = "fake-job-id"
 			jobIndex            = 0
 			jobAZ               = "fake-job-az"
 			jobIP               = "1.2.3.4"
@@ -124,6 +125,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			instanceInfos = []director.VMInfo{
 				{
 					JobName:      jobName,
+					ID:           jobID,
 					Index:        &jobIndex,
 					ProcessState: processState,
 					IPs:          []string{jobIP},

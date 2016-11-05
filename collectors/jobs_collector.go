@@ -48,154 +48,154 @@ func NewJobsCollector(
 	jobHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "healthy"),
 		"BOSH Job Healthy.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobLoadAvg01Desc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "load_avg01"),
 		"BOSH Job Load avg01.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobLoadAvg05Desc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "load_avg05"),
 		"BOSH Job Load avg05.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobLoadAvg15Desc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "load_avg15"),
 		"BOSH Job Load avg15.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobCPUSysDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "cpu_sys"),
 		"BOSH Job CPU System.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobCPUUserDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "cpu_user"),
 		"BOSH Job CPU User.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobCPUWaitDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "cpu_wait"),
 		"BOSH Job CPU Wait.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobMemKBDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "mem_kb"),
 		"BOSH Job Memory KB.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobMemPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "mem_percent"),
 		"BOSH Job Memory Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSwapKBDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "swap_kb"),
 		"BOSH Job Swap KB.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSwapPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "swap_percent"),
 		"BOSH Job Swap Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSystemDiskInodePercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "system_disk_inode_percent"),
 		"BOSH Job System Disk Inode Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobSystemDiskPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "system_disk_percent"),
 		"BOSH Job System Disk Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobEphemeralDiskInodePercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "ephemeral_disk_inode_percent"),
 		"BOSH Job Ephemeral Disk Inode Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobEphemeralDiskPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "ephemeral_disk_percent"),
 		"BOSH Job Ephemeral Disk Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobPersistentDiskInodePercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "persistent_disk_inode_percent"),
 		"BOSH Job Persistent Disk Inode Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobPersistentDiskPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "persistent_disk_percent"),
 		"BOSH Job Persistent Disk Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip"},
 		nil,
 	)
 
 	jobProcessHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job_process", "healthy"),
 		"BOSH Job Process Healthy.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	jobProcessUptimeDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job_process", "uptime_seconds"),
 		"BOSH Job Process Uptime in seconds.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	jobProcessCPUTotalDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job_process", "cpu_total"),
 		"BOSH Job Process CPU Total.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	jobProcessMemKBDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job_process", "mem_kb"),
 		"BOSH Job Process Memory KB.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
 	jobProcessMemPercentDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job_process", "mem_percent"),
 		"BOSH Job Process Memory Percent.",
-		[]string{"bosh_deployment", "bosh_job", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
+		[]string{"bosh_deployment", "bosh_job", "bosh_id", "bosh_index", "bosh_az", "bosh_ip", "bosh_process"},
 		nil,
 	)
 
@@ -313,6 +313,7 @@ func (c JobsCollector) reportJobMetrics(
 	for _, instanceInfo := range instanceInfos {
 		deploymentName := deployment.Name()
 		jobName := instanceInfo.JobName
+		jobID := instanceInfo.ID
 		jobIndex := strconv.Itoa(int(*instanceInfo.Index))
 		jobAZ := instanceInfo.AZ
 		jobIP := ""
@@ -320,22 +321,22 @@ func (c JobsCollector) reportJobMetrics(
 			jobIP = instanceInfo.IPs[0]
 		}
 
-		c.jobHealthyMetrics(ch, instanceInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobLoadAvgMetrics(ch, instanceInfo.Vitals.Load, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobCPUMetrics(ch, instanceInfo.Vitals.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobMemMetrics(ch, instanceInfo.Vitals.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobSwapMetrics(ch, instanceInfo.Vitals.Swap, deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobSystemDiskMetrics(ch, instanceInfo.Vitals.SystemDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobEphemeralDiskMetrics(ch, instanceInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
-		c.jobPersistentDiskMetrics(ch, instanceInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobIndex, jobAZ, jobIP)
+		c.jobHealthyMetrics(ch, instanceInfo.IsRunning(), deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
+		c.jobLoadAvgMetrics(ch, instanceInfo.Vitals.Load, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
+		c.jobCPUMetrics(ch, instanceInfo.Vitals.CPU, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
+		c.jobMemMetrics(ch, instanceInfo.Vitals.Mem, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
+		c.jobSwapMetrics(ch, instanceInfo.Vitals.Swap, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
+		c.jobSystemDiskMetrics(ch, instanceInfo.Vitals.SystemDisk(), deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
+		c.jobEphemeralDiskMetrics(ch, instanceInfo.Vitals.EphemeralDisk(), deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
+		c.jobPersistentDiskMetrics(ch, instanceInfo.Vitals.PersistentDisk(), deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
 
 		for _, processInfo := range instanceInfo.Processes {
 			processName := processInfo.Name
 
-			c.jobProcessHealthyMetrics(ch, processInfo.IsRunning(), deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
-			c.jobProcessUptimeMetrics(ch, processInfo.Uptime, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
-			c.jobProcessCPUMetrics(ch, processInfo.CPU, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
-			c.jobProcessMemMetrics(ch, processInfo.Mem, deploymentName, jobName, jobIndex, jobAZ, jobIP, processName)
+			c.jobProcessHealthyMetrics(ch, processInfo.IsRunning(), deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP, processName)
+			c.jobProcessUptimeMetrics(ch, processInfo.Uptime, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP, processName)
+			c.jobProcessCPUMetrics(ch, processInfo.CPU, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP, processName)
+			c.jobProcessMemMetrics(ch, processInfo.Mem, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP, processName)
 		}
 	}
 }
@@ -345,6 +346,7 @@ func (c JobsCollector) jobHealthyMetrics(
 	vmRunning bool,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -360,6 +362,7 @@ func (c JobsCollector) jobHealthyMetrics(
 		runningMetric,
 		deploymentName,
 		jobName,
+		jobID,
 		jobIndex,
 		jobAZ,
 		jobIP,
@@ -371,6 +374,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 	loadAvg []string,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -387,6 +391,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 					float64(loadAvg01),
 					deploymentName,
 					jobName,
+					jobID,
 					jobIndex,
 					jobAZ,
 					jobIP,
@@ -405,6 +410,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 					float64(loadAvg05),
 					deploymentName,
 					jobName,
+					jobID,
 					jobIndex,
 					jobAZ,
 					jobIP,
@@ -423,6 +429,7 @@ func (c JobsCollector) jobLoadAvgMetrics(
 					float64(loadAvg15),
 					deploymentName,
 					jobName,
+					jobID,
 					jobIndex,
 					jobAZ,
 					jobIP,
@@ -437,6 +444,7 @@ func (c JobsCollector) jobCPUMetrics(
 	cpuMetrics director.VMInfoVitalsCPU,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -452,6 +460,7 @@ func (c JobsCollector) jobCPUMetrics(
 				cpuSys,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -470,6 +479,7 @@ func (c JobsCollector) jobCPUMetrics(
 				cpuUser,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -488,6 +498,7 @@ func (c JobsCollector) jobCPUMetrics(
 				cpuWait,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -501,6 +512,7 @@ func (c JobsCollector) jobMemMetrics(
 	memMetrics director.VMInfoVitalsMemSize,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -516,6 +528,7 @@ func (c JobsCollector) jobMemMetrics(
 				memKB,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -534,6 +547,7 @@ func (c JobsCollector) jobMemMetrics(
 				memPercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -547,6 +561,7 @@ func (c JobsCollector) jobSwapMetrics(
 	swapMetrics director.VMInfoVitalsMemSize,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -562,6 +577,7 @@ func (c JobsCollector) jobSwapMetrics(
 				swapKB,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -580,6 +596,7 @@ func (c JobsCollector) jobSwapMetrics(
 				swapPercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -593,6 +610,7 @@ func (c JobsCollector) jobSystemDiskMetrics(
 	systemDiskMetrics director.VMInfoVitalsDiskSize,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -608,6 +626,7 @@ func (c JobsCollector) jobSystemDiskMetrics(
 				systemDiskInodePercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -626,6 +645,7 @@ func (c JobsCollector) jobSystemDiskMetrics(
 				systemDiskPercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -639,6 +659,7 @@ func (c JobsCollector) jobEphemeralDiskMetrics(
 	ephemeralDiskMetrics director.VMInfoVitalsDiskSize,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -655,6 +676,7 @@ func (c JobsCollector) jobEphemeralDiskMetrics(
 				ephemeralDiskInodePercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -673,6 +695,7 @@ func (c JobsCollector) jobEphemeralDiskMetrics(
 				ephemeralDiskPercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -686,6 +709,7 @@ func (c JobsCollector) jobPersistentDiskMetrics(
 	persistentDiskMetrics director.VMInfoVitalsDiskSize,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -701,6 +725,7 @@ func (c JobsCollector) jobPersistentDiskMetrics(
 				persistentDiskInodePercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -719,6 +744,7 @@ func (c JobsCollector) jobPersistentDiskMetrics(
 				persistentDiskPercent,
 				deploymentName,
 				jobName,
+				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
@@ -732,6 +758,7 @@ func (c JobsCollector) jobProcessHealthyMetrics(
 	processRunning bool,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -748,6 +775,7 @@ func (c JobsCollector) jobProcessHealthyMetrics(
 		runningMetric,
 		deploymentName,
 		jobName,
+		jobID,
 		jobIndex,
 		jobAZ,
 		jobIP,
@@ -760,6 +788,7 @@ func (c JobsCollector) jobProcessUptimeMetrics(
 	uptime director.VMInfoVitalsUptime,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -772,6 +801,7 @@ func (c JobsCollector) jobProcessUptimeMetrics(
 			float64(*uptime.Seconds),
 			deploymentName,
 			jobName,
+			jobID,
 			jobIndex,
 			jobAZ,
 			jobIP,
@@ -785,6 +815,7 @@ func (c JobsCollector) jobProcessCPUMetrics(
 	cpuMetrics director.VMInfoVitalsCPU,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -797,6 +828,7 @@ func (c JobsCollector) jobProcessCPUMetrics(
 			float64(*cpuMetrics.Total),
 			deploymentName,
 			jobName,
+			jobID,
 			jobIndex,
 			jobAZ,
 			jobIP,
@@ -810,6 +842,7 @@ func (c JobsCollector) jobProcessMemMetrics(
 	memMetrics director.VMInfoVitalsMemIntSize,
 	deploymentName string,
 	jobName string,
+	jobID string,
 	jobIndex string,
 	jobAZ string,
 	jobIP string,
@@ -822,6 +855,7 @@ func (c JobsCollector) jobProcessMemMetrics(
 			float64(*memMetrics.KB),
 			deploymentName,
 			jobName,
+			jobID,
 			jobIndex,
 			jobAZ,
 			jobIP,
@@ -836,6 +870,7 @@ func (c JobsCollector) jobProcessMemMetrics(
 			*memMetrics.Percent,
 			deploymentName,
 			jobName,
+			jobID,
 			jobIndex,
 			jobAZ,
 			jobIP,

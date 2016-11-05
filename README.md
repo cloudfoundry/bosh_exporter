@@ -111,14 +111,14 @@ If the `ServiceDiscovery` collector is enabled, the exporter will write a `json`
     "targets": ["10.244.0.12"],
     "labels":
       {
-        "__meta_bosh_process": "bosh_exporter"
+        "__meta_bosh_job_process_name": "bosh_exporter"
       }
   },
   {
     "targets": ["10.244.0.11", "10.244.0.12", "10.244.0.13", "10.244.0.14"],
     "labels":
       {
-        "__meta_bosh_process": "node_exporter"
+        "__meta_bosh_job_process_name": "node_exporter"
       }
   }
 ]

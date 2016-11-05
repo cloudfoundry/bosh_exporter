@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	boshProcessNameLabel = model.MetaLabelPrefix + "bosh_process"
+	boshJobProcessNameLabel = model.MetaLabelPrefix + "bosh_job_process_name"
 )
 
 type Processes map[string][]ProcessInfo
@@ -166,7 +166,7 @@ func (c ServiceDiscoveryCollector) createTargetGroups(processes Processes) Targe
 		targetGroup := TargetGroup{
 			Targets: targets,
 			Labels: model.LabelSet{
-				model.LabelName(boshProcessNameLabel): model.LabelValue(processName),
+				model.LabelName(boshJobProcessNameLabel): model.LabelValue(processName),
 			},
 		}
 		targetGroups = append(targetGroups, targetGroup)

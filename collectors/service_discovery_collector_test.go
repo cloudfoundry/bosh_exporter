@@ -104,7 +104,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			processState        = "running"
 			jobProcessName      = "fake-process-name"
 			jobProcessState     = "running"
-			targetGroupsContent = "[{\"targets\":[\"1.2.3.4\"],\"labels\":{\"__meta_bosh_process\":\"fake-process-name\"}}]"
+			targetGroupsContent = "[{\"targets\":[\"1.2.3.4\"],\"labels\":{\"__meta_bosh_job_process_name\":\"fake-process-name\"}}]"
 
 			vmProcesses   []director.VMInfoProcess
 			instanceInfos []director.VMInfo

@@ -41,13 +41,13 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | bosh.url<br />BOSH_EXPORTER_BOSH_URL | Yes | | BOSH URL |
 | bosh.username<br />BOSH_EXPORTER_BOSH_USERNAME | No | | BOSH Username |
 | bosh.password<br />BOSH_EXPORTER_BOSH_PASSWORD | No | | BOSH Password |
+| bosh.uaa.url<br />BOSH_EXPORTER_BOSH_UAA_URL | No | | BOSH UAA URL |
+| bosh.uaa.client-id<br />BOSH_EXPORTER_BOSH_UAA_CLIENT_ID | No | | BOSH UAA Client ID |
+| bosh.uaa.client-secret<br />BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET | No | | BOSH UAA Client Secret |
 | bosh.log-level<br />BOSH_EXPORTER_BOSH_LOG_LEVEL | No | ERROR | BOSH Log Level ("DEBUG", "INFO", "WARN", "ERROR", "NONE") |
 | bosh.ca-cert-file<br />BOSH_EXPORTER_BOSH_CA_CERT_FILE | No | | BOSH CA Certificate file |
 | bosh.deployments<br />BOSH_EXPORTER_BOSH_DEPLOYMENTS | No | | Comma separated deployments to filter |
 | bosh.collectors<br />BOSH_EXPORTER_BOSH_COLLECTORS | No | | Comma separated collectors to filter (Deployments,Jobs) |
-| uaa.url<br />BOSH_EXPORTER_UAA_URL | No | | BOSH UAA URL |
-| uaa.client-id<br />BOSH_EXPORTER_UAA_CLIENT_ID | No | | BOSH UAA Client ID |
-| uaa.client-secret<br />BOSH_EXPORTER_UAA_CLIENT_SECRET | No | | BOSH UAA Client Secret |
 | metrics.namespace<br />BOSH_EXPORTER_METRICS_NAMESPACE | No | bosh_exporter | Metrics Namespace |
 | web.listen-address<br />BOSH_EXPORTER_WEB_LISTEN_ADDRESS | No | :9190 | Address to listen on for web interface and telemetry |
 | web.telemetry-path<br />BOSH_EXPORTER_WEB_TELEMETRY_PATH | No | /metrics | Path under which to expose Prometheus metrics |

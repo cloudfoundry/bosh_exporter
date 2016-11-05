@@ -35,6 +35,21 @@ var (
 		"BOSH Password ($BOSH_EXPORTER_BOSH_PASSWORD).",
 	)
 
+	boshUAAURL = flag.String(
+		"bosh.uaa.url", "",
+		"BOSH UAA Url ($BOSH_EXPORTER_BOSH_UAA_URL).",
+	)
+
+	boshUAAClientID = flag.String(
+		"bosh.uaa.client-id", "",
+		"BOSH UAA Client ID ($BOSH_EXPORTER_BOSH_UAA_CLIENT_ID).",
+	)
+
+	boshUAAClientSecret = flag.String(
+		"bosh.uaa.client-secret", "",
+		"BOSH UAA Client Secret ($BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET).",
+	)
+
 	boshLogLevel = flag.String(
 		"bosh.log-level", "ERROR",
 		"BOSH Log Level ($BOSH_EXPORTER_BOSH_LOG_LEVEL).",
@@ -53,21 +68,6 @@ var (
 	boshCollectors = flag.String(
 		"bosh.collectors", "",
 		"Comma separated collectors to filter (Deployments,Jobs) ($BOSH_EXPORTER_BOSH_COLLECTORS).",
-	)
-
-	uaaURL = flag.String(
-		"uaa.url", "",
-		"BOSH UAA Url ($BOSH_EXPORTER_UAA_URL).",
-	)
-
-	uaaClientID = flag.String(
-		"uaa.client-id", "",
-		"BOSH UAA Client ID ($BOSH_EXPORTER_UAA_CLIENT_ID).",
-	)
-
-	uaaClientSecret = flag.String(
-		"uaa.client-secret", "",
-		"BOSH UAA Client Secret ($BOSH_EXPORTER_UAA_CLIENT_SECRET).",
 	)
 
 	metricsNamespace = flag.String(
@@ -99,13 +99,13 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_URL", boshURL)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_USERNAME", boshUsername)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_PASSWORD", boshPassword)
+	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_URL", boshUAAURL)
+	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_CLIENT_ID", boshUAAClientID)
+	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET", boshUAAClientSecret)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_DEPLOYMENTS", boshDeployments)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_COLLECTORS", boshCollectors)
-	overrideWithEnvVar("BOSH_EXPORTER_UAA_URL", uaaURL)
-	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_ID", uaaClientID)
-	overrideWithEnvVar("BOSH_EXPORTER_UAA_CLIENT_SECRET", uaaClientSecret)
 	overrideWithEnvVar("BOSH_EXPORTER_METRICS_NAMESPACE", metricsNamespace)
 	overrideWithEnvVar("BOSH_EXPORTER_WEB_LISTEN_ADDRESS", listenAddress)
 	overrideWithEnvVar("BOSH_EXPORTER_WEB_TELEMETRY_PATH", metricsPath)
@@ -160,15 +160,15 @@ func buildBOSHClient() (director.Director, error) {
 	directorConfig.Username = *boshUsername
 	directorConfig.Password = *boshPassword
 
-	if *uaaURL != "" {
-		uaaConfig, err := uaa.NewConfigFromURL(*uaaURL)
+	if *boshUAAURL != "" {
+		uaaConfig, err := uaa.NewConfigFromURL(*boshUAAURL)
 		if err != nil {
 			return nil, err
 		}
 
 		uaaConfig.CACert = boshCACert
-		uaaConfig.Client = *uaaClientID
-		uaaConfig.ClientSecret = *uaaClientSecret
+		uaaConfig.Client = *boshUAAClientID
+		uaaConfig.ClientSecret = *boshUAAClientSecret
 
 		uaaFactory := uaa.NewFactory(logger)
 		uaaClient, err := uaaFactory.New(uaaConfig)

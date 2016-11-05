@@ -21,7 +21,7 @@ func init() {
 	flag.Set("log.level", "fatal")
 }
 
-var _ = Describe("JobsCollector", func() {
+var _ = Describe("DeploymentsCollector", func() {
 	var (
 		namespace            string
 		boshDeployments      []string

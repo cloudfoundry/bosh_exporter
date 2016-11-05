@@ -67,12 +67,22 @@ var (
 
 	boshCollectors = flag.String(
 		"bosh.collectors", "",
-		"Comma separated collectors to filter (Deployments,Jobs) ($BOSH_EXPORTER_BOSH_COLLECTORS).",
+		"Comma separated collectors to filter (Deployments,Jobs,ServiceDiscovery) ($BOSH_EXPORTER_BOSH_COLLECTORS).",
 	)
 
 	metricsNamespace = flag.String(
 		"metrics.namespace", "bosh_exporter",
 		"Metrics Namespace ($BOSH_EXPORTER_METRICS_NAMESPACE).",
+	)
+
+	sdFilename = flag.String(
+		"sd.filename", "bosh_target_groups.json",
+		"Full path to the Service Discovery output file ($BOSH_EXPORTER_SD_FILENAME).",
+	)
+
+	sdProcessesRegexp = flag.String(
+		"sd.processes_regexp", "",
+		"Regexp to filter Service Discovery processes names ($BOSH_EXPORTER_SD_PROCESSES_REGEXP).",
 	)
 
 	showVersion = flag.Bool(
@@ -107,6 +117,8 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_DEPLOYMENTS", boshDeployments)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_COLLECTORS", boshCollectors)
 	overrideWithEnvVar("BOSH_EXPORTER_METRICS_NAMESPACE", metricsNamespace)
+	overrideWithEnvVar("BOSH_EXPORTER_SD_FILENAME", sdFilename)
+	overrideWithEnvVar("BOSH_EXPORTER_SD_PROCESSES_REGEXP", sdProcessesRegexp)
 	overrideWithEnvVar("BOSH_EXPORTER_WEB_LISTEN_ADDRESS", listenAddress)
 	overrideWithEnvVar("BOSH_EXPORTER_WEB_TELEMETRY_PATH", metricsPath)
 }
@@ -237,6 +249,26 @@ func main() {
 	if collectorsFilter.Enabled(filters.JobsCollector) {
 		jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
 		prometheus.MustRegister(jobsCollector)
+	}
+
+	if collectorsFilter.Enabled(filters.ServiceDiscoveryCollector) {
+		var processesFilters []string
+		if *sdProcessesRegexp != "" {
+			processesFilters = []string{*sdProcessesRegexp}
+		}
+		processesFilter, err := filters.NewRegexpFilter(processesFilters)
+		if err != nil {
+			log.Errorf("Error processing Processes Regexp: %v", err)
+			os.Exit(1)
+		}
+
+		serviceDiscoveryCollector := collectors.NewServiceDiscoveryCollector(
+			*metricsNamespace,
+			*deploymentsFilter,
+			*sdFilename,
+			*processesFilter,
+		)
+		prometheus.MustRegister(serviceDiscoveryCollector)
 	}
 
 	http.Handle(*metricsPath, prometheus.Handler())

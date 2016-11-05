@@ -9,20 +9,20 @@ import (
 
 var _ = Describe("CollectorsFilter", func() {
 	var (
-		err    error
-		filter []string
+		err     error
+		filters []string
 
 		collectorsFilter *CollectorsFilter
 	)
 
 	JustBeforeEach(func() {
-		collectorsFilter, err = NewCollectorsFilter(filter)
+		collectorsFilter, err = NewCollectorsFilter(filters)
 	})
 
 	Describe("New", func() {
 		Context("when filters are supported", func() {
 			BeforeEach(func() {
-				filter = []string{DeploymentsCollector, JobsCollector}
+				filters = []string{DeploymentsCollector, JobsCollector, ServiceDiscoveryCollector}
 			})
 
 			It("does not return an error", func() {
@@ -32,7 +32,7 @@ var _ = Describe("CollectorsFilter", func() {
 
 		Context("when filters are not supported", func() {
 			BeforeEach(func() {
-				filter = []string{DeploymentsCollector, JobsCollector, "Unknown"}
+				filters = []string{DeploymentsCollector, JobsCollector, "Unknown"}
 			})
 
 			It("returns an error", func() {
@@ -44,24 +44,24 @@ var _ = Describe("CollectorsFilter", func() {
 
 	Describe("Enabled", func() {
 		BeforeEach(func() {
-			filter = []string{DeploymentsCollector}
+			filters = []string{DeploymentsCollector}
 		})
 
-		Context("when event is enabled", func() {
+		Context("when collector is enabled", func() {
 			It("returns true", func() {
 				Expect(collectorsFilter.Enabled(DeploymentsCollector)).To(BeTrue())
 			})
 		})
 
-		Context("when event is not enabled", func() {
+		Context("when collector is not enabled", func() {
 			It("returns false", func() {
 				Expect(collectorsFilter.Enabled(JobsCollector)).To(BeFalse())
 			})
 		})
 
-		Context("when there is no filter", func() {
+		Context("when there are no filters", func() {
 			BeforeEach(func() {
-				filter = []string{}
+				filters = []string{}
 			})
 
 			It("returns true", func() {

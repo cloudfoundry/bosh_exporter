@@ -4,6 +4,10 @@ A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics.
 
 Please refer to the [FAQ][faq] for general questions about this exporter.
 
+## Architecture overview
+
+![](https://cdn.rawgit.com/cloudfoundry-community/bosh_exporter/master/architecture/architecture.svg)
+
 ## Installation
 
 ### Binaries

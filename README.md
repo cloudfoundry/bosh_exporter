@@ -1,8 +1,6 @@
-# BOSH Exporter [![Build Status](https://travis-ci.org/cloudfoundry-community/bosh_exporter.png)](https://travis-ci.org/cloudfoundry-community/bosh_exporter)
+# BOSH Prometheus Exporter [![Build Status](https://travis-ci.org/cloudfoundry-community/bosh_exporter.png)](https://travis-ci.org/cloudfoundry-community/bosh_exporter)
 
-A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics.
-
-Please refer to the [FAQ][faq] for general questions about this exporter.
+A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics. Please refer to the [FAQ][faq] for general questions about this exporter.
 
 ## Architecture overview
 

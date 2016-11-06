@@ -6,7 +6,7 @@ A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics.
 
 ### Binaries
 
-Download the already existing [binaries](https://github.com/cloudfoundry-community/bosh_exporter/releases) for your platform.
+Download the already existing [binaries](https://github.com/cloudfoundry-community/bosh_exporter/releases) for your platform:
 
 ```bash
 $ ./bosh_exporter <flags>

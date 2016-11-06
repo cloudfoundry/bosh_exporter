@@ -4,7 +4,15 @@ A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics.
 
 ## Installation
 
-### Locally
+### Binaries
+
+Download the already existing [binaries](https://github.com/cloudfoundry-community/bosh_exporter/releases) for your platform.
+
+```bash
+$ ./bosh_exporter <flags>
+```
+
+### From source
 
 Using the standard `go install` (you must have [Go][golang] already installed in your local machine):
 

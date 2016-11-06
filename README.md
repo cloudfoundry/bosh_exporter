@@ -126,6 +126,14 @@ If the `ServiceDiscovery` collector is enabled, the exporter will write a `json`
 
 The list of targets can be filtered using the *sd.processes_regexp* flag.
 
+## Contributing
+
+Refer to [CONTRIBUTING.md](https://github.com/cloudfoundry-community/bosh_exporter/blob/master/CONTRIBUTING.md).
+
+## License
+
+Apache License 2.0, see [LICENSE](https://github.com/cloudfoundry-community/bosh_exporter/blob/master/LICENSE).
+
 [bosh]: https://bosh.io
 [cloudfoundry]: https://www.cloudfoundry.org/
 [file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;

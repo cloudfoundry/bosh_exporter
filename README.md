@@ -2,11 +2,13 @@
 
 A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics.
 
+Please refer to the [FAQ][faq] for general questions about this exporter.
+
 ## Installation
 
 ### Binaries
 
-Download the already existing [binaries](https://github.com/cloudfoundry-community/bosh_exporter/releases) for your platform:
+Download the already existing [binaries][binaries] for your platform:
 
 ```bash
 $ ./bosh_exporter <flags>
@@ -136,16 +138,20 @@ The list of targets can be filtered using the *sd.processes_regexp* flag.
 
 ## Contributing
 
-Refer to [CONTRIBUTING.md](https://github.com/cloudfoundry-community/bosh_exporter/blob/master/CONTRIBUTING.md).
+Refer to the [contributing guidelines][contributing].
 
 ## License
 
-Apache License 2.0, see [LICENSE](https://github.com/cloudfoundry-community/bosh_exporter/blob/master/LICENSE).
+Apache License 2.0, see [LICENSE][license].
 
+[binaries]: https://github.com/cloudfoundry-community/bosh_exporter/releases
 [bosh]: https://bosh.io
 [cloudfoundry]: https://www.cloudfoundry.org/
+[contributing]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/CONTRIBUTING.md
+[faq]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/FAQ.md
 [file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;
 [golang]: https://golang.org/
+[license]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/LICENSE
 [manifest]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/manifest.yml
 [prometheus]: https://prometheus.io/
 [prometheus-boshrelease]: https://github.com/cloudfoundry-community/prometheus-boshrelease

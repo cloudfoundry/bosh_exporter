@@ -1,4 +1,4 @@
-# Architectura diagram
+# Architecture diagram
 
 The architecture image was drawn on [https://www.draw.io/][draw]. The native source file is called `architecture.xml`, while `architecture.svg` is its SVG export.
 

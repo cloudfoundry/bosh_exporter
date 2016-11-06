@@ -2,7 +2,7 @@
 
 ### What metrics does this exporter report?
 
-The BOSH exporter gets the metrics from the [BOSH Director][bosh_director], who gathers them from each VM [BOSH agent][bosh_agent]. The metrics that are being [reported][bosh_exporter_metrics] are pretty basic, but include:
+The BOSH Prometheus Exporter gets the metrics from the [BOSH Director][bosh_director], who gathers them from each VM [BOSH Agent][bosh_agent]. The metrics that are being [reported][bosh_exporter_metrics] are pretty basic, but include:
 
 * Deployment metrics:
   * Releases in use
@@ -20,13 +20,13 @@ The BOSH exporter gets the metrics from the [BOSH Director][bosh_director], who 
   * CPU
   * Memory
 
-### How can I get more detailed metrics about each VM?
+### How can I get more detailed metrics from each VM?
 
 If you want to get more detailed VM system metrics, like disk I/O, network traffic, ..., it is recommended to deploy the Prometheus [Node exporter][node_exporter] on each VM.
 
 ### What are the caveats when using this exporter?
 
-In order to get the metrics, the exporter calls the [BOSH Director][bosh_director] [Instance details][instance_details] endpoint. This request result in potentially long running operations against each [BOSH agent][bosh_agent], so such requests start a [Director task][director_task]. Therefore, each exporter scrape will generate a new [Director task][director_task] per deployment. This will NOT hurt your BOSH performance, but has the nasty effect that generates thousand of tasks per scrape (i.e. scrapping each minute will generate 1440 tasks per deployment per day).
+In order to get the metrics, the exporter calls the [BOSH Director][bosh_director] [Instance details][instance_details] endpoint. This request result in potentially long running operations against each [BOSH Agent][bosh_agent], so such requests start a [Director Task][director_task]. Therefore, each exporter scrape will generate a new [Director Task][director_task] per deployment. This will NOT hurt your BOSH performance, but has the nasty effect that generates thousand of tasks per scrape (i.e. scrapping each minute will generate 1440 tasks per deployment per day).
 
 It is, therefore, recommended to increase the `scrape interval` and the `scrape timeout` for this exporter:
 
@@ -52,7 +52,7 @@ bosh_job_id="$3"
 ...
 ```
 
-Then you will need to enable the [Graphite plugin][bosh_graphite] at your [BOSH Health Monitor][[bosh_health_monitor]] configuration pointing to the [Graphite exporter][graphite_exporter] IP address.
+Then you will need to enable the [Graphite plugin][bosh_graphite] at your [BOSH Health Monitor][bosh_health_monitor] configuration pointing to the [Graphite exporter][graphite_exporter] IP address.
 
 On the other hand, the downside of this approach is that you will NOT get the same level of metrics that this exporter reports and you cannot use the service discovery approach.
 
@@ -105,7 +105,7 @@ Yes, the *sd.processes_regexp* command flag allows you to filter what BOSH Job p
 There are mainly two reasons:
 
 * Prometheus Service Discovery is not pluggable, that means that you either incorporate the BOSH Service Discovery as part of the official [Prometheus core code][prometheus_github] or you create a separate executable that produces an output file that can be used by the Prometheus [file-based service discovery][file_sd_config] mechanism. We decided to use the [file-based service discovery][file_sd_config] mechanism because it was easier for us to test this approach.
-* We want to minimize the number of calls to the [BOSH Director][bosh_director] (see the above `caveats`). Having a different executable means that in order to get the BOSH Job IPs and processes we will need to generate a new [Director task][director_task]. Using a new collector within this exporter allows us to reuse the same deployment calls.
+* We want to minimize the number of calls to the [BOSH Director][bosh_director] (see the above [caveats](#how-can-i-get-bosh-metrics-without-the-above-caveats)). Having a different executable means that in order to get the BOSH Job IPs and processes we will need to generate a new [Director Task][director_task]. Using a new collector within this exporter allows us to reuse the same deployment calls.
 
 ### What is the recommended deployment strategy?
 

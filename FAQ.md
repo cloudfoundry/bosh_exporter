@@ -72,7 +72,19 @@ Comunication between the exporter and the [BOSH Director][bosh_director] uses HT
 x509: cannot validate certificate for X.X.X.X because it doesn't contain any IP SANs
 ```
 
-In order to generate the proper certificates, you can reuse the [generate.sh][generate_certificates] script located at the [BOSH Lite][bosh_lite] repository.
+In order to generate the proper certificates, you can reuse the [generate.sh][generate_certificates] script located at the [BOSH Lite][bosh_lite] repository updating the IP address. Then deploy (or redeploy) your [BOSH Director][bosh_director] adding the following properties:
+
+```yaml
+properties:
+  director:
+    ssl:
+      cert: |
+        <content of the director.crt file>
+      key: |
+        <content of the director.key file>
+```
+
+Later, when starting the `bosh_exporter` you must specify the *bosh.ca-cert-file* command line flag pointing to the location of the `ca.crt` file.
 
 For testing purposes, this repository includes the [CA Cert][bosh_lite_ca_cert] to be used only when testing the exporter against a [BOSH Lite][bosh_lite].
 

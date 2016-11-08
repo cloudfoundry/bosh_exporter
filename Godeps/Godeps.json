@@ -26,18 +26,18 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-cli/director",
-			"Comment": "v0.0.100",
-			"Rev": "1786eb2c3854a676537f676c8cadd0160bf56a16"
+			"Comment": "v0.0.101",
+			"Rev": "33f5c26b0b7c960778ab7284eed13eeb700f16f9"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-cli/director/fakes",
-			"Comment": "v0.0.100",
-			"Rev": "1786eb2c3854a676537f676c8cadd0160bf56a16"
+			"Comment": "v0.0.101",
+			"Rev": "33f5c26b0b7c960778ab7284eed13eeb700f16f9"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-cli/uaa",
-			"Comment": "v0.0.100",
-			"Rev": "1786eb2c3854a676537f676c8cadd0160bf56a16"
+			"Comment": "v0.0.101",
+			"Rev": "33f5c26b0b7c960778ab7284eed13eeb700f16f9"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-utils/errors",
@@ -210,6 +210,11 @@
 			"ImportPath": "github.com/onsi/gomega/types",
 			"Comment": "v1.0-115-g9ed8da1",
 			"Rev": "9ed8da19f2156b87a803a8fdf6d126f627a12db1"
+		},
+		{
+			"ImportPath": "github.com/patrickmn/go-cache",
+			"Comment": "v2.0.0",
+			"Rev": "1881a9bccb818787f68c52bfba648c6cf34c34fa"
 		},
 		{
 			"ImportPath": "github.com/prometheus/client_golang/prometheus",

@@ -62,7 +62,7 @@ var _ = Describe("JobsCollector", func() {
 
 		jobHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "healthy"),
-			"BOSH Job Healthy.",
+			"BOSH Job Healthy (1 for healthy, 0 for unhealthy).",
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 			nil,
 		)
@@ -181,7 +181,7 @@ var _ = Describe("JobsCollector", func() {
 
 		jobProcessHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job_process", "healthy"),
-			"BOSH Job Process Healthy.",
+			"BOSH Job Process Healthy (1 for healthy, 0 for unhealthy).",
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
 			nil,
 		)

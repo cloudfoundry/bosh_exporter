@@ -26,14 +26,14 @@ func NewDeploymentsCollector(
 ) *DeploymentsCollector {
 	deploymentReleaseInfoDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "deployment", "release_info"),
-		"BOSH Deployment Release Info.",
+		"Labeled BOSH Deployment Release Info with a constant '1' value.",
 		[]string{"bosh_deployment", "bosh_release_name", "bosh_release_version"},
 		nil,
 	)
 
 	deploymentStemcellInfoDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "deployment", "stemcell_info"),
-		"BOSH Deployment Stemcell Info.",
+		"Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
 		[]string{"bosh_deployment", "bosh_stemcell_name", "bosh_stemcell_version", "bosh_stemcell_os_name"},
 		nil,
 	)

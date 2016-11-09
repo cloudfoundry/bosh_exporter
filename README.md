@@ -60,7 +60,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | bosh.ca-cert-file<br />BOSH_EXPORTER_BOSH_CA_CERT_FILE | No | | BOSH CA Certificate file |
 | bosh.deployments<br />BOSH_EXPORTER_BOSH_DEPLOYMENTS | No | | Comma separated deployments to filter |
 | bosh.collectors<br />BOSH_EXPORTER_BOSH_COLLECTORS | No | | Comma separated collectors to filter (`Deployments`, `Jobs`, `ServiceDiscovery`) |
-| metrics.namespace<br />BOSH_EXPORTER_METRICS_NAMESPACE | No | bosh_exporter | Metrics Namespace |
+| metrics.namespace<br />BOSH_EXPORTER_METRICS_NAMESPACE | No | bosh | Metrics Namespace |
 | sd.filename<br />BOSH_EXPORTER_SD_FILENAME | No | bosh_target_groups.json | Full path to the Service Discovery output file |
 | sd.processes_regexp<br />BOSH_EXPORTER_SD_PROCESSES_REGEXP | No | | Regexp to filter Service Discovery processes names |
 | web.listen-address<br />BOSH_EXPORTER_WEB_LISTEN_ADDRESS | No | :9190 | Address to listen on for web interface and telemetry |

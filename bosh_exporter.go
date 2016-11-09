@@ -71,7 +71,7 @@ var (
 	)
 
 	metricsNamespace = flag.String(
-		"metrics.namespace", "bosh_exporter",
+		"metrics.namespace", "bosh",
 		"Metrics Namespace ($BOSH_EXPORTER_METRICS_NAMESPACE).",
 	)
 

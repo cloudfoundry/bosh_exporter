@@ -45,7 +45,7 @@ An alternative approach to gather BOSH metrics without using this exporter is to
 
 ```
 *.*.*.*.system_healthy
-name="bosh_exporter_job_healthy"
+name="bosh_job_healthy"
 bosh_deployment="$1"
 bosh_job_name="$2"
 bosh_job_id="$3"

@@ -58,11 +58,11 @@ On the other hand, the downside of this approach is that you will NOT get the sa
 
 ### How can I enable only a particular collector?
 
-The *bosh.collectors* command flag allows you to filter what collectors will be enabled. Possible values are `Deployments` ,`Jobs`, `ServiceDiscovery` (or a combination of them).
+The *filter.collectors* command flag allows you to filter what collectors will be enabled. Possible values are `Deployments`, `Jobs`, `ServiceDiscovery` (or a combination of them).
 
 ### How can I filter by a particular BOSH deployment?
 
-The *bosh.deployments* command flag allows you to filter what BOSH deployments will be reported.
+The *filter.deployments* command flag allows you to filter what BOSH deployments will be reported.
 
 ### How can I get the BOSH CA certificate?
 

@@ -58,8 +58,8 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | bosh.uaa.client-secret<br />BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET | No | | BOSH UAA Client Secret |
 | bosh.log-level<br />BOSH_EXPORTER_BOSH_LOG_LEVEL | No | ERROR | BOSH Log Level (`DEBUG`, `INFO`, `WARN`, `ERROR`, `NONE`) |
 | bosh.ca-cert-file<br />BOSH_EXPORTER_BOSH_CA_CERT_FILE | No | | BOSH CA Certificate file |
-| bosh.deployments<br />BOSH_EXPORTER_BOSH_DEPLOYMENTS | No | | Comma separated deployments to filter |
-| bosh.collectors<br />BOSH_EXPORTER_BOSH_COLLECTORS | No | | Comma separated collectors to filter (`Deployments`, `Jobs`, `ServiceDiscovery`) |
+| filter.deployments<br />BOSH_EXPORTER_FILTER_DEPLOYMENTS | No | | Comma separated deployments to filter |
+| filter.collectors<br />BOSH_EXPORTER_FILTER_COLLECTORS | No | | Comma separated collectors to filter (`Deployments`, `Jobs`, `ServiceDiscovery`) |
 | metrics.namespace<br />BOSH_EXPORTER_METRICS_NAMESPACE | No | bosh | Metrics Namespace |
 | sd.filename<br />BOSH_EXPORTER_SD_FILENAME | No | bosh_target_groups.json | Full path to the Service Discovery output file |
 | sd.processes_regexp<br />BOSH_EXPORTER_SD_PROCESSES_REGEXP | No | | Regexp to filter Service Discovery processes names |

@@ -60,14 +60,14 @@ var (
 		"BOSH CA Certificate file ($BOSH_EXPORTER_BOSH_CA_CERT_FILE).",
 	)
 
-	boshDeployments = flag.String(
-		"bosh.deployments", "",
-		"Comma separated deployments to filter ($BOSH_EXPORTER_BOSH_DEPLOYMENTS).",
+	filterDeployments = flag.String(
+		"filter.deployments", "",
+		"Comma separated deployments to filter ($BOSH_EXPORTER_FILTER_DEPLOYMENTS).",
 	)
 
-	boshCollectors = flag.String(
-		"bosh.collectors", "",
-		"Comma separated collectors to filter (Deployments,Jobs,ServiceDiscovery) ($BOSH_EXPORTER_BOSH_COLLECTORS).",
+	filterCollectors = flag.String(
+		"filter.collectors", "",
+		"Comma separated collectors to filter (Deployments,Jobs,ServiceDiscovery) ($BOSH_EXPORTER_FILTER_COLLECTORS).",
 	)
 
 	metricsNamespace = flag.String(
@@ -114,8 +114,8 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET", boshUAAClientSecret)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_DEPLOYMENTS", boshDeployments)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_COLLECTORS", boshCollectors)
+	overrideWithEnvVar("BOSH_EXPORTER_FILTER_DEPLOYMENTS", filterDeployments)
+	overrideWithEnvVar("BOSH_EXPORTER_FILTER_COLLECTORS", filterCollectors)
 	overrideWithEnvVar("BOSH_EXPORTER_METRICS_NAMESPACE", metricsNamespace)
 	overrideWithEnvVar("BOSH_EXPORTER_SD_FILENAME", sdFilename)
 	overrideWithEnvVar("BOSH_EXPORTER_SD_PROCESSES_REGEXP", sdProcessesRegexp)
@@ -226,14 +226,14 @@ func main() {
 	log.Infof("Using BOSH Director `%s` (%s)", boshInfo.Name, boshInfo.UUID)
 
 	var deploymentsFilters []string
-	if *boshDeployments != "" {
-		deploymentsFilters = strings.Split(*boshDeployments, ",")
+	if *filterDeployments != "" {
+		deploymentsFilters = strings.Split(*filterDeployments, ",")
 	}
 	deploymentsFilter := filters.NewDeploymentsFilter(deploymentsFilters, boshClient)
 
 	var collectorsFilters []string
-	if *boshCollectors != "" {
-		collectorsFilters = strings.Split(*boshCollectors, ",")
+	if *filterCollectors != "" {
+		collectorsFilters = strings.Split(*filterCollectors, ",")
 	}
 	collectorsFilter, err := filters.NewCollectorsFilter(collectorsFilters)
 	if err != nil {

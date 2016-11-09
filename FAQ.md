@@ -22,7 +22,7 @@ The BOSH Prometheus Exporter gets the metrics from the [BOSH Director][bosh_dire
 
 ### How can I get more detailed metrics from each VM?
 
-If you want to get more detailed VM system metrics, like disk I/O, network traffic, ..., it is recommended to deploy the Prometheus [Node exporter][node_exporter] on each VM.
+If you want to get more detailed VM system metrics, like disk I/O, network traffic, ..., it is recommended to deploy the Prometheus [Node Exporter][node_exporter] on each VM.
 
 ### What are the caveats when using this exporter?
 
@@ -37,11 +37,11 @@ scrape_configs:
     scrape_timeout: 1m
 ```
 
-A longer `scrape interval` means less *real time* metrics, but for most use cases, this will be enough, specially when combined with the [Node exporter][node_exporter].
+A longer `scrape interval` means less *real time* metrics, but for most use cases, this will be enough, specially when combined with the [Node Exporter][node_exporter].
 
 ### How can I get BOSH metrics without the above caveats?
 
-An alternative approach to gather BOSH metrics without using this exporter is to use the [Graphite exporter][graphite_exporter] and configure a [metric mapping][graphite_mapping]:
+An alternative approach to gather BOSH metrics without using this exporter is to use the [Graphite Exporter][graphite_exporter] and configure a [metric mapping][graphite_mapping]:
 
 ```
 *.*.*.*.system_healthy
@@ -52,7 +52,7 @@ bosh_job_id="$3"
 ...
 ```
 
-Then you will need to enable the [Graphite plugin][bosh_graphite] at your [BOSH Health Monitor][bosh_health_monitor] configuration pointing to the [Graphite exporter][graphite_exporter] IP address.
+Then you will need to enable the [Graphite Health Monitor plugin][bosh_graphite] at your [BOSH Health Monitor][bosh_health_monitor] configuration pointing to the [Graphite Exporter][graphite_exporter] IP address.
 
 On the other hand, the downside of this approach is that you will NOT get the same level of metrics that this exporter reports and you cannot use the service discovery approach.
 

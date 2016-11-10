@@ -351,6 +351,7 @@ var _ = Describe("JobsCollector", func() {
 			jobID                         = "fake-job-id"
 			jobIndex                      = 0
 			jobAZ                         = "fake-job-az"
+			jobVMID                       = "fake-job-vmid"
 			jobIP                         = "1.2.3.4"
 			processState                  = "running"
 			jobLoadAvg01                  = float64(0.01)
@@ -463,6 +464,7 @@ var _ = Describe("JobsCollector", func() {
 					ProcessState: processState,
 					IPs:          []string{jobIP},
 					AZ:           jobAZ,
+					VMID:         jobVMID,
 					Vitals:       vmVitals,
 					Processes:    vmProcesses,
 				},
@@ -1093,6 +1095,26 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_process_mem_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessMemPercentMetric)))
+			})
+		})
+
+		Context("when instance has no VMID", func() {
+			BeforeEach(func() {
+				instanceInfos[0].VMID = ""
+
+				deployment = &fakes.FakeDeployment{
+					NameStub:          func() string { return deploymentName },
+					InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
+				}
+
+				deployments = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(deployments, nil)
+			})
+
+			It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
+				Eventually(metrics).Should(Receive())
+				Eventually(metrics).Should(Receive())
+				Consistently(metrics).ShouldNot(Receive())
 			})
 		})
 

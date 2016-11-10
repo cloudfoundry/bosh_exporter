@@ -100,6 +100,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			jobID               = "fake-job-id"
 			jobIndex            = 0
 			jobAZ               = "fake-job-az"
+			jobVMID             = "fake-job-vmid"
 			jobIP               = "1.2.3.4"
 			processState        = "running"
 			jobProcessName      = "fake-process-name"
@@ -130,6 +131,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 					ProcessState: processState,
 					IPs:          []string{jobIP},
 					AZ:           jobAZ,
+					VMID:         jobVMID,
 					Processes:    vmProcesses,
 				},
 			}
@@ -160,6 +162,33 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			Eventually(metrics).Should(Receive())
 			Eventually(metrics).Should(Receive())
 			Consistently(metrics).ShouldNot(Receive())
+		})
+
+		Context("when instance has no VMID", func() {
+			BeforeEach(func() {
+				instanceInfos[0].VMID = ""
+
+				deployment = &fakes.FakeDeployment{
+					NameStub:          func() string { return deploymentName },
+					InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
+				}
+
+				deployments = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(deployments, nil)
+			})
+
+			It("writes an empty target groups file", func() {
+				Eventually(metrics).Should(Receive())
+				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(string(targetGroups)).To(Equal("[]"))
+			})
+
+			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				Eventually(metrics).Should(Receive())
+				Eventually(metrics).Should(Receive())
+				Consistently(metrics).ShouldNot(Receive())
+			})
 		})
 
 		Context("when there are no deployments", func() {

@@ -130,26 +130,28 @@ func (c ServiceDiscoveryCollector) getDeploymentProcesses(deployment director.De
 		return
 	}
 
-	for _, instanceInfos := range instanceInfos {
-		if len(instanceInfos.IPs) >= 0 {
-			for _, pi := range instanceInfos.Processes {
-				if !c.processesFilter.Enabled(pi.Name) {
-					continue
-				}
+	for _, instanceInfo := range instanceInfos {
+		if instanceInfo.VMID == "" || len(instanceInfo.IPs) == 0 {
+			continue
+		}
 
-				processInfo := &ProcessInfo{
-					DeploymentName: deployment.Name(),
-					JobName:        instanceInfos.JobName,
-					JobID:          instanceInfos.ID,
-					JobIndex:       *instanceInfos.Index,
-					JobAZ:          instanceInfos.AZ,
-					JobIP:          instanceInfos.IPs[0],
-				}
-
-				c.mu.Lock()
-				processes[pi.Name] = append(processes[pi.Name], *processInfo)
-				c.mu.Unlock()
+		for _, pi := range instanceInfo.Processes {
+			if !c.processesFilter.Enabled(pi.Name) {
+				continue
 			}
+
+			processInfo := &ProcessInfo{
+				DeploymentName: deployment.Name(),
+				JobName:        instanceInfo.JobName,
+				JobID:          instanceInfo.ID,
+				JobIndex:       *instanceInfo.Index,
+				JobAZ:          instanceInfo.AZ,
+				JobIP:          instanceInfo.IPs[0],
+			}
+
+			c.mu.Lock()
+			processes[pi.Name] = append(processes[pi.Name], *processInfo)
+			c.mu.Unlock()
 		}
 	}
 }

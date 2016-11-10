@@ -311,6 +311,10 @@ func (c JobsCollector) reportJobMetrics(
 	}
 
 	for _, instanceInfo := range instanceInfos {
+		if instanceInfo.VMID == "" {
+			continue
+		}
+
 		deploymentName := deployment.Name()
 		jobName := instanceInfo.JobName
 		jobID := instanceInfo.ID

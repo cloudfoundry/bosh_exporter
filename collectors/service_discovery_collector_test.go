@@ -1,7 +1,6 @@
 package collectors_test
 
 import (
-	"errors"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -9,10 +8,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/cloudfoundry/bosh-cli/director/fakes"
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/cloudfoundry-community/bosh_exporter/deployments"
 	"github.com/cloudfoundry-community/bosh_exporter/filters"
 
 	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
@@ -26,12 +24,9 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 	var (
 		err                       error
 		namespace                 string
-		boshDeployments           []string
-		deploymentsFilter         *filters.DeploymentsFilter
 		tmpfile                   *os.File
 		serviceDiscoveryFilename  string
 		processesFilter           *filters.RegexpFilter
-		boshClient                *fakes.FakeDirector
 		serviceDiscoveryCollector *ServiceDiscoveryCollector
 
 		lastServiceDiscoveryScrapeTimestampDesc       *prometheus.Desc
@@ -40,11 +35,9 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
-		boshDeployments = []string{}
 		tmpfile, err = ioutil.TempFile("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
-		boshClient = &fakes.FakeDirector{}
 
 		lastServiceDiscoveryScrapeTimestampDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "last_service_discovery_scrape_timestamp"),
@@ -66,9 +59,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		deploymentsFilter = filters.NewDeploymentsFilter(boshDeployments, boshClient)
 		processesFilter, err = filters.NewRegexpFilter([]string{})
-		serviceDiscoveryCollector = NewServiceDiscoveryCollector(namespace, *deploymentsFilter, serviceDiscoveryFilename, *processesFilter)
+		serviceDiscoveryCollector = NewServiceDiscoveryCollector(namespace, serviceDiscoveryFilename, *processesFilter)
 	})
 
 	Describe("Describe", func() {
@@ -98,57 +90,50 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			deploymentName      = "fake-deployment-name"
 			jobName             = "fake-job-name"
 			jobID               = "fake-job-id"
-			jobIndex            = 0
+			jobIndex            = "0"
 			jobAZ               = "fake-job-az"
-			jobVMID             = "fake-job-vmid"
 			jobIP               = "1.2.3.4"
-			processState        = "running"
 			jobProcessName      = "fake-process-name"
-			jobProcessState     = "running"
 			targetGroupsContent = "[{\"targets\":[\"1.2.3.4\"],\"labels\":{\"__meta_bosh_job_process_name\":\"fake-process-name\"}}]"
 
-			vmProcesses   []director.VMInfoProcess
-			instanceInfos []director.VMInfo
-			deployments   []director.Deployment
-			deployment    director.Deployment
+			processes       []deployments.Process
+			instances       []deployments.Instance
+			deploymentInfo  deployments.DeploymentInfo
+			deploymentsInfo []deployments.DeploymentInfo
 
 			metrics chan prometheus.Metric
 		)
 
 		BeforeEach(func() {
-			vmProcesses = []director.VMInfoProcess{
+			processes = []deployments.Process{
 				{
-					Name:  jobProcessName,
-					State: jobProcessState,
+					Name: jobProcessName,
 				},
 			}
 
-			instanceInfos = []director.VMInfo{
+			instances = []deployments.Instance{
 				{
-					JobName:      jobName,
-					ID:           jobID,
-					Index:        &jobIndex,
-					ProcessState: processState,
-					IPs:          []string{jobIP},
-					AZ:           jobAZ,
-					VMID:         jobVMID,
-					Processes:    vmProcesses,
+					Name:      jobName,
+					ID:        jobID,
+					Index:     jobIndex,
+					IPs:       []string{jobIP},
+					AZ:        jobAZ,
+					Processes: processes,
 				},
 			}
 
-			deployment = &fakes.FakeDeployment{
-				NameStub:          func() string { return deploymentName },
-				InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
+			deploymentInfo = deployments.DeploymentInfo{
+				Name:      deploymentName,
+				Instances: instances,
 			}
 
-			deployments = []director.Deployment{deployment}
-			boshClient.DeploymentsReturns(deployments, nil)
+			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 
 			metrics = make(chan prometheus.Metric)
 		})
 
 		JustBeforeEach(func() {
-			go serviceDiscoveryCollector.Collect(metrics)
+			go serviceDiscoveryCollector.Collect(deploymentsInfo, metrics)
 		})
 
 		It("writes a target groups file", func() {
@@ -164,36 +149,9 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			Consistently(metrics).ShouldNot(Receive())
 		})
 
-		Context("when instance has no VMID", func() {
-			BeforeEach(func() {
-				instanceInfos[0].VMID = ""
-
-				deployment = &fakes.FakeDeployment{
-					NameStub:          func() string { return deploymentName },
-					InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
-				}
-
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
-			})
-
-			It("writes an empty target groups file", func() {
-				Eventually(metrics).Should(Receive())
-				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(targetGroups)).To(Equal("[]"))
-			})
-
-			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-			})
-		})
-
 		Context("when there are no deployments", func() {
 			BeforeEach(func() {
-				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
+				deploymentsInfo = []deployments.DeploymentInfo{}
 			})
 
 			It("writes an empty target groups file", func() {
@@ -210,14 +168,10 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			})
 		})
 
-		Context("when it does not return any InstanceInfos", func() {
+		Context("when there are no instances", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:          func() string { return deploymentName },
-					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				deploymentInfo.Instances = []deployments.Instance{}
+				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
 			It("writes an empty target groups file", func() {
@@ -234,14 +188,10 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			})
 		})
 
-		Context("when it fails to get the InstanceInfos for a deployment", func() {
+		Context("when instance has no IP", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:          func() string { return deploymentName },
-					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no InstanceInfo") },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				deploymentInfo.Instances[0].IPs = []string{}
+				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
 			It("writes an empty target groups file", func() {
@@ -258,5 +208,24 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			})
 		})
 
+		Context("when there are no processes", func() {
+			BeforeEach(func() {
+				deploymentInfo.Instances[0].Processes = []deployments.Process{}
+				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
+			})
+
+			It("writes an empty target groups file", func() {
+				Eventually(metrics).Should(Receive())
+				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(string(targetGroups)).To(Equal("[]"))
+			})
+
+			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				Eventually(metrics).Should(Receive())
+				Eventually(metrics).Should(Receive())
+				Consistently(metrics).ShouldNot(Receive())
+			})
+		})
 	})
 })

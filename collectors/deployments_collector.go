@@ -1,29 +1,21 @@
 package collectors
 
 import (
-	"sync"
 	"time"
 
-	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
-	"github.com/cloudfoundry-community/bosh_exporter/filters"
+	"github.com/cloudfoundry-community/bosh_exporter/deployments"
 )
 
 type DeploymentsCollector struct {
-	namespace                                string
-	deploymentsFilter                        filters.DeploymentsFilter
 	deploymentReleaseInfoDesc                *prometheus.Desc
 	deploymentStemcellInfoDesc               *prometheus.Desc
 	lastDeploymentsScrapeTimestampDesc       *prometheus.Desc
 	lastDeploymentsScrapeDurationSecondsDesc *prometheus.Desc
 }
 
-func NewDeploymentsCollector(
-	namespace string,
-	deploymentsFilter filters.DeploymentsFilter,
-) *DeploymentsCollector {
+func NewDeploymentsCollector(namespace string) *DeploymentsCollector {
 	deploymentReleaseInfoDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "deployment", "release_info"),
 		"Labeled BOSH Deployment Release Info with a constant '1' value.",
@@ -53,8 +45,6 @@ func NewDeploymentsCollector(
 	)
 
 	collector := &DeploymentsCollector{
-		namespace:                                namespace,
-		deploymentsFilter:                        deploymentsFilter,
 		deploymentReleaseInfoDesc:                deploymentReleaseInfoDesc,
 		deploymentStemcellInfoDesc:               deploymentStemcellInfoDesc,
 		lastDeploymentsScrapeTimestampDesc:       lastDeploymentsScrapeTimestampDesc,
@@ -63,20 +53,13 @@ func NewDeploymentsCollector(
 	return collector
 }
 
-func (c DeploymentsCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) {
 	var begun = time.Now()
 
-	deployments := c.deploymentsFilter.GetDeployments()
-
-	var wg sync.WaitGroup
 	for _, deployment := range deployments {
-		wg.Add(1)
-		go func(deployment director.Deployment, ch chan<- prometheus.Metric) {
-			defer wg.Done()
-			c.reportDeploymentMetrics(deployment, ch)
-		}(deployment, ch)
+		c.reportDeploymentReleaseInfoMetrics(deployment, ch)
+		c.reportDeploymentStemcellInfoMetrics(deployment, ch)
 	}
-	wg.Wait()
 
 	ch <- prometheus.MustNewConstMetric(
 		c.lastDeploymentsScrapeTimestampDesc,
@@ -91,64 +74,42 @@ func (c DeploymentsCollector) Collect(ch chan<- prometheus.Metric) {
 	)
 }
 
-func (c DeploymentsCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c *DeploymentsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.deploymentReleaseInfoDesc
 	ch <- c.deploymentStemcellInfoDesc
 	ch <- c.lastDeploymentsScrapeTimestampDesc
 	ch <- c.lastDeploymentsScrapeDurationSecondsDesc
 }
 
-func (c DeploymentsCollector) reportDeploymentMetrics(
-	deployment director.Deployment,
+func (c *DeploymentsCollector) reportDeploymentReleaseInfoMetrics(
+	deployment deployments.DeploymentInfo,
 	ch chan<- prometheus.Metric,
 ) {
-	c.reportDeploymentReleaseInfoMetrics(deployment, ch)
-	c.reportDeploymentStemcellInfoMetrics(deployment, ch)
-}
-
-func (c DeploymentsCollector) reportDeploymentReleaseInfoMetrics(
-	deployment director.Deployment,
-	ch chan<- prometheus.Metric,
-) {
-	log.Debugf("Reading Releases info for deployment `%s`:", deployment.Name())
-	releases, err := deployment.Releases()
-	if err != nil {
-		log.Errorf("Error while reading Release info for deployment `%s`: %v", deployment.Name(), err)
-		return
-	}
-
-	for _, release := range releases {
+	for _, release := range deployment.Releases {
 		ch <- prometheus.MustNewConstMetric(
 			c.deploymentReleaseInfoDesc,
 			prometheus.GaugeValue,
 			float64(1),
-			deployment.Name(),
-			release.Name(),
-			release.Version().AsString(),
+			deployment.Name,
+			release.Name,
+			release.Version,
 		)
 	}
 }
 
-func (c DeploymentsCollector) reportDeploymentStemcellInfoMetrics(
-	deployment director.Deployment,
+func (c *DeploymentsCollector) reportDeploymentStemcellInfoMetrics(
+	deployment deployments.DeploymentInfo,
 	ch chan<- prometheus.Metric,
 ) {
-	log.Debugf("Reading Stemcells info for deployment `%s`:", deployment.Name())
-	stemcells, err := deployment.Stemcells()
-	if err != nil {
-		log.Errorf("Error while reading Stemcells info for deployment `%s`: %v", deployment.Name(), err)
-		return
-	}
-
-	for _, stemcell := range stemcells {
+	for _, stemcell := range deployment.Stemcells {
 		ch <- prometheus.MustNewConstMetric(
 			c.deploymentStemcellInfoDesc,
 			prometheus.GaugeValue,
 			float64(1),
-			deployment.Name(),
-			stemcell.Name(),
-			stemcell.Version().AsString(),
-			stemcell.OSName(),
+			deployment.Name,
+			stemcell.Name,
+			stemcell.Version,
+			stemcell.OSName,
 		)
 	}
 }

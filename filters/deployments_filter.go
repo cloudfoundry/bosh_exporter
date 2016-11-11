@@ -14,7 +14,7 @@ func NewDeploymentsFilter(filters []string, boshClient director.Director) *Deplo
 	return &DeploymentsFilter{filters: filters, boshClient: boshClient}
 }
 
-func (f DeploymentsFilter) GetDeployments() []director.Deployment {
+func (f *DeploymentsFilter) GetDeployments() []director.Deployment {
 	var err error
 	var deployments []director.Deployment
 
@@ -33,7 +33,6 @@ func (f DeploymentsFilter) GetDeployments() []director.Deployment {
 		deployments, err = f.boshClient.Deployments()
 		if err != nil {
 			log.Errorf("Error while reading deployments: %v", err)
-			return deployments
 		}
 	}
 

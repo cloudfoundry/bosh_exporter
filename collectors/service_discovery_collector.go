@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/model"
 
+	"github.com/cloudfoundry-community/bosh_exporter/deployments"
 	"github.com/cloudfoundry-community/bosh_exporter/filters"
 )
 
@@ -22,13 +22,14 @@ const (
 	boshJobProcessNameLabel = model.MetaLabelPrefix + "bosh_job_process_name"
 )
 
-type Processes map[string][]ProcessInfo
+type ProcessesDetails map[string][]ProcessDetails
 
-type ProcessInfo struct {
+type ProcessDetails struct {
+	Name           string
 	DeploymentName string
 	JobName        string
 	JobID          string
-	JobIndex       int
+	JobIndex       string
 	JobAZ          string
 	JobIP          string
 }
@@ -41,8 +42,6 @@ type TargetGroup struct {
 }
 
 type ServiceDiscoveryCollector struct {
-	namespace                                     string
-	deploymentsFilter                             filters.DeploymentsFilter
 	serviceDiscoveryFilename                      string
 	processesFilter                               filters.RegexpFilter
 	lastServiceDiscoveryScrapeTimestampDesc       *prometheus.Desc
@@ -52,7 +51,6 @@ type ServiceDiscoveryCollector struct {
 
 func NewServiceDiscoveryCollector(
 	namespace string,
-	deploymentsFilter filters.DeploymentsFilter,
 	serviceDiscoveryFilename string,
 	processesFilter filters.RegexpFilter,
 ) *ServiceDiscoveryCollector {
@@ -71,8 +69,6 @@ func NewServiceDiscoveryCollector(
 	)
 
 	collector := &ServiceDiscoveryCollector{
-		namespace:                                     namespace,
-		deploymentsFilter:                             deploymentsFilter,
 		serviceDiscoveryFilename:                      serviceDiscoveryFilename,
 		processesFilter:                               processesFilter,
 		lastServiceDiscoveryScrapeTimestampDesc:       lastServiceDiscoveryScrapeTimestampDesc,
@@ -82,23 +78,18 @@ func NewServiceDiscoveryCollector(
 	return collector
 }
 
-func (c ServiceDiscoveryCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *ServiceDiscoveryCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) {
 	var begun = time.Now()
 
-	deployments := c.deploymentsFilter.GetDeployments()
-	processes := make(Processes)
-
-	var wg sync.WaitGroup
+	processesDetails := make(ProcessesDetails)
 	for _, deployment := range deployments {
-		wg.Add(1)
-		go func(deployment director.Deployment, processes Processes) {
-			defer wg.Done()
-			c.getDeploymentProcesses(deployment, processes)
-		}(deployment, processes)
+		processes := c.getDeploymentProcesses(deployment)
+		for _, process := range processes {
+			processesDetails[process.Name] = append(processesDetails[process.Name], process)
+		}
 	}
-	wg.Wait()
 
-	targetGroups := c.createTargetGroups(processes)
+	targetGroups := c.createTargetGroups(processesDetails)
 
 	if err := c.writeTargetGroupsToFile(targetGroups); err != nil {
 		log.Error(err)
@@ -117,58 +108,54 @@ func (c ServiceDiscoveryCollector) Collect(ch chan<- prometheus.Metric) {
 	)
 }
 
-func (c ServiceDiscoveryCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c *ServiceDiscoveryCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.lastServiceDiscoveryScrapeTimestampDesc
 	ch <- c.lastServiceDiscoveryScrapeDurationSecondsDesc
 }
 
-func (c ServiceDiscoveryCollector) getDeploymentProcesses(deployment director.Deployment, processes Processes) {
-	log.Debugf("Reading VM info for deployment `%s`:", deployment.Name())
-	instanceInfos, err := deployment.InstanceInfos()
-	if err != nil {
-		log.Errorf("Error while reading VM info for deployment `%s`: %v", deployment.Name(), err)
-		return
-	}
+func (c *ServiceDiscoveryCollector) getDeploymentProcesses(deployment deployments.DeploymentInfo) []ProcessDetails {
+	processesDetails := []ProcessDetails{}
 
-	for _, instanceInfo := range instanceInfos {
-		if instanceInfo.VMID == "" || len(instanceInfo.IPs) == 0 {
+	for _, instance := range deployment.Instances {
+		if len(instance.IPs) == 0 {
 			continue
 		}
 
-		for _, pi := range instanceInfo.Processes {
-			if !c.processesFilter.Enabled(pi.Name) {
+		for _, process := range instance.Processes {
+			if !c.processesFilter.Enabled(process.Name) {
 				continue
 			}
 
-			processInfo := &ProcessInfo{
-				DeploymentName: deployment.Name(),
-				JobName:        instanceInfo.JobName,
-				JobID:          instanceInfo.ID,
-				JobIndex:       *instanceInfo.Index,
-				JobAZ:          instanceInfo.AZ,
-				JobIP:          instanceInfo.IPs[0],
+			processDetails := ProcessDetails{
+				Name:           process.Name,
+				DeploymentName: deployment.Name,
+				JobName:        instance.Name,
+				JobID:          instance.ID,
+				JobIndex:       instance.Index,
+				JobAZ:          instance.AZ,
+				JobIP:          instance.IPs[0],
 			}
 
-			c.mu.Lock()
-			processes[pi.Name] = append(processes[pi.Name], *processInfo)
-			c.mu.Unlock()
+			processesDetails = append(processesDetails, processDetails)
 		}
 	}
+
+	return processesDetails
 }
 
-func (c ServiceDiscoveryCollector) createTargetGroups(processes Processes) TargetGroups {
+func (c *ServiceDiscoveryCollector) createTargetGroups(processesDetails ProcessesDetails) TargetGroups {
 	targetGroups := TargetGroups{}
 
-	for processName, processesInfo := range processes {
+	for name, details := range processesDetails {
 		targets := []string{}
-		for _, processInfo := range processesInfo {
-			targets = append(targets, processInfo.JobIP)
+		for _, processDetails := range details {
+			targets = append(targets, processDetails.JobIP)
 		}
 
 		targetGroup := TargetGroup{
 			Targets: targets,
 			Labels: model.LabelSet{
-				model.LabelName(boshJobProcessNameLabel): model.LabelValue(processName),
+				model.LabelName(boshJobProcessNameLabel): model.LabelValue(name),
 			},
 		}
 		targetGroups = append(targetGroups, targetGroup)
@@ -177,7 +164,7 @@ func (c ServiceDiscoveryCollector) createTargetGroups(processes Processes) Targe
 	return targetGroups
 }
 
-func (c ServiceDiscoveryCollector) writeTargetGroupsToFile(targetGroups TargetGroups) error {
+func (c *ServiceDiscoveryCollector) writeTargetGroupsToFile(targetGroups TargetGroups) error {
 	targetGroupsJSON, err := json.Marshal(targetGroups)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error while marshalling TargetGroups: %v", err))

@@ -16,6 +16,7 @@ import (
 	"github.com/prometheus/common/version"
 
 	"github.com/cloudfoundry-community/bosh_exporter/collectors"
+	"github.com/cloudfoundry-community/bosh_exporter/deployments"
 	"github.com/cloudfoundry-community/bosh_exporter/filters"
 )
 
@@ -230,6 +231,7 @@ func main() {
 		deploymentsFilters = strings.Split(*filterDeployments, ",")
 	}
 	deploymentsFilter := filters.NewDeploymentsFilter(deploymentsFilters, boshClient)
+	deploymentsFetcher := deployments.NewFetcher(*deploymentsFilter)
 
 	var collectorsFilters []string
 	if *filterCollectors != "" {
@@ -241,35 +243,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	if collectorsFilter.Enabled(filters.DeploymentsCollector) {
-		deploymentsCollector := collectors.NewDeploymentsCollector(*metricsNamespace, *deploymentsFilter)
-		prometheus.MustRegister(deploymentsCollector)
+	var processesFilters []string
+	if *sdProcessesRegexp != "" {
+		processesFilters = []string{*sdProcessesRegexp}
+	}
+	processesFilter, err := filters.NewRegexpFilter(processesFilters)
+	if err != nil {
+		log.Errorf("Error processing Processes Regexp: %v", err)
+		os.Exit(1)
 	}
 
-	if collectorsFilter.Enabled(filters.JobsCollector) {
-		jobsCollector := collectors.NewJobsCollector(*metricsNamespace, *deploymentsFilter)
-		prometheus.MustRegister(jobsCollector)
-	}
-
-	if collectorsFilter.Enabled(filters.ServiceDiscoveryCollector) {
-		var processesFilters []string
-		if *sdProcessesRegexp != "" {
-			processesFilters = []string{*sdProcessesRegexp}
-		}
-		processesFilter, err := filters.NewRegexpFilter(processesFilters)
-		if err != nil {
-			log.Errorf("Error processing Processes Regexp: %v", err)
-			os.Exit(1)
-		}
-
-		serviceDiscoveryCollector := collectors.NewServiceDiscoveryCollector(
-			*metricsNamespace,
-			*deploymentsFilter,
-			*sdFilename,
-			*processesFilter,
-		)
-		prometheus.MustRegister(serviceDiscoveryCollector)
-	}
+	boshCollector := collectors.NewBoshCollector(
+		*metricsNamespace,
+		*sdFilename,
+		deploymentsFetcher,
+		collectorsFilter,
+		processesFilter,
+	)
+	prometheus.MustRegister(boshCollector)
 
 	http.Handle(*metricsPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

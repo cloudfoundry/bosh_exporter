@@ -5,18 +5,18 @@ import (
 )
 
 type RegexpFilter struct {
-	reFilters []regexp.Regexp
+	reFilters []*regexp.Regexp
 }
 
 func NewRegexpFilter(filters []string) (*RegexpFilter, error) {
-	reFilters := []regexp.Regexp{}
+	reFilters := []*regexp.Regexp{}
 
 	for _, filter := range filters {
 		re, err := regexp.Compile(filter)
 		if err != nil {
 			return nil, err
 		}
-		reFilters = append(reFilters, *re)
+		reFilters = append(reFilters, re)
 	}
 
 	return &RegexpFilter{reFilters: reFilters}, nil

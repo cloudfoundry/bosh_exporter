@@ -1,18 +1,14 @@
 package collectors_test
 
 import (
-	"errors"
 	"flag"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/cloudfoundry/bosh-cli/director/fakes"
-	"github.com/cppforlife/go-semi-semantic/version"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cloudfoundry-community/bosh_exporter/filters"
+	"github.com/cloudfoundry-community/bosh_exporter/deployments"
 
 	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
@@ -24,9 +20,6 @@ func init() {
 var _ = Describe("DeploymentsCollector", func() {
 	var (
 		namespace            string
-		boshDeployments      []string
-		deploymentsFilter    *filters.DeploymentsFilter
-		boshClient           *fakes.FakeDirector
 		deploymentsCollector *DeploymentsCollector
 
 		deploymentReleaseInfoDesc                *prometheus.Desc
@@ -37,8 +30,6 @@ var _ = Describe("DeploymentsCollector", func() {
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
-		boshDeployments = []string{}
-		boshClient = &fakes.FakeDirector{}
 
 		deploymentReleaseInfoDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "deployment", "release_info"),
@@ -70,8 +61,7 @@ var _ = Describe("DeploymentsCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		deploymentsFilter = filters.NewDeploymentsFilter(boshDeployments, boshClient)
-		deploymentsCollector = NewDeploymentsCollector(namespace, *deploymentsFilter)
+		deploymentsCollector = NewDeploymentsCollector(namespace)
 	})
 
 	Describe("Describe", func() {
@@ -113,21 +103,22 @@ var _ = Describe("DeploymentsCollector", func() {
 			stemcellVersion = "4.5.6"
 			stemcellOSName  = "fake-stemcell-os-name"
 
-			release = &fakes.FakeRelease{
-				NameStub:    func() string { return releaseName },
-				VersionStub: func() version.Version { return version.MustNewVersionFromString(releaseVersion) },
+			release = deployments.Release{
+				Name:    releaseName,
+				Version: releaseVersion,
 			}
-			releases = []director.Release{release}
+			releases = []deployments.Release{release}
 
-			stemcell = &fakes.FakeStemcell{
-				NameStub:    func() string { return stemcellName },
-				VersionStub: func() version.Version { return version.MustNewVersionFromString(stemcellVersion) },
-				OSNameStub:  func() string { return stemcellOSName },
+			stemcell = deployments.Stemcell{
+				Name:    stemcellName,
+				Version: stemcellVersion,
+				OSName:  stemcellOSName,
 			}
-			stemcells = []director.Stemcell{stemcell}
+			stemcells = []deployments.Stemcell{stemcell}
 
-			deployments []director.Deployment
-			deployment  director.Deployment
+			deploymentInfo deployments.DeploymentInfo
+
+			deploymentsInfo []deployments.DeploymentInfo
 
 			metrics                      chan prometheus.Metric
 			deploymentReleaseInfoMetric  prometheus.Metric
@@ -135,14 +126,12 @@ var _ = Describe("DeploymentsCollector", func() {
 		)
 
 		BeforeEach(func() {
-			deployment = &fakes.FakeDeployment{
-				NameStub:      func() string { return deploymentName },
-				ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
-				StemcellsStub: func() ([]director.Stemcell, error) { return stemcells, nil },
+			deploymentInfo = deployments.DeploymentInfo{
+				Name:      deploymentName,
+				Releases:  releases,
+				Stemcells: stemcells,
 			}
-
-			deployments = []director.Deployment{deployment}
-			boshClient.DeploymentsReturns(deployments, nil)
+			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 
 			metrics = make(chan prometheus.Metric)
 
@@ -167,7 +156,7 @@ var _ = Describe("DeploymentsCollector", func() {
 		})
 
 		JustBeforeEach(func() {
-			go deploymentsCollector.Collect(metrics)
+			go deploymentsCollector.Collect(deploymentsInfo, metrics)
 		})
 
 		It("returns a deployment_release_info metric", func() {
@@ -180,7 +169,7 @@ var _ = Describe("DeploymentsCollector", func() {
 
 		Context("when there are no deployments", func() {
 			BeforeEach(func() {
-				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
+				deploymentsInfo = []deployments.DeploymentInfo{}
 			})
 
 			It("returns only a last_deployments_scrape_timestamp & last_deployments_scrape_duration_seconds metric", func() {
@@ -190,14 +179,10 @@ var _ = Describe("DeploymentsCollector", func() {
 			})
 		})
 
-		Context("when it does not return any Release", func() {
+		Context("when there are no releases", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:      func() string { return deploymentName },
-					StemcellsStub: func() ([]director.Stemcell, error) { return stemcells, nil },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				deploymentInfo.Releases = []deployments.Release{}
+				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
 			It("should not return a deployment_release_info metric", func() {
@@ -205,46 +190,10 @@ var _ = Describe("DeploymentsCollector", func() {
 			})
 		})
 
-		Context("when it fails to get the Releases for a deployment", func() {
+		Context("when there are no stemcells", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:      func() string { return deploymentName },
-					ReleasesStub:  func() ([]director.Release, error) { return nil, errors.New("no Releases") },
-					StemcellsStub: func() ([]director.Stemcell, error) { return stemcells, nil },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
-			})
-
-			It("should not return a deployment_release_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(Equal(deploymentReleaseInfoMetric)))
-			})
-		})
-
-		Context("when it does not return any Stemcell", func() {
-			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:     func() string { return deploymentName },
-					ReleasesStub: func() ([]director.Release, error) { return releases, nil },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
-			})
-
-			It("should not return a deployment_stemcell_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(Equal(deploymentStemcellInfoMetric)))
-			})
-		})
-
-		Context("when it fails to get the Stemcells for a deployment", func() {
-			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:      func() string { return deploymentName },
-					ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
-					StemcellsStub: func() ([]director.Stemcell, error) { return nil, errors.New("no Stemcells") },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				deploymentInfo.Stemcells = []deployments.Stemcell{}
+				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
 			It("should not return a deployment_stemcell_info metric", func() {

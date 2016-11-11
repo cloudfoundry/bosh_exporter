@@ -1,18 +1,15 @@
 package collectors_test
 
 import (
-	"errors"
 	"flag"
 	"strconv"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/cloudfoundry/bosh-cli/director/fakes"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cloudfoundry-community/bosh_exporter/filters"
+	"github.com/cloudfoundry-community/bosh_exporter/deployments"
 
 	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
@@ -23,11 +20,8 @@ func init() {
 
 var _ = Describe("JobsCollector", func() {
 	var (
-		namespace         string
-		boshDeployments   []string
-		deploymentsFilter *filters.DeploymentsFilter
-		boshClient        *fakes.FakeDirector
-		jobsCollector     *JobsCollector
+		namespace     string
+		jobsCollector *JobsCollector
 
 		jobHealthyDesc                    *prometheus.Desc
 		jobLoadAvg01Desc                  *prometheus.Desc
@@ -57,8 +51,6 @@ var _ = Describe("JobsCollector", func() {
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
-		boshDeployments = []string{}
-		boshClient = &fakes.FakeDirector{}
 
 		jobHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "healthy"),
@@ -230,8 +222,7 @@ var _ = Describe("JobsCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		deploymentsFilter = filters.NewDeploymentsFilter(boshDeployments, boshClient)
-		jobsCollector = NewJobsCollector(namespace, *deploymentsFilter)
+		jobsCollector = NewJobsCollector(namespace)
 	})
 
 	Describe("Describe", func() {
@@ -349,14 +340,10 @@ var _ = Describe("JobsCollector", func() {
 			deploymentName                = "fake-deployment-name"
 			jobName                       = "fake-job-name"
 			jobID                         = "fake-job-id"
-			jobIndex                      = 0
-			jobAZ                         = "fake-job-az"
-			jobVMID                       = "fake-job-vmid"
+			jobIndex                      = "0"
 			jobIP                         = "1.2.3.4"
-			processState                  = "running"
-			jobLoadAvg01                  = float64(0.01)
-			jobLoadAvg05                  = float64(0.05)
-			jobLoadAvg15                  = float64(0.15)
+			jobAZ                         = "fake-job-az"
+			jobHealthy                    = true
 			jobCPUSys                     = float64(0.5)
 			jobCPUUser                    = float64(1.0)
 			jobCPUWait                    = float64(1.5)
@@ -364,6 +351,9 @@ var _ = Describe("JobsCollector", func() {
 			jobMemPercent                 = 10
 			jobSwapKB                     = 2000
 			jobSwapPercent                = 20
+			jobLoadAvg01                  = float64(0.01)
+			jobLoadAvg05                  = float64(0.05)
+			jobLoadAvg15                  = float64(0.15)
 			jobSystemDiskInodePercent     = 10
 			jobSystemDiskPercent          = 20
 			jobEphemeralDiskInodePercent  = 30
@@ -371,17 +361,17 @@ var _ = Describe("JobsCollector", func() {
 			jobPersistentDiskInodePercent = 50
 			jobPersistentDiskPercent      = 60
 			jobProcessName                = "fake-process-name"
-			jobProcessState               = "running"
-			jobProcessUptimeSeconds       = uint64(3600)
+			jobProcessUptime              = uint64(3600)
+			jobProcessHealthy             = true
 			jobProcessCPUTotal            = float64(0.5)
 			jobProcessMemKB               = uint64(2000)
 			jobProcessMemPercent          = float64(20)
 
-			vmProcesses   []director.VMInfoProcess
-			vmVitals      director.VMInfoVitals
-			instanceInfos []director.VMInfo
-			deployments   []director.Deployment
-			deployment    director.Deployment
+			processes       []deployments.Process
+			vitals          deployments.Vitals
+			instances       []deployments.Instance
+			deploymentInfo  deployments.DeploymentInfo
+			deploymentsInfo []deployments.DeploymentInfo
 
 			metrics                             chan prometheus.Metric
 			jobHealthyMetric                    prometheus.Metric
@@ -411,27 +401,27 @@ var _ = Describe("JobsCollector", func() {
 		)
 
 		BeforeEach(func() {
-			vmProcesses = []director.VMInfoProcess{
+			processes = []deployments.Process{
 				{
-					Name:   jobProcessName,
-					State:  jobProcessState,
-					CPU:    director.VMInfoVitalsCPU{Total: &jobProcessCPUTotal},
-					Mem:    director.VMInfoVitalsMemIntSize{KB: &jobProcessMemKB, Percent: &jobProcessMemPercent},
-					Uptime: director.VMInfoVitalsUptime{Seconds: &jobProcessUptimeSeconds},
+					Name:    jobProcessName,
+					Uptime:  &jobProcessUptime,
+					Healthy: jobProcessHealthy,
+					CPU:     deployments.CPU{Total: &jobProcessCPUTotal},
+					Mem:     deployments.MemInt{KB: &jobProcessMemKB, Percent: &jobProcessMemPercent},
 				},
 			}
 
-			vmVitals = director.VMInfoVitals{
-				CPU: director.VMInfoVitalsCPU{
+			vitals = deployments.Vitals{
+				CPU: deployments.CPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 				},
-				Mem: director.VMInfoVitalsMemSize{
+				Mem: deployments.Mem{
 					KB:      strconv.Itoa(jobMemKB),
 					Percent: strconv.Itoa(jobMemPercent),
 				},
-				Swap: director.VMInfoVitalsMemSize{
+				Swap: deployments.Mem{
 					KB:      strconv.Itoa(jobSwapKB),
 					Percent: strconv.Itoa(jobSwapPercent),
 				},
@@ -440,43 +430,39 @@ var _ = Describe("JobsCollector", func() {
 					strconv.FormatFloat(jobLoadAvg05, 'E', -1, 64),
 					strconv.FormatFloat(jobLoadAvg15, 'E', -1, 64),
 				},
-				Disk: map[string]director.VMInfoVitalsDiskSize{
-					"system": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobSystemDiskPercent)),
-					},
-					"ephemeral": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobEphemeralDiskPercent)),
-					},
-					"persistent": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobPersistentDiskPercent)),
-					},
+				SystemDisk: deployments.Disk{
+					InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
+					Percent:      strconv.Itoa(int(jobSystemDiskPercent)),
+				},
+				EphemeralDisk: deployments.Disk{
+					InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
+					Percent:      strconv.Itoa(int(jobEphemeralDiskPercent)),
+				},
+				PersistentDisk: deployments.Disk{
+					InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
+					Percent:      strconv.Itoa(int(jobPersistentDiskPercent)),
 				},
 			}
 
-			instanceInfos = []director.VMInfo{
+			instances = []deployments.Instance{
 				{
-					JobName:      jobName,
-					ID:           jobID,
-					Index:        &jobIndex,
-					ProcessState: processState,
-					IPs:          []string{jobIP},
-					AZ:           jobAZ,
-					VMID:         jobVMID,
-					Vitals:       vmVitals,
-					Processes:    vmProcesses,
+					Name:      jobName,
+					ID:        jobID,
+					Index:     jobIndex,
+					IPs:       []string{jobIP},
+					AZ:        jobAZ,
+					Healthy:   jobHealthy,
+					Vitals:    vitals,
+					Processes: processes,
 				},
 			}
 
-			deployment = &fakes.FakeDeployment{
-				NameStub:          func() string { return deploymentName },
-				InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
+			deploymentInfo = deployments.DeploymentInfo{
+				Name:      deploymentName,
+				Instances: instances,
 			}
 
-			deployments = []director.Deployment{deployment}
-			boshClient.DeploymentsReturns(deployments, nil)
+			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 
 			metrics = make(chan prometheus.Metric)
 
@@ -487,7 +473,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -499,7 +485,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -511,7 +497,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -523,7 +509,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -535,7 +521,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -547,7 +533,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -559,7 +545,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -571,7 +557,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -583,7 +569,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -595,7 +581,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -607,7 +593,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -619,7 +605,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -631,7 +617,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -643,7 +629,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -655,7 +641,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -667,7 +653,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -679,7 +665,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -691,7 +677,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 			)
@@ -703,7 +689,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 				jobProcessName,
@@ -716,7 +702,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 				jobProcessName,
@@ -725,11 +711,11 @@ var _ = Describe("JobsCollector", func() {
 			jobProcessUptimeMetric = prometheus.MustNewConstMetric(
 				jobProcessUptimeDesc,
 				prometheus.GaugeValue,
-				float64(jobProcessUptimeSeconds),
+				float64(jobProcessUptime),
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 				jobProcessName,
@@ -742,7 +728,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 				jobProcessName,
@@ -755,7 +741,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 				jobProcessName,
@@ -768,7 +754,7 @@ var _ = Describe("JobsCollector", func() {
 				deploymentName,
 				jobName,
 				jobID,
-				strconv.Itoa(jobIndex),
+				jobIndex,
 				jobAZ,
 				jobIP,
 				jobProcessName,
@@ -776,7 +762,7 @@ var _ = Describe("JobsCollector", func() {
 		})
 
 		JustBeforeEach(func() {
-			go jobsCollector.Collect(metrics)
+			go jobsCollector.Collect(deploymentsInfo, metrics)
 		})
 
 		It("returns a job_process_healthy metric", func() {
@@ -785,7 +771,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when the process is not running", func() {
 			BeforeEach(func() {
-				instanceInfos[0].ProcessState = "failing"
+				instances[0].Healthy = false
 			})
 
 			It("returns a job_process_healthy metric", func() {
@@ -807,7 +793,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no load avg values", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Load = []string{}
+				instances[0].Vitals.Load = []string{}
 			})
 
 			It("does not return any job_load_avg metric", func() {
@@ -823,7 +809,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no cpu sys value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+				instances[0].Vitals.CPU = deployments.CPU{
 					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 				}
@@ -840,7 +826,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no cpu user value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+				instances[0].Vitals.CPU = deployments.CPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 				}
@@ -857,7 +843,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no cpu wait value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.CPU = director.VMInfoVitalsCPU{
+				instances[0].Vitals.CPU = deployments.CPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 				}
@@ -874,7 +860,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no mem kb value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
+				instances[0].Vitals.Mem = deployments.Mem{
 					Percent: strconv.Itoa(jobMemPercent),
 				}
 			})
@@ -890,7 +876,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no mem percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Mem = director.VMInfoVitalsMemSize{
+				instances[0].Vitals.Mem = deployments.Mem{
 					KB: strconv.Itoa(jobMemKB),
 				}
 			})
@@ -906,7 +892,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no swap kb value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
+				instances[0].Vitals.Swap = deployments.Mem{
 					Percent: strconv.Itoa(jobSwapPercent),
 				}
 			})
@@ -922,7 +908,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no swap percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Swap = director.VMInfoVitalsMemSize{
+				instances[0].Vitals.Swap = deployments.Mem{
 					KB: strconv.Itoa(jobSwapKB),
 				}
 			})
@@ -938,7 +924,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no system disk inode percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
+				instances[0].Vitals.SystemDisk = deployments.Disk{
 					Percent: strconv.Itoa(int(jobSystemDiskPercent)),
 				}
 			})
@@ -954,7 +940,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no system disk percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Disk["system"] = director.VMInfoVitalsDiskSize{
+				instances[0].Vitals.SystemDisk = deployments.Disk{
 					InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
 				}
 			})
@@ -970,7 +956,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no ephemeral disk inode percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
+				instances[0].Vitals.EphemeralDisk = deployments.Disk{
 					Percent: strconv.Itoa(int(jobEphemeralDiskPercent)),
 				}
 			})
@@ -986,7 +972,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no ephemeral disk percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Disk["ephemeral"] = director.VMInfoVitalsDiskSize{
+				instances[0].Vitals.EphemeralDisk = deployments.Disk{
 					InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
 				}
 			})
@@ -1002,7 +988,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no persistent disk inode percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
+				instances[0].Vitals.PersistentDisk = deployments.Disk{
 					Percent: strconv.Itoa(int(jobPersistentDiskPercent)),
 				}
 			})
@@ -1018,7 +1004,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no persistent disk percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Vitals.Disk["persistent"] = director.VMInfoVitalsDiskSize{
+				instances[0].Vitals.PersistentDisk = deployments.Disk{
 					InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
 				}
 			})
@@ -1034,7 +1020,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when a process is not running", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Processes[0].State = "failing"
+				instances[0].Processes[0].Healthy = false
 			})
 
 			It("returns an unhealthy job_process_healthy metric", func() {
@@ -1048,7 +1034,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process uptime value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Processes[0].Uptime = director.VMInfoVitalsUptime{}
+				instances[0].Processes[0].Uptime = nil
 			})
 
 			It("does not return a job_process_uptime_seconds metric", func() {
@@ -1062,7 +1048,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process cpu total value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Processes[0].CPU = director.VMInfoVitalsCPU{}
+				instances[0].Processes[0].CPU = deployments.CPU{}
 			})
 
 			It("does not return a job_process_cpu_total metric", func() {
@@ -1076,7 +1062,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process mem kb value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{Percent: &jobProcessMemPercent}
+				instances[0].Processes[0].Mem = deployments.MemInt{Percent: &jobProcessMemPercent}
 			})
 
 			It("does not return a job_process_mem_kb metric", func() {
@@ -1090,7 +1076,7 @@ var _ = Describe("JobsCollector", func() {
 
 		Context("when there is no process mem percent value", func() {
 			BeforeEach(func() {
-				instanceInfos[0].Processes[0].Mem = director.VMInfoVitalsMemIntSize{KB: &jobProcessMemKB}
+				instances[0].Processes[0].Mem = deployments.MemInt{KB: &jobProcessMemKB}
 			})
 
 			It("does not return a job_process_mem_percent metric", func() {
@@ -1098,29 +1084,9 @@ var _ = Describe("JobsCollector", func() {
 			})
 		})
 
-		Context("when instance has no VMID", func() {
-			BeforeEach(func() {
-				instanceInfos[0].VMID = ""
-
-				deployment = &fakes.FakeDeployment{
-					NameStub:          func() string { return deploymentName },
-					InstanceInfosStub: func() ([]director.VMInfo, error) { return instanceInfos, nil },
-				}
-
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
-			})
-
-			It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-			})
-		})
-
 		Context("when there are no deployments", func() {
 			BeforeEach(func() {
-				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
+				deploymentsInfo = []deployments.DeploymentInfo{}
 			})
 
 			It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
@@ -1130,31 +1096,10 @@ var _ = Describe("JobsCollector", func() {
 			})
 		})
 
-		Context("when it does not return any InstanceInfos", func() {
+		Context("when there are no instances", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:          func() string { return deploymentName },
-					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, nil },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
-			})
-
-			It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-			})
-		})
-
-		Context("when it fails to get the InstanceInfos for a deployment", func() {
-			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
-					NameStub:          func() string { return deploymentName },
-					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no InstanceInfo") },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				deploymentInfo.Instances = []deployments.Instance{}
+				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
 			It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {

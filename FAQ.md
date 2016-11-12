@@ -72,17 +72,7 @@ Comunication between the exporter and the [BOSH Director][bosh_director] uses HT
 x509: cannot validate certificate for X.X.X.X because it doesn't contain any IP SANs
 ```
 
-In order to generate the proper certificates, you can reuse the [generate.sh][generate_certificates] script located at the [BOSH Lite][bosh_lite] repository updating the IP address. Then deploy (or redeploy) your [BOSH Director][bosh_director] adding the following properties:
-
-```yaml
-properties:
-  director:
-    ssl:
-      cert: |
-        <content of the director.crt file>
-      key: |
-        <content of the director.key file>
-```
+In order to generate the proper certificates, please refer to the [Director SSL Certificate Configuration][director_certs] documentation.
 
 Later, when starting the `bosh_exporter` you must specify the *bosh.ca-cert-file* command line flag pointing to the location of the `ca.crt` file.
 
@@ -136,6 +126,7 @@ We will be glad to address any questions not answered here. Please, just open a 
 [bosh_health_monitor]: http://bosh.io/docs/bosh-components.html#health-monitor
 [bosh_lite]: https://github.com/cloudfoundry/bosh-lite
 [bosh_lite_ca_cert]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/bosh-lite-ca.crt
+[director_certs]: http://bosh.io/docs/director-certs.html
 [director_task]: http://bosh.io/docs/director-tasks.html
 [file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;
 [graphite_exporter]: https://github.com/prometheus/graphite_exporter

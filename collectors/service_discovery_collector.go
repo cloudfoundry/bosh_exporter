@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/model"
 
 	"github.com/cloudfoundry-community/bosh_exporter/deployments"
@@ -78,7 +77,7 @@ func NewServiceDiscoveryCollector(
 	return collector
 }
 
-func (c *ServiceDiscoveryCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) {
+func (c *ServiceDiscoveryCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) error {
 	var begun = time.Now()
 
 	processesDetails := make(ProcessesDetails)
@@ -91,9 +90,7 @@ func (c *ServiceDiscoveryCollector) Collect(deployments []deployments.Deployment
 
 	targetGroups := c.createTargetGroups(processesDetails)
 
-	if err := c.writeTargetGroupsToFile(targetGroups); err != nil {
-		log.Error(err)
-	}
+	err := c.writeTargetGroupsToFile(targetGroups)
 
 	ch <- prometheus.MustNewConstMetric(
 		c.lastServiceDiscoveryScrapeTimestampDesc,
@@ -106,6 +103,8 @@ func (c *ServiceDiscoveryCollector) Collect(deployments []deployments.Deployment
 		prometheus.GaugeValue,
 		time.Since(begun).Seconds(),
 	)
+
+	return err
 }
 
 func (c *ServiceDiscoveryCollector) Describe(ch chan<- *prometheus.Desc) {

@@ -20,29 +20,46 @@ func NewFetcher(deploymentsFilter filters.DeploymentsFilter) *Fetcher {
 	return &Fetcher{deploymentsFilter: deploymentsFilter}
 }
 
-func (f *Fetcher) Deployments() []DeploymentInfo {
+func (f *Fetcher) Deployments() ([]DeploymentInfo, error) {
+	var deploymentsInfo = []DeploymentInfo{}
 	var mutex = &sync.Mutex{}
 	var wg = &sync.WaitGroup{}
-	var deploymentsInfo = []DeploymentInfo{}
 
-	deployments := f.deploymentsFilter.GetDeployments()
+	deployments, err := f.deploymentsFilter.GetDeployments()
+	if err != nil {
+		return deploymentsInfo, err
+	}
+
+	doneChannel := make(chan bool, 1)
+	errChannel := make(chan error, 1)
 	for _, deployment := range deployments {
 		wg.Add(1)
 		go func(deployment director.Deployment) {
 			defer wg.Done()
 			deploymentInfo, err := f.fetchDeploymentInfo(deployment)
 			if err != nil {
-				log.Error(err)
+				errChannel <- err
 				return
 			}
+
 			mutex.Lock()
 			deploymentsInfo = append(deploymentsInfo, *deploymentInfo)
 			mutex.Unlock()
 		}(deployment)
 	}
-	wg.Wait()
 
-	return deploymentsInfo
+	go func() {
+		wg.Wait()
+		close(doneChannel)
+	}()
+
+	select {
+	case <-doneChannel:
+	case err := <-errChannel:
+		return deploymentsInfo, err
+	}
+
+	return deploymentsInfo, nil
 }
 
 func (f *Fetcher) fetchDeploymentInfo(deployment director.Deployment) (*DeploymentInfo, error) {

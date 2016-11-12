@@ -1,7 +1,6 @@
 package collectors_test
 
 import (
-	"flag"
 	"io/ioutil"
 	"os"
 
@@ -15,10 +14,6 @@ import (
 
 	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
-
-func init() {
-	flag.Set("log.level", "fatal")
-}
 
 var _ = Describe("ServiceDiscoveryCollector", func() {
 	var (
@@ -101,7 +96,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			deploymentInfo  deployments.DeploymentInfo
 			deploymentsInfo []deployments.DeploymentInfo
 
-			metrics chan prometheus.Metric
+			metrics    chan prometheus.Metric
+			errMetrics chan error
 		)
 
 		BeforeEach(func() {
@@ -130,10 +126,15 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 
 			metrics = make(chan prometheus.Metric)
+			errMetrics = make(chan error, 1)
 		})
 
 		JustBeforeEach(func() {
-			go serviceDiscoveryCollector.Collect(deploymentsInfo, metrics)
+			go func() {
+				if err := serviceDiscoveryCollector.Collect(deploymentsInfo, metrics); err != nil {
+					errMetrics <- err
+				}
+			}()
 		})
 
 		It("writes a target groups file", func() {
@@ -147,6 +148,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			Eventually(metrics).Should(Receive())
 			Eventually(metrics).Should(Receive())
 			Consistently(metrics).ShouldNot(Receive())
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there are no deployments", func() {
@@ -165,6 +167,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 				Eventually(metrics).Should(Receive())
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
@@ -185,6 +188,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 				Eventually(metrics).Should(Receive())
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
@@ -205,6 +209,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 				Eventually(metrics).Should(Receive())
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
@@ -225,6 +230,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 				Eventually(metrics).Should(Receive())
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 	})

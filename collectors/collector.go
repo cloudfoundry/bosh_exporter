@@ -7,6 +7,6 @@ import (
 )
 
 type Collector interface {
-	Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric)
+	Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) error
 	Describe(ch chan<- *prometheus.Desc)
 }

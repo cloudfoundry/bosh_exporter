@@ -19,6 +19,7 @@ func init() {
 
 var _ = Describe("DeploymentsFilter", func() {
 	var (
+		err               error
 		filters           []string
 		boshClient        *fakes.FakeDirector
 		deploymentsFilter *DeploymentsFilter
@@ -48,7 +49,7 @@ var _ = Describe("DeploymentsFilter", func() {
 
 		JustBeforeEach(func() {
 			deploymentsFilter = NewDeploymentsFilter(filters, boshClient)
-			deployments = deploymentsFilter.GetDeployments()
+			deployments, err = deploymentsFilter.GetDeployments()
 		})
 
 		Context("when there are no filters", func() {
@@ -58,6 +59,7 @@ var _ = Describe("DeploymentsFilter", func() {
 
 			It("returns all deployments", func() {
 				Expect(deployments).To(Equal(allDeployments))
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			Context("and there are no deployments", func() {
@@ -67,6 +69,7 @@ var _ = Describe("DeploymentsFilter", func() {
 
 				It("does not return any deployment", func() {
 					Expect(deployments).To(BeEmpty())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 
@@ -77,6 +80,7 @@ var _ = Describe("DeploymentsFilter", func() {
 
 				It("does not return any deployment", func() {
 					Expect(deployments).To(BeEmpty())
+					Expect(err).To(HaveOccurred())
 				})
 			})
 		})
@@ -91,6 +95,7 @@ var _ = Describe("DeploymentsFilter", func() {
 				Expect(boshClient.FindDeploymentArgsForCall(0)).To(Equal("fake-deployment-name-1"))
 				Expect(deployments).To(ContainElement(deployment1))
 				Expect(deployments).ToNot(ContainElement(deployment2))
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			Context("and it fails to get the deployment", func() {
@@ -100,6 +105,7 @@ var _ = Describe("DeploymentsFilter", func() {
 
 				It("does not return any deployment", func() {
 					Expect(deployments).To(BeEmpty())
+					Expect(err).To(HaveOccurred())
 				})
 			})
 		})

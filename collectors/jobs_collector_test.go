@@ -1,7 +1,6 @@
 package collectors_test
 
 import (
-	"flag"
 	"strconv"
 
 	. "github.com/onsi/ginkgo"
@@ -13,10 +12,6 @@ import (
 
 	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
-
-func init() {
-	flag.Set("log.level", "fatal")
-}
 
 var _ = Describe("JobsCollector", func() {
 	var (
@@ -374,6 +369,7 @@ var _ = Describe("JobsCollector", func() {
 			deploymentsInfo []deployments.DeploymentInfo
 
 			metrics                             chan prometheus.Metric
+			errMetrics                          chan error
 			jobHealthyMetric                    prometheus.Metric
 			jobUnHealthyMetric                  prometheus.Metric
 			jobLoadAvg01Metric                  prometheus.Metric
@@ -465,6 +461,7 @@ var _ = Describe("JobsCollector", func() {
 			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 
 			metrics = make(chan prometheus.Metric)
+			errMetrics = make(chan error, 1)
 
 			jobHealthyMetric = prometheus.MustNewConstMetric(
 				jobHealthyDesc,
@@ -762,11 +759,16 @@ var _ = Describe("JobsCollector", func() {
 		})
 
 		JustBeforeEach(func() {
-			go jobsCollector.Collect(deploymentsInfo, metrics)
+			go func() {
+				if err := jobsCollector.Collect(deploymentsInfo, metrics); err != nil {
+					errMetrics <- err
+				}
+			}()
 		})
 
 		It("returns a job_process_healthy metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobHealthyMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when the process is not running", func() {
@@ -776,19 +778,23 @@ var _ = Describe("JobsCollector", func() {
 
 			It("returns a job_process_healthy metric", func() {
 				Eventually(metrics).Should(Receive(Equal(jobUnHealthyMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_load_avg01 metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobLoadAvg01Metric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		It("returns a job_load_avg05 metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobLoadAvg05Metric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		It("returns a job_load_avg15 metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobLoadAvg15Metric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no load avg values", func() {
@@ -800,11 +806,13 @@ var _ = Describe("JobsCollector", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg01Metric)))
 				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg05Metric)))
 				Consistently(metrics).ShouldNot(Receive(Equal(jobLoadAvg15Metric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_cpu_sys metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUSysMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no cpu sys value", func() {
@@ -817,11 +825,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_cpu_sys metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUSysMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_cpu_user metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUUserMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no cpu user value", func() {
@@ -834,11 +844,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_cpu_user metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUUserMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_cpu_wait metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobCPUWaitMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no cpu wait value", func() {
@@ -851,11 +863,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_cpu_wait metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobCPUWaitMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_mem_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobMemKBMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no mem kb value", func() {
@@ -867,11 +881,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_mem_kb metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobMemKBMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_mem_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobMemPercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no mem percent value", func() {
@@ -883,11 +899,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_mem_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobMemPercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_swap_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSwapKBMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no swap kb value", func() {
@@ -899,11 +917,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_swap_kb metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSwapKBMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_swap_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSwapPercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no swap percent value", func() {
@@ -915,11 +935,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_swap_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSwapPercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_system_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSystemDiskInodePercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no system disk inode percent value", func() {
@@ -931,11 +953,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_system_disk_inode_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSystemDiskInodePercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_system_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobSystemDiskPercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no system disk percent value", func() {
@@ -947,11 +971,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_system_disk_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobSystemDiskPercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_ephemeral_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskInodePercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no ephemeral disk inode percent value", func() {
@@ -963,11 +989,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_ephemeral_disk_inode_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobEphemeralDiskInodePercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_ephemeral_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobEphemeralDiskPercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no ephemeral disk percent value", func() {
@@ -979,11 +1007,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_Ephemeral_disk_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobEphemeralDiskPercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_persistent_disk_inode_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobPersistentDiskInodePercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no persistent disk inode percent value", func() {
@@ -995,11 +1025,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_persistent_disk_inode_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobPersistentDiskInodePercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_persistent_disk_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobPersistentDiskPercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no persistent disk percent value", func() {
@@ -1011,11 +1043,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_persistent_disk_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobPersistentDiskPercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a healthy job_process_healthy metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobProcessHealthyMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when a process is not running", func() {
@@ -1025,11 +1059,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("returns an unhealthy job_process_healthy metric", func() {
 				Eventually(metrics).Should(Receive(Equal(jobProcessUnHealthyMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_process_uptime_seconds metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobProcessUptimeMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no process uptime value", func() {
@@ -1039,11 +1075,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_process_uptime_seconds metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessUptimeMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_process_cpu_total metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobProcessCPUTotalMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no process cpu total value", func() {
@@ -1053,11 +1091,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_process_cpu_total metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessCPUTotalMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_process_mem_kb metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobProcessMemKBMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no process mem kb value", func() {
@@ -1067,11 +1107,13 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_process_mem_kb metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessMemKBMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_process_mem_percent metric", func() {
 			Eventually(metrics).Should(Receive(Equal(jobProcessMemPercentMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there is no process mem percent value", func() {
@@ -1081,6 +1123,7 @@ var _ = Describe("JobsCollector", func() {
 
 			It("does not return a job_process_mem_percent metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(jobProcessMemPercentMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
@@ -1093,6 +1136,7 @@ var _ = Describe("JobsCollector", func() {
 				Eventually(metrics).Should(Receive())
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
@@ -1106,6 +1150,7 @@ var _ = Describe("JobsCollector", func() {
 				Eventually(metrics).Should(Receive())
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 	})

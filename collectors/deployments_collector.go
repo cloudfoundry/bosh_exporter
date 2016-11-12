@@ -53,7 +53,7 @@ func NewDeploymentsCollector(namespace string) *DeploymentsCollector {
 	return collector
 }
 
-func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) {
+func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) error {
 	var begun = time.Now()
 
 	for _, deployment := range deployments {
@@ -72,6 +72,8 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 		prometheus.GaugeValue,
 		time.Since(begun).Seconds(),
 	)
+
+	return nil
 }
 
 func (c *DeploymentsCollector) Describe(ch chan<- *prometheus.Desc) {

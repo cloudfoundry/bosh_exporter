@@ -23,6 +23,7 @@ func init() {
 
 var _ = Describe("Fetcher", func() {
 	var (
+		err                error
 		boshDeployments    []string
 		boshClient         *fakes.FakeDirector
 		deploymentsFilter  *filters.DeploymentsFilter
@@ -271,11 +272,12 @@ var _ = Describe("Fetcher", func() {
 		})
 
 		JustBeforeEach(func() {
-			deploymentsInfo = deploymentsFetcher.Deployments()
+			deploymentsInfo, err = deploymentsFetcher.Deployments()
 		})
 
 		It("returns the deployments", func() {
 			Expect(deploymentsInfo).To(Equal(expectedDeploymentsInfo))
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		Context("when instance has no VMID", func() {
@@ -293,6 +295,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return the instance", func() {
 				Expect(deploymentsInfo[0].Instances).To(BeEmpty())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -303,6 +306,18 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+
+		Context("when it fails to get the deployment", func() {
+			BeforeEach(func() {
+				boshClient.DeploymentsReturns([]director.Deployment{}, errors.New("no deployments"))
+			})
+
+			It("does not return deployments", func() {
+				Expect(deploymentsInfo).To(BeEmpty())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 
@@ -320,6 +335,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return errands", func() {
 				Expect(deploymentsInfo[0].Errands).To(BeEmpty())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -335,6 +351,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 
@@ -352,6 +369,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return instances", func() {
 				Expect(deploymentsInfo[0].Instances).To(BeEmpty())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -367,6 +385,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 
@@ -384,6 +403,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return releases", func() {
 				Expect(deploymentsInfo[0].Releases).To(BeEmpty())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -399,6 +419,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 
@@ -416,6 +437,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return stemcells", func() {
 				Expect(deploymentsInfo[0].Stemcells).To(BeEmpty())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -431,6 +453,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})

@@ -1,6 +1,9 @@
 package filters
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/common/log"
 )
@@ -14,7 +17,7 @@ func NewDeploymentsFilter(filters []string, boshClient director.Director) *Deplo
 	return &DeploymentsFilter{filters: filters, boshClient: boshClient}
 }
 
-func (f *DeploymentsFilter) GetDeployments() []director.Deployment {
+func (f *DeploymentsFilter) GetDeployments() ([]director.Deployment, error) {
 	var err error
 	var deployments []director.Deployment
 
@@ -23,8 +26,7 @@ func (f *DeploymentsFilter) GetDeployments() []director.Deployment {
 		for _, deploymentName := range f.filters {
 			deployment, err := f.boshClient.FindDeployment(deploymentName)
 			if err != nil {
-				log.Errorf("Error while reading deployment `%s`: %v", deploymentName, err)
-				continue
+				return deployments, errors.New(fmt.Sprintf("Error while reading deployment `%s`: %v", deploymentName, err))
 			}
 			deployments = append(deployments, deployment)
 		}
@@ -32,9 +34,9 @@ func (f *DeploymentsFilter) GetDeployments() []director.Deployment {
 		log.Debugf("Reading deployments...")
 		deployments, err = f.boshClient.Deployments()
 		if err != nil {
-			log.Errorf("Error while reading deployments: %v", err)
+			return deployments, errors.New(fmt.Sprintf("Error while reading deployments: %v", err))
 		}
 	}
 
-	return deployments
+	return deployments, nil
 }

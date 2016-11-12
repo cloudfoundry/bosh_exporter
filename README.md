@@ -73,6 +73,8 @@ The exporter returns the following metrics:
 | Metric | Description | Labels |
 | ------ | ----------- | ------ |
 | *namespace*_scrapes_total | Total number of times BOSH was scraped for metrics | |
+| *namespace*_scrape_errors_total | Total number of times an error occured scraping BOSH | |
+| *namespace*_last_scrape_error | Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success) | |
 | *namespace*_last_scrape_timestamp | Number of seconds since 1970 since last scrape from BOSH | |
 | *namespace*_last_scrape_duration_seconds | Duration of the last scrape from BOSH | |
 

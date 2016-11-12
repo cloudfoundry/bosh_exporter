@@ -1,8 +1,6 @@
 package collectors_test
 
 import (
-	"flag"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -12,10 +10,6 @@ import (
 
 	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
-
-func init() {
-	flag.Set("log.level", "fatal")
-}
 
 var _ = Describe("DeploymentsCollector", func() {
 	var (
@@ -121,6 +115,7 @@ var _ = Describe("DeploymentsCollector", func() {
 			deploymentsInfo []deployments.DeploymentInfo
 
 			metrics                      chan prometheus.Metric
+			errMetrics                   chan error
 			deploymentReleaseInfoMetric  prometheus.Metric
 			deploymentStemcellInfoMetric prometheus.Metric
 		)
@@ -134,6 +129,7 @@ var _ = Describe("DeploymentsCollector", func() {
 			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 
 			metrics = make(chan prometheus.Metric)
+			errMetrics = make(chan error, 1)
 
 			deploymentReleaseInfoMetric = prometheus.MustNewConstMetric(
 				deploymentReleaseInfoDesc,
@@ -156,15 +152,21 @@ var _ = Describe("DeploymentsCollector", func() {
 		})
 
 		JustBeforeEach(func() {
-			go deploymentsCollector.Collect(deploymentsInfo, metrics)
+			go func() {
+				if err := deploymentsCollector.Collect(deploymentsInfo, metrics); err != nil {
+					errMetrics <- err
+				}
+			}()
 		})
 
 		It("returns a deployment_release_info metric", func() {
 			Eventually(metrics).Should(Receive(Equal(deploymentReleaseInfoMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		It("returns a deployment_stemcell_info metric", func() {
 			Eventually(metrics).Should(Receive(Equal(deploymentStemcellInfoMetric)))
+			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when there are no deployments", func() {
@@ -176,6 +178,7 @@ var _ = Describe("DeploymentsCollector", func() {
 				Eventually(metrics).Should(Receive())
 				Eventually(metrics).Should(Receive())
 				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
@@ -187,6 +190,7 @@ var _ = Describe("DeploymentsCollector", func() {
 
 			It("should not return a deployment_release_info metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(deploymentReleaseInfoMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
@@ -198,6 +202,7 @@ var _ = Describe("DeploymentsCollector", func() {
 
 			It("should not return a deployment_stemcell_info metric", func() {
 				Consistently(metrics).ShouldNot(Receive(Equal(deploymentStemcellInfoMetric)))
+				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 	})

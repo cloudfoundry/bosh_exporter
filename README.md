@@ -68,6 +68,14 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 
 ### Metrics
 
+The exporter returns the following metrics:
+
+| Metric | Description | Labels |
+| ------ | ----------- | ------ |
+| *namespace*_scrapes_total | Total number of times BOSH was scraped for metrics | |
+| *namespace*_last_scrape_timestamp | Number of seconds since 1970 since last scrape from BOSH | |
+| *namespace*_last_scrape_duration_seconds | Duration of the last scrape from BOSH | |
+
 The exporter returns the following `Deployments` metrics:
 
 | Metric | Description | Labels |

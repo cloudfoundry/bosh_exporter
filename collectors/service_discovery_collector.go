@@ -42,7 +42,8 @@ type TargetGroup struct {
 
 type ServiceDiscoveryCollector struct {
 	serviceDiscoveryFilename                      string
-	processesFilter                               filters.RegexpFilter
+	azsFilter                                     *filters.AZsFilter
+	processesFilter                               *filters.RegexpFilter
 	lastServiceDiscoveryScrapeTimestampDesc       *prometheus.Desc
 	lastServiceDiscoveryScrapeDurationSecondsDesc *prometheus.Desc
 	mu                                            *sync.Mutex
@@ -51,7 +52,8 @@ type ServiceDiscoveryCollector struct {
 func NewServiceDiscoveryCollector(
 	namespace string,
 	serviceDiscoveryFilename string,
-	processesFilter filters.RegexpFilter,
+	azsFilter *filters.AZsFilter,
+	processesFilter *filters.RegexpFilter,
 ) *ServiceDiscoveryCollector {
 	lastServiceDiscoveryScrapeTimestampDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "last_service_discovery_scrape_timestamp"),
@@ -69,6 +71,7 @@ func NewServiceDiscoveryCollector(
 
 	collector := &ServiceDiscoveryCollector{
 		serviceDiscoveryFilename:                      serviceDiscoveryFilename,
+		azsFilter:                                     azsFilter,
 		processesFilter:                               processesFilter,
 		lastServiceDiscoveryScrapeTimestampDesc:       lastServiceDiscoveryScrapeTimestampDesc,
 		lastServiceDiscoveryScrapeDurationSecondsDesc: lastServiceDiscoveryScrapeDurationSecondsDesc,
@@ -116,7 +119,7 @@ func (c *ServiceDiscoveryCollector) getDeploymentProcesses(deployment deployment
 	processesDetails := []ProcessDetails{}
 
 	for _, instance := range deployment.Instances {
-		if len(instance.IPs) == 0 {
+		if len(instance.IPs) == 0 || !c.azsFilter.Enabled(instance.AZ) {
 			continue
 		}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/cloudfoundry-community/bosh_exporter/deployments"
+	"github.com/cloudfoundry-community/bosh_exporter/filters"
 
 	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
 )
@@ -16,6 +17,7 @@ import (
 var _ = Describe("JobsCollector", func() {
 	var (
 		namespace     string
+		azsFilter     *filters.AZsFilter
 		jobsCollector *JobsCollector
 
 		jobHealthyDesc                    *prometheus.Desc
@@ -46,6 +48,7 @@ var _ = Describe("JobsCollector", func() {
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
+		azsFilter = filters.NewAZsFilter([]string{})
 
 		jobHealthyDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "job", "healthy"),
@@ -217,7 +220,7 @@ var _ = Describe("JobsCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		jobsCollector = NewJobsCollector(namespace)
+		jobsCollector = NewJobsCollector(namespace, azsFilter)
 	})
 
 	Describe("Describe", func() {

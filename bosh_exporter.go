@@ -66,6 +66,11 @@ var (
 		"Comma separated deployments to filter ($BOSH_EXPORTER_FILTER_DEPLOYMENTS).",
 	)
 
+	filterAZs = flag.String(
+		"filter.azs", "",
+		"Comma separated AZs to filter ($BOSH_EXPORTER_FILTER_AZS).",
+	)
+
 	filterCollectors = flag.String(
 		"filter.collectors", "",
 		"Comma separated collectors to filter (Deployments,Jobs,ServiceDiscovery) ($BOSH_EXPORTER_FILTER_COLLECTORS).",
@@ -116,6 +121,7 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
 	overrideWithEnvVar("BOSH_EXPORTER_FILTER_DEPLOYMENTS", filterDeployments)
+	overrideWithEnvVar("BOSH_EXPORTER_FILTER_AZS", filterAZs)
 	overrideWithEnvVar("BOSH_EXPORTER_FILTER_COLLECTORS", filterCollectors)
 	overrideWithEnvVar("BOSH_EXPORTER_METRICS_NAMESPACE", metricsNamespace)
 	overrideWithEnvVar("BOSH_EXPORTER_SD_FILENAME", sdFilename)
@@ -233,6 +239,12 @@ func main() {
 	deploymentsFilter := filters.NewDeploymentsFilter(deploymentsFilters, boshClient)
 	deploymentsFetcher := deployments.NewFetcher(*deploymentsFilter)
 
+	var azsFilters []string
+	if *filterAZs != "" {
+		azsFilters = strings.Split(*filterAZs, ",")
+	}
+	azsFilter := filters.NewAZsFilter(azsFilters)
+
 	var collectorsFilters []string
 	if *filterCollectors != "" {
 		collectorsFilters = strings.Split(*filterCollectors, ",")
@@ -258,6 +270,7 @@ func main() {
 		*sdFilename,
 		deploymentsFetcher,
 		collectorsFilter,
+		azsFilter,
 		processesFilter,
 	)
 	prometheus.MustRegister(boshCollector)

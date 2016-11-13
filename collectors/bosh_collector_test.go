@@ -35,6 +35,7 @@ var _ = Describe("BoshCollector", func() {
 		deploymentsFilter  *filters.DeploymentsFilter
 		deploymentsFetcher *deployments.Fetcher
 		collectorsFilter   *filters.CollectorsFilter
+		azsFilter          *filters.AZsFilter
 		processesFilter    *filters.RegexpFilter
 		boshCollector      *BoshCollector
 
@@ -57,6 +58,7 @@ var _ = Describe("BoshCollector", func() {
 		deploymentsFetcher = deployments.NewFetcher(*deploymentsFilter)
 		collectorsFilter, err = filters.NewCollectorsFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())
+		azsFilter = filters.NewAZsFilter([]string{})
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())
 
@@ -102,7 +104,7 @@ var _ = Describe("BoshCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		boshCollector = NewBoshCollector(namespace, serviceDiscoveryFilename, deploymentsFetcher, collectorsFilter, processesFilter)
+		boshCollector = NewBoshCollector(namespace, serviceDiscoveryFilename, deploymentsFetcher, collectorsFilter, azsFilter, processesFilter)
 	})
 
 	Describe("Describe", func() {

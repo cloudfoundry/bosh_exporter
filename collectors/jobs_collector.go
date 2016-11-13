@@ -9,9 +9,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/cloudfoundry-community/bosh_exporter/deployments"
+	"github.com/cloudfoundry-community/bosh_exporter/filters"
 )
 
 type JobsCollector struct {
+	azsFilter                         *filters.AZsFilter
 	jobHealthyDesc                    *prometheus.Desc
 	jobLoadAvg01Desc                  *prometheus.Desc
 	jobLoadAvg05Desc                  *prometheus.Desc
@@ -38,7 +40,7 @@ type JobsCollector struct {
 	lastJobsScrapeDurationSecondsDesc *prometheus.Desc
 }
 
-func NewJobsCollector(namespace string) *JobsCollector {
+func NewJobsCollector(namespace string, azsFilter *filters.AZsFilter) *JobsCollector {
 	jobHealthyDesc := prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "job", "healthy"),
 		"BOSH Job Healthy (1 for healthy, 0 for unhealthy).",
@@ -208,6 +210,7 @@ func NewJobsCollector(namespace string) *JobsCollector {
 	)
 
 	collector := &JobsCollector{
+		azsFilter:                         azsFilter,
 		jobHealthyDesc:                    jobHealthyDesc,
 		jobLoadAvg01Desc:                  jobLoadAvg01Desc,
 		jobLoadAvg05Desc:                  jobLoadAvg05Desc,
@@ -290,6 +293,10 @@ func (c *JobsCollector) reportJobMetrics(deployment deployments.DeploymentInfo, 
 	var err error
 
 	for _, instance := range deployment.Instances {
+		if !c.azsFilter.Enabled(instance.AZ) {
+			continue
+		}
+
 		deploymentName := deployment.Name
 		jobName := instance.Name
 		jobID := instance.ID

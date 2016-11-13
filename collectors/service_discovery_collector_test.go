@@ -21,6 +21,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		namespace                 string
 		tmpfile                   *os.File
 		serviceDiscoveryFilename  string
+		azsFilter                 *filters.AZsFilter
 		processesFilter           *filters.RegexpFilter
 		serviceDiscoveryCollector *ServiceDiscoveryCollector
 
@@ -33,6 +34,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		tmpfile, err = ioutil.TempFile("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
+		azsFilter = filters.NewAZsFilter([]string{})
+		processesFilter, err = filters.NewRegexpFilter([]string{})
 
 		lastServiceDiscoveryScrapeTimestampDesc = prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "last_service_discovery_scrape_timestamp"),
@@ -50,12 +53,12 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 	})
 
 	AfterEach(func() {
-		os.Remove(serviceDiscoveryFilename)
+		err = os.Remove(serviceDiscoveryFilename)
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	JustBeforeEach(func() {
-		processesFilter, err = filters.NewRegexpFilter([]string{})
-		serviceDiscoveryCollector = NewServiceDiscoveryCollector(namespace, serviceDiscoveryFilename, *processesFilter)
+		serviceDiscoveryCollector = NewServiceDiscoveryCollector(namespace, serviceDiscoveryFilename, azsFilter, processesFilter)
 	})
 
 	Describe("Describe", func() {

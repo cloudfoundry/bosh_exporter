@@ -64,6 +64,10 @@ The *filter.collectors* command flag allows you to filter what collectors will b
 
 The *filter.deployments* command flag allows you to filter what BOSH deployments will be reported.
 
+### How can I filter by a particular BOSH AZ?
+
+The *filter.azs* command flag allows you to filter what [BOSH AZs][bosh_azs] will be reported.
+
 ### How can I get the BOSH CA certificate?
 
 Comunication between the exporter and the [BOSH Director][bosh_director] uses HTTPS. Actually, there is no way to disable the SSL certificate validation, so therefore, the certificates must be created setting a [Subject Alternative Name][san] (SAN) with the IP address of the [BOSH Director][bosh_director], otherwise, you will get the following error message:
@@ -120,6 +124,7 @@ But the downside of the above advice is when using the Service Discovery mechani
 We will be glad to address any questions not answered here. Please, just open a [new issue][issues].
 
 [bosh_agent]: https://bosh.io/docs/bosh-components.html#agent
+[bosh_azs]: http://bosh.io/docs/azs.html
 [bosh_director]: http://bosh.io/docs/bosh-components.html#director
 [bosh_exporter_metrics]: https://github.com/cloudfoundry-community/bosh_exporter#metrics
 [bosh_graphite]: http://bosh.io/docs/hm-config.html#graphite

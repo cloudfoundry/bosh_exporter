@@ -41,6 +41,8 @@ A longer `scrape interval` means less *real time* metrics, but for most use case
 
 ### How can I get BOSH metrics without the above caveats?
 
+#### Graphite Exporter
+
 An alternative approach to gather BOSH metrics without using this exporter is to use the [Graphite Exporter][graphite_exporter] and configure a [metric mapping][graphite_mapping]:
 
 ```
@@ -54,7 +56,13 @@ bosh_job_id="$3"
 
 Then you will need to enable the [Graphite Health Monitor plugin][bosh_graphite] at your [BOSH Health Monitor][bosh_health_monitor] configuration pointing to the [Graphite Exporter][graphite_exporter] IP address.
 
-On the other hand, the downside of this approach is that you will NOT get the same level of metrics that this exporter reports and you cannot use the service discovery approach.
+#### BOSH HM metrics forwarder
+
+Another alternative approach is to use the [BOSH HM metrics forwarder][bosh_hmforwarder], that will forward BOSH health metrics into Loggregator thus making them available in the [Cloud Foundry Firehose][firehose]. Later, you can use the [Cloud Foundry Firehose Exporter ][firehose_exporter] to get BOSH metrics.
+
+#### Downsides
+
+The downside of the above approaches is that you will NOT get the same level of metrics that this exporter reports and you cannot use the service discovery approach.
 
 ### How can I enable only a particular collector?
 
@@ -128,12 +136,15 @@ We will be glad to address any questions not answered here. Please, just open a 
 [bosh_director]: http://bosh.io/docs/bosh-components.html#director
 [bosh_exporter_metrics]: https://github.com/cloudfoundry-community/bosh_exporter#metrics
 [bosh_graphite]: http://bosh.io/docs/hm-config.html#graphite
+[bosh_hmforwarder]: https://github.com/cloudfoundry/loggregator/tree/develop/src/boshhmforwarder
 [bosh_health_monitor]: http://bosh.io/docs/bosh-components.html#health-monitor
 [bosh_lite]: https://github.com/cloudfoundry/bosh-lite
 [bosh_lite_ca_cert]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/bosh-lite-ca.crt
 [director_certs]: http://bosh.io/docs/director-certs.html
 [director_task]: http://bosh.io/docs/director-tasks.html
 [file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;
+[firehose]: https://docs.cloudfoundry.org/loggregator/architecture.html#firehose
+[firehose_exporter]: https://github.com/cloudfoundry-community/firehose_exporter
 [graphite_exporter]: https://github.com/prometheus/graphite_exporter
 [graphite_mapping]: https://github.com/prometheus/graphite_exporter#metric-mapping-and-configuration
 [instance_details]: https://bosh.io/docs/director-api-v1.html#list-instances-detailed

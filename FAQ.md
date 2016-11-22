@@ -76,6 +76,10 @@ The *filter.deployments* command flag allows you to filter what BOSH deployments
 
 The *filter.azs* command flag allows you to filter what [BOSH AZs][bosh_azs] will be reported.
 
+### Can I target multiple BOSH Directors with a single exporter instance?
+
+No, this exporter only supports targetting a single [BOSH Director][bosh_director]. If you want to get metrics from several directors, you will need to use one exporter per director.
+
 ### How can I get the BOSH CA certificate?
 
 Comunication between the exporter and the [BOSH Director][bosh_director] uses HTTPS. Actually, there is no way to disable the SSL certificate validation, so therefore, the certificates must be created setting a [Subject Alternative Name][san] (SAN) with the IP address of the [BOSH Director][bosh_director], otherwise, you will get the following error message:

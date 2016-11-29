@@ -143,7 +143,7 @@ func readCACert(CACertFile string, logger logger.Logger) (string, error) {
 
 		CACertFileFullPath, err := fs.ExpandPath(CACertFile)
 		if err != nil {
-			return "", nil
+			return "", err
 		}
 
 		CACert, err := fs.ReadFileString(CACertFileFullPath)

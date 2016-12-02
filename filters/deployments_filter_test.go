@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/cloudfoundry/bosh-cli/director/fakes"
+	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 
 	. "github.com/cloudfoundry-community/bosh_exporter/filters"
 )
@@ -21,7 +21,7 @@ var _ = Describe("DeploymentsFilter", func() {
 	var (
 		err               error
 		filters           []string
-		boshClient        *fakes.FakeDirector
+		boshClient        *directorfakes.FakeDirector
 		deploymentsFilter *DeploymentsFilter
 	)
 
@@ -36,12 +36,12 @@ var _ = Describe("DeploymentsFilter", func() {
 
 		BeforeEach(func() {
 			filters = []string{}
-			boshClient = &fakes.FakeDirector{}
+			boshClient = &directorfakes.FakeDirector{}
 
-			deployment1 = &fakes.FakeDeployment{
+			deployment1 = &directorfakes.FakeDeployment{
 				NameStub: func() string { return "fake-deployment-name-1" },
 			}
-			deployment2 = &fakes.FakeDeployment{
+			deployment2 = &directorfakes.FakeDeployment{
 				NameStub: func() string { return "fake-deployment-name-2" },
 			}
 			allDeployments = []director.Deployment{}

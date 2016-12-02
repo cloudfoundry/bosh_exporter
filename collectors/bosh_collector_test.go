@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/cloudfoundry/bosh-cli/director/fakes"
+	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/cloudfoundry-community/bosh_exporter/deployments"
@@ -31,7 +31,7 @@ var _ = Describe("BoshCollector", func() {
 		serviceDiscoveryFilename string
 
 		boshDeployments    []string
-		boshClient         *fakes.FakeDirector
+		boshClient         *directorfakes.FakeDirector
 		deploymentsFilter  *filters.DeploymentsFilter
 		deploymentsFetcher *deployments.Fetcher
 		collectorsFilter   *filters.CollectorsFilter
@@ -53,7 +53,7 @@ var _ = Describe("BoshCollector", func() {
 		serviceDiscoveryFilename = tmpfile.Name()
 
 		boshDeployments = []string{}
-		boshClient = &fakes.FakeDirector{}
+		boshClient = &directorfakes.FakeDirector{}
 		deploymentsFilter = filters.NewDeploymentsFilter(boshDeployments, boshClient)
 		deploymentsFetcher = deployments.NewFetcher(*deploymentsFilter)
 		collectorsFilter, err = filters.NewCollectorsFilter([]string{})

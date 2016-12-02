@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/cloudfoundry/bosh-cli/director/fakes"
+	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 	"github.com/cppforlife/go-semi-semantic/version"
 
 	"github.com/cloudfoundry-community/bosh_exporter/filters"
@@ -25,14 +25,14 @@ var _ = Describe("Fetcher", func() {
 	var (
 		err                error
 		boshDeployments    []string
-		boshClient         *fakes.FakeDirector
+		boshClient         *directorfakes.FakeDirector
 		deploymentsFilter  *filters.DeploymentsFilter
 		deploymentsFetcher *Fetcher
 	)
 
 	BeforeEach(func() {
 		boshDeployments = []string{}
-		boshClient = &fakes.FakeDirector{}
+		boshClient = &directorfakes.FakeDirector{}
 	})
 
 	JustBeforeEach(func() {
@@ -174,20 +174,20 @@ var _ = Describe("Fetcher", func() {
 				},
 			}
 
-			release = &fakes.FakeRelease{
+			release = &directorfakes.FakeRelease{
 				NameStub:    func() string { return releaseName },
 				VersionStub: func() version.Version { return version.MustNewVersionFromString(releaseVersion) },
 			}
 			releases = []director.Release{release}
 
-			stemcell = &fakes.FakeStemcell{
+			stemcell = &directorfakes.FakeStemcell{
 				NameStub:    func() string { return stemcellName },
 				VersionStub: func() version.Version { return version.MustNewVersionFromString(stemcellVersion) },
 				OSNameStub:  func() string { return stemcellOSName },
 			}
 			stemcells = []director.Stemcell{stemcell}
 
-			deployment = &fakes.FakeDeployment{
+			deployment = &directorfakes.FakeDeployment{
 				NameStub:          func() string { return deploymentName },
 				ErrandsStub:       func() ([]director.Errand, error) { return errands, nil },
 				InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
@@ -283,7 +283,7 @@ var _ = Describe("Fetcher", func() {
 		Context("when instance has no VMID", func() {
 			BeforeEach(func() {
 				instances[0].VMID = ""
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
 					ErrandsStub:   func() ([]director.Errand, error) { return errands, nil },
 					ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
@@ -323,7 +323,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when there are no errands", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
 					ReleasesStub:      func() ([]director.Release, error) { return releases, nil },
@@ -341,7 +341,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when it fails to get the deployment errands", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:    func() string { return deploymentName },
 					ErrandsStub: func() ([]director.Errand, error) { return nil, errors.New("no errands") },
 				}
@@ -357,7 +357,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when there are no instances", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
 					ErrandsStub:   func() ([]director.Errand, error) { return errands, nil },
 					ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
@@ -375,7 +375,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when it fails to get the deployment instances", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no instances") },
 				}
@@ -391,7 +391,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when there are no releases", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
 					ErrandsStub:       func() ([]director.Errand, error) { return errands, nil },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
@@ -409,7 +409,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when it fails to get the deployment releases", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:     func() string { return deploymentName },
 					ReleasesStub: func() ([]director.Release, error) { return nil, errors.New("no releases") },
 				}
@@ -425,7 +425,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when there are no stemcells", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
 					ErrandsStub:       func() ([]director.Errand, error) { return errands, nil },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
@@ -443,7 +443,7 @@ var _ = Describe("Fetcher", func() {
 
 		Context("when it fails to get the deployment stemcells", func() {
 			BeforeEach(func() {
-				deployment = &fakes.FakeDeployment{
+				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
 					StemcellsStub: func() ([]director.Stemcell, error) { return nil, errors.New("no stemcells") },
 				}

@@ -66,11 +66,11 @@ The downside of the above approaches is that you will NOT get the same level of 
 
 ### How can I enable only a particular collector?
 
-The *filter.collectors* command flag allows you to filter what collectors will be enabled. Possible values are `Deployments`, `Jobs`, `ServiceDiscovery` (or a combination of them).
+The `filter.collectors` command flag allows you to filter what collectors will be enabled. Possible values are `Deployments`, `Jobs`, `ServiceDiscovery` (or a combination of them).
 
 ### How can I filter by a particular BOSH deployment?
 
-The *filter.deployments* command flag allows you to filter what BOSH deployments will be reported.
+The `filter.deployments` command flag allows you to filter what BOSH deployments will be reported.
 
 ### How can I filter by a particular BOSH AZ?
 
@@ -90,13 +90,13 @@ x509: cannot validate certificate for X.X.X.X because it doesn't contain any IP 
 
 In order to generate the proper certificates, please refer to the [Director SSL Certificate Configuration][director_certs] documentation.
 
-Later, when starting the `bosh_exporter` you must specify the *bosh.ca-cert-file* command line flag pointing to the location of the `ca.crt` file.
+Later, when starting the `bosh_exporter` you must specify the `bosh.ca-cert-file` command line flag pointing to the location of the `ca.crt` file.
 
 For testing purposes, this repository includes the [CA Cert][bosh_lite_ca_cert] to be used only when testing the exporter against a [BOSH Lite][bosh_lite].
 
 ### How can I use the Service Discovery?
 
-If you don't want to configure manually all exporters IP addresses at your prometheus configuration file, you can use the Prometheus [file-based service discovery][file_sd_config] mechanism. Just point the `file_sd_configs` configuration to the output file (*sd.filename* command flag) of this exporter and use the Prometheus [relabel configuration][relabel_config] to get the IP address:
+If you don't want to configure manually all exporters IP addresses at your prometheus configuration file, you can use the Prometheus [file-based service discovery][file_sd_config] mechanism. Just point the `file_sd_configs` configuration to the output file (`sd.filename` command flag) of this exporter and use the Prometheus [relabel configuration][relabel_config] to get the IP address:
 
 ```yaml
 scrape_configs:
@@ -116,7 +116,7 @@ scrape_configs:
 
 ### How can I filter the Service Discovery output file by a particular exporter?
 
-Yes, the *sd.processes_regexp* command flag allows you to filter what BOSH Job processes will be reported.
+Yes, the `sd.processes_regexp` command flag allows you to filter what BOSH Job processes will be reported.
 
 ### Why is the BOSH Service Discovery a collector?
 

@@ -50,7 +50,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 
 | Flag / Environment Variable | Required | Default | Description |
 | --------------------------- | -------- | ------- | ----------- |
-| bosh.url<br />`BOSH_EXPORTER_BOSH_URL` | Yes | | BOSH URL |
+| `bosh.url`<br />`BOSH_EXPORTER_BOSH_URL` | Yes | | BOSH URL |
 | `bosh.username`<br />`BOSH_EXPORTER_BOSH_USERNAME` | *[1]* | | BOSH Username |
 | `bosh.password`<br />`BOSH_EXPORTER_BOSH_PASSWORD` | *[1]* | | BOSH Password |
 | `bosh.uaa.url`<br />`BOSH_EXPORTER_BOSH_UAA_URL` | *[1]* | | BOSH UAA URL |

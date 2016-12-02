@@ -42,6 +42,9 @@ type Director interface {
 	LatestCloudConfig() (CloudConfig, error)
 	UpdateCloudConfig([]byte) error
 
+	LatestCPIConfig() (CPIConfig, error)
+	UpdateCPIConfig([]byte) error
+
 	LatestRuntimeConfig() (RuntimeConfig, error)
 	UpdateRuntimeConfig([]byte) error
 
@@ -106,23 +109,27 @@ type Deployment interface {
 	DeleteSnapshots() error
 	DeleteVM(string) error
 
-	// Deployment, pool or instance specifics
-	Start(slug AllOrPoolOrInstanceSlug, opts StartOpts) error
-	Stop(slug AllOrPoolOrInstanceSlug, opts StopOpts) error
-	Restart(slug AllOrPoolOrInstanceSlug, opts RestartOpts) error
-	Recreate(slug AllOrPoolOrInstanceSlug, opts RecreateOpts) error
+	ConfigVars() ([]ConfigVarsResult, error)
 
-	SetUpSSH(AllOrPoolOrInstanceSlug, SSHOpts) (SSHResult, error)
-	CleanUpSSH(AllOrPoolOrInstanceSlug, SSHOpts) error
+	// Deployment, pool or instance specifics
+	Start(slug AllOrInstanceGroupOrInstanceSlug, opts StartOpts) error
+	Stop(slug AllOrInstanceGroupOrInstanceSlug, opts StopOpts) error
+	Restart(slug AllOrInstanceGroupOrInstanceSlug, opts RestartOpts) error
+	Recreate(slug AllOrInstanceGroupOrInstanceSlug, opts RecreateOpts) error
+
+	SetUpSSH(AllOrInstanceGroupOrInstanceSlug, SSHOpts) (SSHResult, error)
+	CleanUpSSH(AllOrInstanceGroupOrInstanceSlug, SSHOpts) error
 
 	// Instance specifics
-	FetchLogs(InstanceSlug, []string, bool) (LogsResult, error)
+	FetchLogs(AllOrInstanceGroupOrInstanceSlug, []string, bool) (LogsResult, error)
 	TakeSnapshot(InstanceSlug) error
 	Ignore(InstanceSlug, bool) error
 	EnableResurrection(InstanceSlug, bool) error
 
 	Update(manifest []byte, opts UpdateOpts) error
 	Delete(force bool) error
+
+	AttachDisk(slug InstanceSlug, diskCID string) error
 }
 
 type StartOpts struct {
@@ -134,7 +141,7 @@ type StopOpts struct {
 	Canaries    string
 	MaxInFlight string
 	Force       bool
-	SkipDrain   SkipDrain
+	SkipDrain   bool
 	Hard        bool
 }
 
@@ -142,21 +149,22 @@ type RestartOpts struct {
 	Canaries    string
 	MaxInFlight string
 	Force       bool
-	SkipDrain   SkipDrain
+	SkipDrain   bool
 }
 
 type RecreateOpts struct {
 	Canaries    string
 	MaxInFlight string
 	Force       bool
-	SkipDrain   SkipDrain
+	Fix         bool
+	SkipDrain   bool
 	DryRun      bool
 }
 
 type UpdateOpts struct {
 	Recreate    bool
 	Fix         bool
-	SkipDrain   SkipDrain
+	SkipDrain   SkipDrains
 	Canaries    string
 	MaxInFlight string
 	DryRun      bool
@@ -192,6 +200,8 @@ type Stemcell interface {
 	VersionMark(mark string) string
 
 	OSName() string
+
+	CPI() string
 	CID() string
 
 	Delete(force bool) error
@@ -269,4 +279,5 @@ type Event interface {
 	DeploymentName() string
 	Instance() string
 	Context() map[string]interface{}
+	Error() string
 }

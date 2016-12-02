@@ -26,38 +26,38 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-cli/director",
-			"Comment": "v0.0.101",
-			"Rev": "33f5c26b0b7c960778ab7284eed13eeb700f16f9"
+			"Comment": "v0.0.125",
+			"Rev": "72383384e86331f3f09d6c4c39458ac95bfeb606"
 		},
 		{
-			"ImportPath": "github.com/cloudfoundry/bosh-cli/director/fakes",
-			"Comment": "v0.0.101",
-			"Rev": "33f5c26b0b7c960778ab7284eed13eeb700f16f9"
+			"ImportPath": "github.com/cloudfoundry/bosh-cli/director/directorfakes",
+			"Comment": "v0.0.125",
+			"Rev": "72383384e86331f3f09d6c4c39458ac95bfeb606"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-cli/uaa",
-			"Comment": "v0.0.101",
-			"Rev": "33f5c26b0b7c960778ab7284eed13eeb700f16f9"
+			"Comment": "v0.0.125",
+			"Rev": "72383384e86331f3f09d6c4c39458ac95bfeb606"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-utils/errors",
-			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+			"Rev": "ed39ea3a92b20becbfb16a2b02cf52e58aad5c26"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-utils/httpclient",
-			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+			"Rev": "ed39ea3a92b20becbfb16a2b02cf52e58aad5c26"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-utils/logger",
-			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+			"Rev": "ed39ea3a92b20becbfb16a2b02cf52e58aad5c26"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-utils/system",
-			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+			"Rev": "ed39ea3a92b20becbfb16a2b02cf52e58aad5c26"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/bosh-utils/uuid",
-			"Rev": "68a349540d0fed556d7e7affa9c165c829b80e59"
+			"Rev": "ed39ea3a92b20becbfb16a2b02cf52e58aad5c26"
 		},
 		{
 			"ImportPath": "github.com/cppforlife/go-semi-semantic/version",

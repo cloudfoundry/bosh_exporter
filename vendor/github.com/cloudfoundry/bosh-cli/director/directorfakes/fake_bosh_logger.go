@@ -1,4 +1,4 @@
-package fakes
+package directorfakes
 
 import (
 	"fmt"

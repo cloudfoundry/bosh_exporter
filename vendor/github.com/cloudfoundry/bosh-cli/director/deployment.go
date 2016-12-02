@@ -40,6 +40,11 @@ type LogsResult struct {
 	SHA1        string
 }
 
+type ConfigVarsResult struct {
+	PlaceholderID   string `json:"placeholder_id"`
+	PlaceholderName string `json:"placeholder_name"`
+}
+
 func (d DeploymentImpl) Name() string { return d.name }
 
 func (d *DeploymentImpl) CloudConfig() (string, error) {
@@ -107,7 +112,7 @@ func (d DeploymentImpl) Manifest() (string, error) {
 	return resp.Manifest, nil
 }
 
-func (d DeploymentImpl) FetchLogs(slug InstanceSlug, filters []string, agent bool) (LogsResult, error) {
+func (d DeploymentImpl) FetchLogs(slug AllOrInstanceGroupOrInstanceSlug, filters []string, agent bool) (LogsResult, error) {
 	blobID, sha1, err := d.client.FetchLogs(d.name, slug.Name(), slug.IndexOrID(), filters, agent)
 	if err != nil {
 		return LogsResult{}, err
@@ -124,28 +129,28 @@ func (d DeploymentImpl) Ignore(slug InstanceSlug, enabled bool) error {
 	return d.client.Ignore(d.name, slug.Name(), slug.IndexOrID(), enabled)
 }
 
-func (d DeploymentImpl) Start(slug AllOrPoolOrInstanceSlug, opts StartOpts) error {
-	return d.changeJobState("started", slug, SkipDrain{}, false, false, opts.Canaries, opts.MaxInFlight)
+func (d DeploymentImpl) Start(slug AllOrInstanceGroupOrInstanceSlug, opts StartOpts) error {
+	return d.changeJobState("started", slug, false, false, false, false, opts.Canaries, opts.MaxInFlight)
 }
 
-func (d DeploymentImpl) Stop(slug AllOrPoolOrInstanceSlug, opts StopOpts) error {
+func (d DeploymentImpl) Stop(slug AllOrInstanceGroupOrInstanceSlug, opts StopOpts) error {
 	if opts.Hard {
-		return d.changeJobState("detached", slug, opts.SkipDrain, opts.Force, false, opts.Canaries, opts.MaxInFlight)
+		return d.changeJobState("detached", slug, opts.SkipDrain, opts.Force, false, false, opts.Canaries, opts.MaxInFlight)
 	}
-	return d.changeJobState("stopped", slug, opts.SkipDrain, opts.Force, false, opts.Canaries, opts.MaxInFlight)
+	return d.changeJobState("stopped", slug, opts.SkipDrain, opts.Force, false, false, opts.Canaries, opts.MaxInFlight)
 }
 
-func (d DeploymentImpl) Restart(slug AllOrPoolOrInstanceSlug, opts RestartOpts) error {
-	return d.changeJobState("restart", slug, opts.SkipDrain, opts.Force, false, opts.Canaries, opts.MaxInFlight)
+func (d DeploymentImpl) Restart(slug AllOrInstanceGroupOrInstanceSlug, opts RestartOpts) error {
+	return d.changeJobState("restart", slug, opts.SkipDrain, opts.Force, false, false, opts.Canaries, opts.MaxInFlight)
 }
 
-func (d DeploymentImpl) Recreate(slug AllOrPoolOrInstanceSlug, opts RecreateOpts) error {
-	return d.changeJobState("recreate", slug, opts.SkipDrain, opts.Force, opts.DryRun, opts.Canaries, opts.MaxInFlight)
+func (d DeploymentImpl) Recreate(slug AllOrInstanceGroupOrInstanceSlug, opts RecreateOpts) error {
+	return d.changeJobState("recreate", slug, opts.SkipDrain, opts.Force, opts.Fix, opts.DryRun, opts.Canaries, opts.MaxInFlight)
 }
 
-func (d DeploymentImpl) changeJobState(state string, slug AllOrPoolOrInstanceSlug, sd SkipDrain, force bool, dryRun bool, canaries string, maxInFlight string) error {
+func (d DeploymentImpl) changeJobState(state string, slug AllOrInstanceGroupOrInstanceSlug, skipDrain bool, force bool, fix bool, dryRun bool, canaries string, maxInFlight string) error {
 	return d.client.ChangeJobState(
-		state, d.name, slug.Name(), slug.IndexOrID(), sd, force, dryRun, canaries, maxInFlight)
+		state, d.name, slug.Name(), slug.IndexOrID(), skipDrain, force, fix, dryRun, canaries, maxInFlight)
 }
 
 func (d DeploymentImpl) ExportRelease(release ReleaseSlug, os OSVersionSlug) (ExportReleaseResult, error) {
@@ -179,6 +184,17 @@ func (d DeploymentImpl) Delete(force bool) error {
 	return nil
 }
 
+func (d DeploymentImpl) AttachDisk(slug InstanceSlug, diskCID string) error {
+	values := gourl.Values{}
+	values.Add("deployment", d.Name())
+	values.Add("job", slug.Name())
+	values.Add("instance_id", slug.IndexOrID())
+
+	path := fmt.Sprintf("/disks/%s/attachments?%s", diskCID, values.Encode())
+	_, err := d.client.taskClientRequest.PutResult(path, []byte{}, func(*http.Request) {})
+	return err
+}
+
 func (d DeploymentImpl) IsInProgress() (bool, error) {
 	lockResps, err := d.client.Locks()
 	if err != nil {
@@ -194,17 +210,28 @@ func (d DeploymentImpl) IsInProgress() (bool, error) {
 	return false, nil
 }
 
+func (d DeploymentImpl) ConfigVars() ([]ConfigVarsResult, error) {
+	path := fmt.Sprintf("/deployments/%s/config_vars", d.name)
+	response := []ConfigVarsResult{}
+
+	if err := d.client.clientRequest.Get(path, &response); err != nil {
+		return nil, bosherr.WrapErrorf(err, "Error fetching vars for deployment '%s'", d.name)
+	}
+
+	return response, nil
+}
+
 func (c Client) FetchLogs(deploymentName, job, indexOrID string, filters []string, agent bool) (string, string, error) {
 	if len(deploymentName) == 0 {
 		return "", "", bosherr.Error("Expected non-empty deployment name")
 	}
 
 	if len(job) == 0 {
-		return "", "", bosherr.Error("Expected non-empty job name")
+		job = "*"
 	}
 
 	if len(indexOrID) == 0 {
-		return "", "", bosherr.Error("Expected non-empty index or ID")
+		indexOrID = "*"
 	}
 
 	query := gourl.Values{}
@@ -235,13 +262,13 @@ func (c Client) FetchLogs(deploymentName, job, indexOrID string, filters []strin
 	return taskResp.Result, "", nil
 }
 
-func (c Client) Ignore(deploymentName, job, indexOrID string, enabled bool) error {
+func (c Client) Ignore(deploymentName, instanceGroup, indexOrID string, enabled bool) error {
 	if len(deploymentName) == 0 {
 		return bosherr.Error("Expected non-empty deployment name")
 	}
 
-	if len(job) == 0 {
-		return bosherr.Error("Expected non-empty job name")
+	if len(instanceGroup) == 0 {
+		return bosherr.Error("Expected non-empty instance group name")
 	}
 
 	if len(indexOrID) == 0 {
@@ -260,12 +287,12 @@ func (c Client) Ignore(deploymentName, job, indexOrID string, enabled bool) erro
 	}
 
 	path := fmt.Sprintf("/deployments/%s/instance_groups/%s/%s/ignore",
-		deploymentName, job, indexOrID)
+		deploymentName, instanceGroup, indexOrID)
 
 	_, _, err = c.clientRequest.RawPut(path, reqBody, headers)
 	if err != nil {
 		msg := "Changing ignore state for '%s/%s' in deployment '%s'"
-		return bosherr.WrapErrorf(err, msg, job, indexOrID, deploymentName)
+		return bosherr.WrapErrorf(err, msg, instanceGroup, indexOrID, deploymentName)
 	}
 
 	return nil
@@ -307,7 +334,7 @@ func (c Client) EnableResurrection(deploymentName, job, indexOrID string, enable
 	return nil
 }
 
-func (c Client) ChangeJobState(state, deploymentName, job, indexOrID string, sd SkipDrain, force bool, dryRun bool, canaries string, maxInFlight string) error {
+func (c Client) ChangeJobState(state, deploymentName, job, indexOrID string, skipDrain bool, force bool, fix bool, dryRun bool, canaries string, maxInFlight string) error {
 	if len(state) == 0 {
 		return bosherr.Error("Expected non-empty job state")
 	}
@@ -322,12 +349,16 @@ func (c Client) ChangeJobState(state, deploymentName, job, indexOrID string, sd 
 
 	query.Add("state", state)
 
-	if len(sd.AsQueryValue()) > 0 {
-		query.Add("skip_drain", sd.AsQueryValue())
+	if skipDrain {
+		query.Add("skip_drain", "true")
 	}
 
 	if force {
 		query.Add("force", "true")
+	}
+
+	if fix {
+		query.Add("fix", "true")
 	}
 
 	if dryRun {

@@ -169,10 +169,7 @@ func (c *BoshCollector) Collect(ch chan<- prometheus.Metric) {
 	)
 }
 
-func (c *BoshCollector) executeCollectors(
-	deployments []deployments.DeploymentInfo,
-	ch chan<- prometheus.Metric,
-) error {
+func (c *BoshCollector) executeCollectors(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) error {
 	var wg = &sync.WaitGroup{}
 
 	doneChannel := make(chan bool, 1)

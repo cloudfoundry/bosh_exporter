@@ -13,228 +13,298 @@ import (
 )
 
 type JobsCollector struct {
-	azsFilter                         *filters.AZsFilter
-	jobHealthyDesc                    *prometheus.Desc
-	jobLoadAvg01Desc                  *prometheus.Desc
-	jobLoadAvg05Desc                  *prometheus.Desc
-	jobLoadAvg15Desc                  *prometheus.Desc
-	jobCPUSysDesc                     *prometheus.Desc
-	jobCPUUserDesc                    *prometheus.Desc
-	jobCPUWaitDesc                    *prometheus.Desc
-	jobMemKBDesc                      *prometheus.Desc
-	jobMemPercentDesc                 *prometheus.Desc
-	jobSwapKBDesc                     *prometheus.Desc
-	jobSwapPercentDesc                *prometheus.Desc
-	jobSystemDiskInodePercentDesc     *prometheus.Desc
-	jobSystemDiskPercentDesc          *prometheus.Desc
-	jobEphemeralDiskInodePercentDesc  *prometheus.Desc
-	jobEphemeralDiskPercentDesc       *prometheus.Desc
-	jobPersistentDiskInodePercentDesc *prometheus.Desc
-	jobPersistentDiskPercentDesc      *prometheus.Desc
-	jobProcessHealthyDesc             *prometheus.Desc
-	jobProcessUptimeDesc              *prometheus.Desc
-	jobProcessCPUTotalDesc            *prometheus.Desc
-	jobProcessMemKBDesc               *prometheus.Desc
-	jobProcessMemPercentDesc          *prometheus.Desc
-	lastJobsScrapeTimestampDesc       *prometheus.Desc
-	lastJobsScrapeDurationSecondsDesc *prometheus.Desc
+	azsFilter                           *filters.AZsFilter
+	jobHealthyMetric                    *prometheus.GaugeVec
+	jobLoadAvg01Metric                  *prometheus.GaugeVec
+	jobLoadAvg05Metric                  *prometheus.GaugeVec
+	jobLoadAvg15Metric                  *prometheus.GaugeVec
+	jobCPUSysMetric                     *prometheus.GaugeVec
+	jobCPUUserMetric                    *prometheus.GaugeVec
+	jobCPUWaitMetric                    *prometheus.GaugeVec
+	jobMemKBMetric                      *prometheus.GaugeVec
+	jobMemPercentMetric                 *prometheus.GaugeVec
+	jobSwapKBMetric                     *prometheus.GaugeVec
+	jobSwapPercentMetric                *prometheus.GaugeVec
+	jobSystemDiskInodePercentMetric     *prometheus.GaugeVec
+	jobSystemDiskPercentMetric          *prometheus.GaugeVec
+	jobEphemeralDiskInodePercentMetric  *prometheus.GaugeVec
+	jobEphemeralDiskPercentMetric       *prometheus.GaugeVec
+	jobPersistentDiskInodePercentMetric *prometheus.GaugeVec
+	jobPersistentDiskPercentMetric      *prometheus.GaugeVec
+	jobProcessHealthyMetric             *prometheus.GaugeVec
+	jobProcessUptimeMetric              *prometheus.GaugeVec
+	jobProcessCPUTotalMetric            *prometheus.GaugeVec
+	jobProcessMemKBMetric               *prometheus.GaugeVec
+	jobProcessMemPercentMetric          *prometheus.GaugeVec
+	lastJobsScrapeTimestampMetric       prometheus.Gauge
+	lastJobsScrapeDurationSecondsMetric prometheus.Gauge
 }
 
 func NewJobsCollector(namespace string, azsFilter *filters.AZsFilter) *JobsCollector {
-	jobHealthyDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "healthy"),
-		"BOSH Job Healthy (1 for healthy, 0 for unhealthy).",
+	jobHealthyMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "healthy",
+			Help:      "BOSH Job Healthy (1 for healthy, 0 for unhealthy).",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobLoadAvg01Desc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "load_avg01"),
-		"BOSH Job Load avg01.",
+	jobLoadAvg01Metric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "load_avg01",
+			Help:      "BOSH Job Load avg01.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobLoadAvg05Desc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "load_avg05"),
-		"BOSH Job Load avg05.",
+	jobLoadAvg05Metric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "load_avg05",
+			Help:      "BOSH Job Load avg05.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobLoadAvg15Desc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "load_avg15"),
-		"BOSH Job Load avg15.",
+	jobLoadAvg15Metric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "load_avg15",
+			Help:      "BOSH Job Load avg15.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobCPUSysDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "cpu_sys"),
-		"BOSH Job CPU System.",
+	jobCPUSysMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "cpu_sys",
+			Help:      "BOSH Job CPU System.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobCPUUserDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "cpu_user"),
-		"BOSH Job CPU User.",
+	jobCPUUserMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "cpu_user",
+			Help:      "BOSH Job CPU User.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobCPUWaitDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "cpu_wait"),
-		"BOSH Job CPU Wait.",
+	jobCPUWaitMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "cpu_wait",
+			Help:      "BOSH Job CPU Wait.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobMemKBDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "mem_kb"),
-		"BOSH Job Memory KB.",
+	jobMemKBMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "mem_kb",
+			Help:      "BOSH Job Memory KB.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobMemPercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "mem_percent"),
-		"BOSH Job Memory Percent.",
+	jobMemPercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "mem_percent",
+			Help:      "BOSH Job Memory Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobSwapKBDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "swap_kb"),
-		"BOSH Job Swap KB.",
+	jobSwapKBMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "swap_kb",
+			Help:      "BOSH Job Swap KB.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobSwapPercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "swap_percent"),
-		"BOSH Job Swap Percent.",
+	jobSwapPercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "swap_percent",
+			Help:      "BOSH Job Swap Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobSystemDiskInodePercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "system_disk_inode_percent"),
-		"BOSH Job System Disk Inode Percent.",
+	jobSystemDiskInodePercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "system_disk_inode_percent",
+			Help:      "BOSH Job System Disk Inode Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobSystemDiskPercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "system_disk_percent"),
-		"BOSH Job System Disk Percent.",
+	jobSystemDiskPercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "system_disk_percent",
+			Help:      "BOSH Job System Disk Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobEphemeralDiskInodePercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "ephemeral_disk_inode_percent"),
-		"BOSH Job Ephemeral Disk Inode Percent.",
+	jobEphemeralDiskInodePercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "ephemeral_disk_inode_percent",
+			Help:      "BOSH Job Ephemeral Disk Inode Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobEphemeralDiskPercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "ephemeral_disk_percent"),
-		"BOSH Job Ephemeral Disk Percent.",
+	jobEphemeralDiskPercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "ephemeral_disk_percent",
+			Help:      "BOSH Job Ephemeral Disk Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobPersistentDiskInodePercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "persistent_disk_inode_percent"),
-		"BOSH Job Persistent Disk Inode Percent.",
+	jobPersistentDiskInodePercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "persistent_disk_inode_percent",
+			Help:      "BOSH Job Persistent Disk Inode Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobPersistentDiskPercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job", "persistent_disk_percent"),
-		"BOSH Job Persistent Disk Percent.",
+	jobPersistentDiskPercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job",
+			Name:      "persistent_disk_percent",
+			Help:      "BOSH Job Persistent Disk Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		nil,
 	)
 
-	jobProcessHealthyDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job_process", "healthy"),
-		"BOSH Job Process Healthy (1 for healthy, 0 for unhealthy).",
+	jobProcessHealthyMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job_process",
+			Name:      "healthy",
+			Help:      "BOSH Job Process Healthy (1 for healthy, 0 for unhealthy).",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		nil,
 	)
 
-	jobProcessUptimeDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job_process", "uptime_seconds"),
-		"BOSH Job Process Uptime in seconds.",
+	jobProcessUptimeMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job_process",
+			Name:      "uptime_seconds",
+			Help:      "BOSH Job Process Uptime in seconds.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		nil,
 	)
 
-	jobProcessCPUTotalDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job_process", "cpu_total"),
-		"BOSH Job Process CPU Total.",
+	jobProcessCPUTotalMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job_process",
+			Name:      "cpu_total",
+			Help:      "BOSH Job Process CPU Total.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		nil,
 	)
 
-	jobProcessMemKBDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job_process", "mem_kb"),
-		"BOSH Job Process Memory KB.",
+	jobProcessMemKBMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job_process",
+			Name:      "mem_kb",
+			Help:      "BOSH Job Process Memory KB.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		nil,
 	)
 
-	jobProcessMemPercentDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "job_process", "mem_percent"),
-		"BOSH Job Process Memory Percent.",
+	jobProcessMemPercentMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "job_process",
+			Name:      "mem_percent",
+			Help:      "BOSH Job Process Memory Percent.",
+		},
 		[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		nil,
 	)
 
-	lastJobsScrapeTimestampDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_jobs_scrape_timestamp"),
-		"Number of seconds since 1970 since last scrape of Job metrics from BOSH.",
-		[]string{},
-		nil,
+	lastJobsScrapeTimestampMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_jobs_scrape_timestamp",
+			Help:      "Number of seconds since 1970 since last scrape of Job metrics from BOSH.",
+		},
 	)
 
-	lastJobsScrapeDurationSecondsDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_jobs_scrape_duration_seconds"),
-		"Duration of the last scrape of Job metrics from BOSH.",
-		[]string{},
-		nil,
+	lastJobsScrapeDurationSecondsMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_jobs_scrape_duration_seconds",
+			Help:      "Duration of the last scrape of Job metrics from BOSH.",
+		},
 	)
 
 	collector := &JobsCollector{
-		azsFilter:                         azsFilter,
-		jobHealthyDesc:                    jobHealthyDesc,
-		jobLoadAvg01Desc:                  jobLoadAvg01Desc,
-		jobLoadAvg05Desc:                  jobLoadAvg05Desc,
-		jobLoadAvg15Desc:                  jobLoadAvg15Desc,
-		jobCPUSysDesc:                     jobCPUSysDesc,
-		jobCPUUserDesc:                    jobCPUUserDesc,
-		jobCPUWaitDesc:                    jobCPUWaitDesc,
-		jobMemKBDesc:                      jobMemKBDesc,
-		jobMemPercentDesc:                 jobMemPercentDesc,
-		jobSwapKBDesc:                     jobSwapKBDesc,
-		jobSwapPercentDesc:                jobSwapPercentDesc,
-		jobSystemDiskInodePercentDesc:     jobSystemDiskInodePercentDesc,
-		jobSystemDiskPercentDesc:          jobSystemDiskPercentDesc,
-		jobEphemeralDiskInodePercentDesc:  jobEphemeralDiskInodePercentDesc,
-		jobEphemeralDiskPercentDesc:       jobEphemeralDiskPercentDesc,
-		jobPersistentDiskInodePercentDesc: jobPersistentDiskInodePercentDesc,
-		jobPersistentDiskPercentDesc:      jobPersistentDiskPercentDesc,
-		jobProcessHealthyDesc:             jobProcessHealthyDesc,
-		jobProcessUptimeDesc:              jobProcessUptimeDesc,
-		jobProcessCPUTotalDesc:            jobProcessCPUTotalDesc,
-		jobProcessMemKBDesc:               jobProcessMemKBDesc,
-		jobProcessMemPercentDesc:          jobProcessMemPercentDesc,
-		lastJobsScrapeTimestampDesc:       lastJobsScrapeTimestampDesc,
-		lastJobsScrapeDurationSecondsDesc: lastJobsScrapeDurationSecondsDesc,
+		azsFilter:                           azsFilter,
+		jobHealthyMetric:                    jobHealthyMetric,
+		jobLoadAvg01Metric:                  jobLoadAvg01Metric,
+		jobLoadAvg05Metric:                  jobLoadAvg05Metric,
+		jobLoadAvg15Metric:                  jobLoadAvg15Metric,
+		jobCPUSysMetric:                     jobCPUSysMetric,
+		jobCPUUserMetric:                    jobCPUUserMetric,
+		jobCPUWaitMetric:                    jobCPUWaitMetric,
+		jobMemKBMetric:                      jobMemKBMetric,
+		jobMemPercentMetric:                 jobMemPercentMetric,
+		jobSwapKBMetric:                     jobSwapKBMetric,
+		jobSwapPercentMetric:                jobSwapPercentMetric,
+		jobSystemDiskInodePercentMetric:     jobSystemDiskInodePercentMetric,
+		jobSystemDiskPercentMetric:          jobSystemDiskPercentMetric,
+		jobEphemeralDiskInodePercentMetric:  jobEphemeralDiskInodePercentMetric,
+		jobEphemeralDiskPercentMetric:       jobEphemeralDiskPercentMetric,
+		jobPersistentDiskInodePercentMetric: jobPersistentDiskInodePercentMetric,
+		jobPersistentDiskPercentMetric:      jobPersistentDiskPercentMetric,
+		jobProcessHealthyMetric:             jobProcessHealthyMetric,
+		jobProcessUptimeMetric:              jobProcessUptimeMetric,
+		jobProcessCPUTotalMetric:            jobProcessCPUTotalMetric,
+		jobProcessMemKBMetric:               jobProcessMemKBMetric,
+		jobProcessMemPercentMetric:          jobProcessMemPercentMetric,
+		lastJobsScrapeTimestampMetric:       lastJobsScrapeTimestampMetric,
+		lastJobsScrapeDurationSecondsMetric: lastJobsScrapeDurationSecondsMetric,
 	}
 	return collector
 }
@@ -243,50 +313,90 @@ func (c *JobsCollector) Collect(deployments []deployments.DeploymentInfo, ch cha
 	var err error
 	var begun = time.Now()
 
+	c.jobHealthyMetric.Reset()
+	c.jobLoadAvg01Metric.Reset()
+	c.jobLoadAvg05Metric.Reset()
+	c.jobLoadAvg15Metric.Reset()
+	c.jobCPUSysMetric.Reset()
+	c.jobCPUUserMetric.Reset()
+	c.jobCPUWaitMetric.Reset()
+	c.jobMemKBMetric.Reset()
+	c.jobMemPercentMetric.Reset()
+	c.jobSwapKBMetric.Reset()
+	c.jobSwapPercentMetric.Reset()
+	c.jobSystemDiskInodePercentMetric.Reset()
+	c.jobSystemDiskPercentMetric.Reset()
+	c.jobEphemeralDiskInodePercentMetric.Reset()
+	c.jobEphemeralDiskPercentMetric.Reset()
+	c.jobPersistentDiskInodePercentMetric.Reset()
+	c.jobPersistentDiskPercentMetric.Reset()
+	c.jobProcessHealthyMetric.Reset()
+	c.jobProcessUptimeMetric.Reset()
+	c.jobProcessCPUTotalMetric.Reset()
+	c.jobProcessMemKBMetric.Reset()
+	c.jobProcessMemPercentMetric.Reset()
+
 	for _, deployment := range deployments {
 		err = c.reportJobMetrics(deployment, ch)
 	}
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastJobsScrapeTimestampDesc,
-		prometheus.GaugeValue,
-		float64(time.Now().Unix()),
-	)
+	c.jobHealthyMetric.Collect(ch)
+	c.jobLoadAvg01Metric.Collect(ch)
+	c.jobLoadAvg05Metric.Collect(ch)
+	c.jobLoadAvg15Metric.Collect(ch)
+	c.jobCPUSysMetric.Collect(ch)
+	c.jobCPUUserMetric.Collect(ch)
+	c.jobCPUWaitMetric.Collect(ch)
+	c.jobMemKBMetric.Collect(ch)
+	c.jobMemPercentMetric.Collect(ch)
+	c.jobSwapKBMetric.Collect(ch)
+	c.jobSwapPercentMetric.Collect(ch)
+	c.jobSystemDiskInodePercentMetric.Collect(ch)
+	c.jobSystemDiskPercentMetric.Collect(ch)
+	c.jobEphemeralDiskInodePercentMetric.Collect(ch)
+	c.jobEphemeralDiskPercentMetric.Collect(ch)
+	c.jobPersistentDiskInodePercentMetric.Collect(ch)
+	c.jobPersistentDiskPercentMetric.Collect(ch)
+	c.jobProcessHealthyMetric.Collect(ch)
+	c.jobProcessUptimeMetric.Collect(ch)
+	c.jobProcessCPUTotalMetric.Collect(ch)
+	c.jobProcessMemKBMetric.Collect(ch)
+	c.jobProcessMemPercentMetric.Collect(ch)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastJobsScrapeDurationSecondsDesc,
-		prometheus.GaugeValue,
-		time.Since(begun).Seconds(),
-	)
+	c.lastJobsScrapeTimestampMetric.Set(float64(time.Now().Unix()))
+	c.lastJobsScrapeTimestampMetric.Collect(ch)
+
+	c.lastJobsScrapeDurationSecondsMetric.Set(time.Since(begun).Seconds())
+	c.lastJobsScrapeDurationSecondsMetric.Collect(ch)
 
 	return err
 }
 
 func (c *JobsCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.jobHealthyDesc
-	ch <- c.jobLoadAvg01Desc
-	ch <- c.jobLoadAvg05Desc
-	ch <- c.jobLoadAvg15Desc
-	ch <- c.jobCPUSysDesc
-	ch <- c.jobCPUUserDesc
-	ch <- c.jobCPUWaitDesc
-	ch <- c.jobMemKBDesc
-	ch <- c.jobMemPercentDesc
-	ch <- c.jobSwapKBDesc
-	ch <- c.jobSwapPercentDesc
-	ch <- c.jobSystemDiskInodePercentDesc
-	ch <- c.jobSystemDiskPercentDesc
-	ch <- c.jobEphemeralDiskInodePercentDesc
-	ch <- c.jobEphemeralDiskPercentDesc
-	ch <- c.jobPersistentDiskInodePercentDesc
-	ch <- c.jobPersistentDiskPercentDesc
-	ch <- c.jobProcessHealthyDesc
-	ch <- c.jobProcessUptimeDesc
-	ch <- c.jobProcessCPUTotalDesc
-	ch <- c.jobProcessMemKBDesc
-	ch <- c.jobProcessMemPercentDesc
-	ch <- c.lastJobsScrapeTimestampDesc
-	ch <- c.lastJobsScrapeDurationSecondsDesc
+	c.jobHealthyMetric.Describe(ch)
+	c.jobLoadAvg01Metric.Describe(ch)
+	c.jobLoadAvg05Metric.Describe(ch)
+	c.jobLoadAvg15Metric.Describe(ch)
+	c.jobCPUSysMetric.Describe(ch)
+	c.jobCPUUserMetric.Describe(ch)
+	c.jobCPUWaitMetric.Describe(ch)
+	c.jobMemKBMetric.Describe(ch)
+	c.jobMemPercentMetric.Describe(ch)
+	c.jobSwapKBMetric.Describe(ch)
+	c.jobSwapPercentMetric.Describe(ch)
+	c.jobSystemDiskInodePercentMetric.Describe(ch)
+	c.jobSystemDiskPercentMetric.Describe(ch)
+	c.jobEphemeralDiskInodePercentMetric.Describe(ch)
+	c.jobEphemeralDiskPercentMetric.Describe(ch)
+	c.jobPersistentDiskInodePercentMetric.Describe(ch)
+	c.jobPersistentDiskPercentMetric.Describe(ch)
+	c.jobProcessHealthyMetric.Describe(ch)
+	c.jobProcessUptimeMetric.Describe(ch)
+	c.jobProcessCPUTotalMetric.Describe(ch)
+	c.jobProcessMemKBMetric.Describe(ch)
+	c.jobProcessMemPercentMetric.Describe(ch)
+	c.lastJobsScrapeTimestampMetric.Describe(ch)
+	c.lastJobsScrapeDurationSecondsMetric.Describe(ch)
 }
 
 func (c *JobsCollector) reportJobMetrics(deployment deployments.DeploymentInfo, ch chan<- prometheus.Metric) error {
@@ -344,17 +454,14 @@ func (c *JobsCollector) jobHealthyMetrics(
 		healthyMetric = 1
 	}
 
-	ch <- prometheus.MustNewConstMetric(
-		c.jobHealthyDesc,
-		prometheus.GaugeValue,
-		healthyMetric,
+	c.jobHealthyMetric.WithLabelValues(
 		deploymentName,
 		jobName,
 		jobID,
 		jobIndex,
 		jobAZ,
 		jobIP,
-	)
+	).Set(healthyMetric)
 
 	return nil
 }
@@ -377,17 +484,14 @@ func (c *JobsCollector) jobLoadAvgMetrics(
 			if err != nil {
 				err = errors.New(fmt.Sprintf("Error while converting Load avg01 metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 			} else {
-				ch <- prometheus.MustNewConstMetric(
-					c.jobLoadAvg01Desc,
-					prometheus.GaugeValue,
-					float64(loadAvg01),
+				c.jobLoadAvg01Metric.WithLabelValues(
 					deploymentName,
 					jobName,
 					jobID,
 					jobIndex,
 					jobAZ,
 					jobIP,
-				)
+				).Set(float64(loadAvg01))
 			}
 		}
 
@@ -396,17 +500,15 @@ func (c *JobsCollector) jobLoadAvgMetrics(
 			if err != nil {
 				err = errors.New(fmt.Sprintf("Error while converting Load avg05 metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 			} else {
-				ch <- prometheus.MustNewConstMetric(
-					c.jobLoadAvg05Desc,
-					prometheus.GaugeValue,
-					float64(loadAvg05),
+				c.jobLoadAvg05Metric.WithLabelValues(
 					deploymentName,
 					jobName,
 					jobID,
 					jobIndex,
 					jobAZ,
 					jobIP,
-				)
+				).Set(float64(loadAvg05))
+
 			}
 		}
 
@@ -415,17 +517,14 @@ func (c *JobsCollector) jobLoadAvgMetrics(
 			if err != nil {
 				err = errors.New(fmt.Sprintf("Error while converting Load avg15 metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 			} else {
-				ch <- prometheus.MustNewConstMetric(
-					c.jobLoadAvg15Desc,
-					prometheus.GaugeValue,
-					float64(loadAvg15),
+				c.jobLoadAvg15Metric.WithLabelValues(
 					deploymentName,
 					jobName,
 					jobID,
 					jobIndex,
 					jobAZ,
 					jobIP,
-				)
+				).Set(float64(loadAvg15))
 			}
 		}
 	}
@@ -450,17 +549,14 @@ func (c *JobsCollector) jobCPUMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting CPU Sys metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobCPUSysDesc,
-				prometheus.GaugeValue,
-				cpuSys,
+			c.jobCPUSysMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(cpuSys)
 		}
 	}
 
@@ -469,17 +565,14 @@ func (c *JobsCollector) jobCPUMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting CPU User metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobCPUUserDesc,
-				prometheus.GaugeValue,
-				cpuUser,
+			c.jobCPUUserMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(cpuUser)
 		}
 	}
 
@@ -488,17 +581,14 @@ func (c *JobsCollector) jobCPUMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting CPU Wait metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobCPUWaitDesc,
-				prometheus.GaugeValue,
-				cpuWait,
+			c.jobCPUWaitMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(cpuWait)
 		}
 	}
 
@@ -522,17 +612,14 @@ func (c *JobsCollector) jobMemMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Mem KB metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobMemKBDesc,
-				prometheus.GaugeValue,
-				memKB,
+			c.jobMemKBMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(memKB)
 		}
 	}
 
@@ -541,17 +628,14 @@ func (c *JobsCollector) jobMemMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Mem Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobMemPercentDesc,
-				prometheus.GaugeValue,
-				memPercent,
+			c.jobMemPercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(memPercent)
 		}
 	}
 
@@ -575,17 +659,14 @@ func (c *JobsCollector) jobSwapMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Swap KB metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobSwapKBDesc,
-				prometheus.GaugeValue,
-				swapKB,
+			c.jobSwapKBMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(swapKB)
 		}
 	}
 
@@ -594,17 +675,14 @@ func (c *JobsCollector) jobSwapMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Swap Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobSwapPercentDesc,
-				prometheus.GaugeValue,
-				swapPercent,
+			c.jobSwapPercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(swapPercent)
 		}
 	}
 
@@ -628,17 +706,14 @@ func (c *JobsCollector) jobSystemDiskMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting System Disk Inode Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobSystemDiskInodePercentDesc,
-				prometheus.GaugeValue,
-				systemDiskInodePercent,
+			c.jobSystemDiskInodePercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(systemDiskInodePercent)
 		}
 	}
 
@@ -647,17 +722,14 @@ func (c *JobsCollector) jobSystemDiskMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting System Disk Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobSystemDiskPercentDesc,
-				prometheus.GaugeValue,
-				systemDiskPercent,
+			c.jobSystemDiskPercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(systemDiskPercent)
 		}
 	}
 
@@ -681,18 +753,14 @@ func (c *JobsCollector) jobEphemeralDiskMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Ephemeral Disk Inode Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-
-			ch <- prometheus.MustNewConstMetric(
-				c.jobEphemeralDiskInodePercentDesc,
-				prometheus.GaugeValue,
-				ephemeralDiskInodePercent,
+			c.jobEphemeralDiskInodePercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(ephemeralDiskInodePercent)
 		}
 	}
 
@@ -701,17 +769,14 @@ func (c *JobsCollector) jobEphemeralDiskMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Ephemeral Disk Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobEphemeralDiskPercentDesc,
-				prometheus.GaugeValue,
-				ephemeralDiskPercent,
+			c.jobEphemeralDiskPercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(ephemeralDiskPercent)
 		}
 	}
 
@@ -735,17 +800,14 @@ func (c *JobsCollector) jobPersistentDiskMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Persistent Disk Inode Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobPersistentDiskInodePercentDesc,
-				prometheus.GaugeValue,
-				persistentDiskInodePercent,
+			c.jobPersistentDiskInodePercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(persistentDiskInodePercent)
 		}
 	}
 
@@ -754,17 +816,14 @@ func (c *JobsCollector) jobPersistentDiskMetrics(
 		if err != nil {
 			err = errors.New(fmt.Sprintf("Error while converting Persistent Disk Percent metric for deployment `%s` and job `%s`: %v", deploymentName, jobName, err))
 		} else {
-			ch <- prometheus.MustNewConstMetric(
-				c.jobPersistentDiskPercentDesc,
-				prometheus.GaugeValue,
-				persistentDiskPercent,
+			c.jobPersistentDiskPercentMetric.WithLabelValues(
 				deploymentName,
 				jobName,
 				jobID,
 				jobIndex,
 				jobAZ,
 				jobIP,
-			)
+			).Set(persistentDiskPercent)
 		}
 	}
 
@@ -787,10 +846,7 @@ func (c *JobsCollector) jobProcessHealthyMetrics(
 		healthyMetric = 1
 	}
 
-	ch <- prometheus.MustNewConstMetric(
-		c.jobProcessHealthyDesc,
-		prometheus.GaugeValue,
-		healthyMetric,
+	c.jobProcessHealthyMetric.WithLabelValues(
 		deploymentName,
 		jobName,
 		jobID,
@@ -798,7 +854,7 @@ func (c *JobsCollector) jobProcessHealthyMetrics(
 		jobAZ,
 		jobIP,
 		jobProcessName,
-	)
+	).Set(healthyMetric)
 
 	return nil
 }
@@ -815,10 +871,7 @@ func (c *JobsCollector) jobProcessUptimeMetrics(
 	jobProcessName string,
 ) error {
 	if uptime != nil {
-		ch <- prometheus.MustNewConstMetric(
-			c.jobProcessUptimeDesc,
-			prometheus.GaugeValue,
-			float64(*uptime),
+		c.jobProcessUptimeMetric.WithLabelValues(
 			deploymentName,
 			jobName,
 			jobID,
@@ -826,7 +879,7 @@ func (c *JobsCollector) jobProcessUptimeMetrics(
 			jobAZ,
 			jobIP,
 			jobProcessName,
-		)
+		).Set(float64(*uptime))
 	}
 
 	return nil
@@ -844,10 +897,7 @@ func (c *JobsCollector) jobProcessCPUMetrics(
 	jobProcessName string,
 ) error {
 	if cpu.Total != nil {
-		ch <- prometheus.MustNewConstMetric(
-			c.jobProcessCPUTotalDesc,
-			prometheus.GaugeValue,
-			float64(*cpu.Total),
+		c.jobProcessCPUTotalMetric.WithLabelValues(
 			deploymentName,
 			jobName,
 			jobID,
@@ -855,7 +905,7 @@ func (c *JobsCollector) jobProcessCPUMetrics(
 			jobAZ,
 			jobIP,
 			jobProcessName,
-		)
+		).Set(float64(*cpu.Total))
 	}
 
 	return nil
@@ -873,10 +923,7 @@ func (c *JobsCollector) jobProcessMemMetrics(
 	jobProcessName string,
 ) error {
 	if mem.KB != nil {
-		ch <- prometheus.MustNewConstMetric(
-			c.jobProcessMemKBDesc,
-			prometheus.GaugeValue,
-			float64(*mem.KB),
+		c.jobProcessMemKBMetric.WithLabelValues(
 			deploymentName,
 			jobName,
 			jobID,
@@ -884,14 +931,11 @@ func (c *JobsCollector) jobProcessMemMetrics(
 			jobAZ,
 			jobIP,
 			jobProcessName,
-		)
+		).Set(float64(*mem.KB))
 	}
 
 	if mem.Percent != nil {
-		ch <- prometheus.MustNewConstMetric(
-			c.jobProcessMemPercentDesc,
-			prometheus.GaugeValue,
-			*mem.Percent,
+		c.jobProcessMemPercentMetric.WithLabelValues(
 			deploymentName,
 			jobName,
 			jobID,
@@ -899,7 +943,7 @@ func (c *JobsCollector) jobProcessMemMetrics(
 			jobAZ,
 			jobIP,
 			jobProcessName,
-		)
+		).Set(*mem.Percent)
 	}
 
 	return nil

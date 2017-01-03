@@ -9,46 +9,56 @@ import (
 )
 
 type DeploymentsCollector struct {
-	deploymentReleaseInfoDesc                *prometheus.Desc
-	deploymentStemcellInfoDesc               *prometheus.Desc
-	lastDeploymentsScrapeTimestampDesc       *prometheus.Desc
-	lastDeploymentsScrapeDurationSecondsDesc *prometheus.Desc
+	deploymentReleaseInfoMetric                *prometheus.GaugeVec
+	deploymentStemcellInfoMetric               *prometheus.GaugeVec
+	lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
+	lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
 }
 
 func NewDeploymentsCollector(namespace string) *DeploymentsCollector {
-	deploymentReleaseInfoDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "deployment", "release_info"),
-		"Labeled BOSH Deployment Release Info with a constant '1' value.",
+	deploymentReleaseInfoMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "deployment",
+			Name:      "release_info",
+			Help:      "Labeled BOSH Deployment Release Info with a constant '1' value.",
+		},
 		[]string{"bosh_deployment", "bosh_release_name", "bosh_release_version"},
-		nil,
 	)
 
-	deploymentStemcellInfoDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "deployment", "stemcell_info"),
-		"Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
+	deploymentStemcellInfoMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "deployment",
+			Name:      "stemcell_info",
+			Help:      "Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
+		},
 		[]string{"bosh_deployment", "bosh_stemcell_name", "bosh_stemcell_version", "bosh_stemcell_os_name"},
-		nil,
 	)
 
-	lastDeploymentsScrapeTimestampDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_deployments_scrape_timestamp"),
-		"Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
-		[]string{},
-		nil,
+	lastDeploymentsScrapeTimestampMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_deployments_scrape_timestamp",
+			Help:      "Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
+		},
 	)
 
-	lastDeploymentsScrapeDurationSecondsDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_deployments_scrape_duration_seconds"),
-		"Duration of the last scrape of Deployments metrics from BOSH.",
-		[]string{},
-		nil,
+	lastDeploymentsScrapeDurationSecondsMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_deployments_scrape_duration_seconds",
+			Help:      "Duration of the last scrape of Deployments metrics from BOSH.",
+		},
 	)
 
 	collector := &DeploymentsCollector{
-		deploymentReleaseInfoDesc:                deploymentReleaseInfoDesc,
-		deploymentStemcellInfoDesc:               deploymentStemcellInfoDesc,
-		lastDeploymentsScrapeTimestampDesc:       lastDeploymentsScrapeTimestampDesc,
-		lastDeploymentsScrapeDurationSecondsDesc: lastDeploymentsScrapeDurationSecondsDesc,
+		deploymentReleaseInfoMetric:                deploymentReleaseInfoMetric,
+		deploymentStemcellInfoMetric:               deploymentStemcellInfoMetric,
+		lastDeploymentsScrapeTimestampMetric:       lastDeploymentsScrapeTimestampMetric,
+		lastDeploymentsScrapeDurationSecondsMetric: lastDeploymentsScrapeDurationSecondsMetric,
 	}
 	return collector
 }
@@ -56,31 +66,31 @@ func NewDeploymentsCollector(namespace string) *DeploymentsCollector {
 func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) error {
 	var begun = time.Now()
 
+	c.deploymentReleaseInfoMetric.Reset()
+	c.deploymentStemcellInfoMetric.Reset()
+
 	for _, deployment := range deployments {
 		c.reportDeploymentReleaseInfoMetrics(deployment, ch)
 		c.reportDeploymentStemcellInfoMetrics(deployment, ch)
 	}
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastDeploymentsScrapeTimestampDesc,
-		prometheus.GaugeValue,
-		float64(time.Now().Unix()),
-	)
+	c.deploymentReleaseInfoMetric.Collect(ch)
+	c.deploymentStemcellInfoMetric.Collect(ch)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastDeploymentsScrapeDurationSecondsDesc,
-		prometheus.GaugeValue,
-		time.Since(begun).Seconds(),
-	)
+	c.lastDeploymentsScrapeTimestampMetric.Set(float64(time.Now().Unix()))
+	c.lastDeploymentsScrapeTimestampMetric.Collect(ch)
+
+	c.lastDeploymentsScrapeDurationSecondsMetric.Set(time.Since(begun).Seconds())
+	c.lastDeploymentsScrapeDurationSecondsMetric.Collect(ch)
 
 	return nil
 }
 
 func (c *DeploymentsCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.deploymentReleaseInfoDesc
-	ch <- c.deploymentStemcellInfoDesc
-	ch <- c.lastDeploymentsScrapeTimestampDesc
-	ch <- c.lastDeploymentsScrapeDurationSecondsDesc
+	c.deploymentReleaseInfoMetric.Describe(ch)
+	c.deploymentStemcellInfoMetric.Describe(ch)
+	c.lastDeploymentsScrapeTimestampMetric.Describe(ch)
+	c.lastDeploymentsScrapeDurationSecondsMetric.Describe(ch)
 }
 
 func (c *DeploymentsCollector) reportDeploymentReleaseInfoMetrics(
@@ -88,14 +98,11 @@ func (c *DeploymentsCollector) reportDeploymentReleaseInfoMetrics(
 	ch chan<- prometheus.Metric,
 ) {
 	for _, release := range deployment.Releases {
-		ch <- prometheus.MustNewConstMetric(
-			c.deploymentReleaseInfoDesc,
-			prometheus.GaugeValue,
-			float64(1),
+		c.deploymentReleaseInfoMetric.WithLabelValues(
 			deployment.Name,
 			release.Name,
 			release.Version,
-		)
+		).Set(float64(1))
 	}
 }
 
@@ -104,14 +111,11 @@ func (c *DeploymentsCollector) reportDeploymentStemcellInfoMetrics(
 	ch chan<- prometheus.Metric,
 ) {
 	for _, stemcell := range deployment.Stemcells {
-		ch <- prometheus.MustNewConstMetric(
-			c.deploymentStemcellInfoDesc,
-			prometheus.GaugeValue,
-			float64(1),
+		c.deploymentStemcellInfoMetric.WithLabelValues(
 			deployment.Name,
 			stemcell.Name,
 			stemcell.Version,
 			stemcell.OSName,
-		)
+		).Set(float64(1))
 	}
 }

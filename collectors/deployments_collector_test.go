@@ -16,41 +16,71 @@ var _ = Describe("DeploymentsCollector", func() {
 		namespace            string
 		deploymentsCollector *DeploymentsCollector
 
-		deploymentReleaseInfoDesc                *prometheus.Desc
-		deploymentStemcellInfoDesc               *prometheus.Desc
-		lastDeploymentsScrapeTimestampDesc       *prometheus.Desc
-		lastDeploymentsScrapeDurationSecondsDesc *prometheus.Desc
+		deploymentReleaseInfoMetric                *prometheus.GaugeVec
+		deploymentStemcellInfoMetric               *prometheus.GaugeVec
+		lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
+		lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
+
+		deploymentName  = "fake-deployment-name"
+		releaseName     = "fake-release-name"
+		releaseVersion  = "1.2.3"
+		stemcellName    = "fake-stemcell-name"
+		stemcellVersion = "4.5.6"
+		stemcellOSName  = "fake-stemcell-os-name"
 	)
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
 
-		deploymentReleaseInfoDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "deployment", "release_info"),
-			"Labeled BOSH Deployment Release Info with a constant '1' value.",
+		deploymentReleaseInfoMetric = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "deployment",
+				Name:      "release_info",
+				Help:      "Labeled BOSH Deployment Release Info with a constant '1' value.",
+			},
 			[]string{"bosh_deployment", "bosh_release_name", "bosh_release_version"},
-			nil,
 		)
 
-		deploymentStemcellInfoDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "deployment", "stemcell_info"),
-			"Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
+		deploymentReleaseInfoMetric.WithLabelValues(
+			deploymentName,
+			releaseName,
+			releaseVersion,
+		).Set(float64(1))
+
+		deploymentStemcellInfoMetric = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "deployment",
+				Name:      "stemcell_info",
+				Help:      "Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
+			},
 			[]string{"bosh_deployment", "bosh_stemcell_name", "bosh_stemcell_version", "bosh_stemcell_os_name"},
-			nil,
 		)
 
-		lastDeploymentsScrapeTimestampDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "last_deployments_scrape_timestamp"),
-			"Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
-			[]string{},
-			nil,
+		deploymentStemcellInfoMetric.WithLabelValues(
+			deploymentName,
+			stemcellName,
+			stemcellVersion,
+			stemcellOSName,
+		).Set(float64(1))
+
+		lastDeploymentsScrapeTimestampMetric = prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_deployments_scrape_timestamp",
+				Help:      "Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
+			},
 		)
 
-		lastDeploymentsScrapeDurationSecondsDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "last_deployments_scrape_duration_seconds"),
-			"Duration of the last scrape of Deployments metrics from BOSH.",
-			[]string{},
-			nil,
+		lastDeploymentsScrapeDurationSecondsMetric = prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_deployments_scrape_duration_seconds",
+				Help:      "Duration of the last scrape of Deployments metrics from BOSH.",
+			},
 		)
 	})
 
@@ -72,31 +102,33 @@ var _ = Describe("DeploymentsCollector", func() {
 		})
 
 		It("returns a deployment_release_info description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentReleaseInfoDesc)))
+			Eventually(descriptions).Should(Receive(Equal(deploymentReleaseInfoMetric.WithLabelValues(
+				deploymentName,
+				releaseName,
+				releaseVersion,
+			).Desc())))
 		})
 
 		It("returns a deployment_stemcell_info metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentStemcellInfoDesc)))
+			Eventually(descriptions).Should(Receive(Equal(deploymentStemcellInfoMetric.WithLabelValues(
+				deploymentName,
+				stemcellName,
+				stemcellVersion,
+				stemcellOSName,
+			).Desc())))
 		})
 
 		It("returns a last_deployments_scrape_timestamp metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastDeploymentsScrapeTimestampDesc)))
+			Eventually(descriptions).Should(Receive(Equal(lastDeploymentsScrapeTimestampMetric.Desc())))
 		})
 
 		It("returns a last_deployments_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastDeploymentsScrapeDurationSecondsDesc)))
+			Eventually(descriptions).Should(Receive(Equal(lastDeploymentsScrapeDurationSecondsMetric.Desc())))
 		})
 	})
 
 	Describe("Collect", func() {
 		var (
-			deploymentName  = "fake-deployment-name"
-			releaseName     = "fake-release-name"
-			releaseVersion  = "1.2.3"
-			stemcellName    = "fake-stemcell-name"
-			stemcellVersion = "4.5.6"
-			stemcellOSName  = "fake-stemcell-os-name"
-
 			release = deployments.Release{
 				Name:    releaseName,
 				Version: releaseVersion,
@@ -114,10 +146,8 @@ var _ = Describe("DeploymentsCollector", func() {
 
 			deploymentsInfo []deployments.DeploymentInfo
 
-			metrics                      chan prometheus.Metric
-			errMetrics                   chan error
-			deploymentReleaseInfoMetric  prometheus.Metric
-			deploymentStemcellInfoMetric prometheus.Metric
+			metrics    chan prometheus.Metric
+			errMetrics chan error
 		)
 
 		BeforeEach(func() {
@@ -130,25 +160,6 @@ var _ = Describe("DeploymentsCollector", func() {
 
 			metrics = make(chan prometheus.Metric)
 			errMetrics = make(chan error, 1)
-
-			deploymentReleaseInfoMetric = prometheus.MustNewConstMetric(
-				deploymentReleaseInfoDesc,
-				prometheus.GaugeValue,
-				float64(1),
-				deploymentName,
-				releaseName,
-				releaseVersion,
-			)
-
-			deploymentStemcellInfoMetric = prometheus.MustNewConstMetric(
-				deploymentStemcellInfoDesc,
-				prometheus.GaugeValue,
-				float64(1),
-				deploymentName,
-				stemcellName,
-				stemcellVersion,
-				stemcellOSName,
-			)
 		})
 
 		JustBeforeEach(func() {
@@ -160,12 +171,21 @@ var _ = Describe("DeploymentsCollector", func() {
 		})
 
 		It("returns a deployment_release_info metric", func() {
-			Eventually(metrics).Should(Receive(Equal(deploymentReleaseInfoMetric)))
+			Eventually(metrics).Should(Receive(Equal(deploymentReleaseInfoMetric.WithLabelValues(
+				deploymentName,
+				releaseName,
+				releaseVersion,
+			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		It("returns a deployment_stemcell_info metric", func() {
-			Eventually(metrics).Should(Receive(Equal(deploymentStemcellInfoMetric)))
+			Eventually(metrics).Should(Receive(Equal(deploymentStemcellInfoMetric.WithLabelValues(
+				deploymentName,
+				stemcellName,
+				stemcellVersion,
+				stemcellOSName,
+			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -189,7 +209,11 @@ var _ = Describe("DeploymentsCollector", func() {
 			})
 
 			It("should not return a deployment_release_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(Equal(deploymentReleaseInfoMetric)))
+				Consistently(metrics).ShouldNot(Receive(Equal(deploymentReleaseInfoMetric.WithLabelValues(
+					deploymentName,
+					releaseName,
+					releaseVersion,
+				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
@@ -201,7 +225,12 @@ var _ = Describe("DeploymentsCollector", func() {
 			})
 
 			It("should not return a deployment_stemcell_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(Equal(deploymentStemcellInfoMetric)))
+				Consistently(metrics).ShouldNot(Receive(Equal(deploymentStemcellInfoMetric.WithLabelValues(
+					deploymentName,
+					stemcellName,
+					stemcellVersion,
+					stemcellOSName,
+				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})

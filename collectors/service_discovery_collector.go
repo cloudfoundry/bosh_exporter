@@ -41,12 +41,12 @@ type TargetGroup struct {
 }
 
 type ServiceDiscoveryCollector struct {
-	serviceDiscoveryFilename                      string
-	azsFilter                                     *filters.AZsFilter
-	processesFilter                               *filters.RegexpFilter
-	lastServiceDiscoveryScrapeTimestampDesc       *prometheus.Desc
-	lastServiceDiscoveryScrapeDurationSecondsDesc *prometheus.Desc
-	mu                                            *sync.Mutex
+	serviceDiscoveryFilename                        string
+	azsFilter                                       *filters.AZsFilter
+	processesFilter                                 *filters.RegexpFilter
+	lastServiceDiscoveryScrapeTimestampMetric       prometheus.Gauge
+	lastServiceDiscoveryScrapeDurationSecondsMetric prometheus.Gauge
+	mu                                              *sync.Mutex
 }
 
 func NewServiceDiscoveryCollector(
@@ -55,26 +55,30 @@ func NewServiceDiscoveryCollector(
 	azsFilter *filters.AZsFilter,
 	processesFilter *filters.RegexpFilter,
 ) *ServiceDiscoveryCollector {
-	lastServiceDiscoveryScrapeTimestampDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_service_discovery_scrape_timestamp"),
-		"Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
-		[]string{},
-		nil,
+	lastServiceDiscoveryScrapeTimestampMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_service_discovery_scrape_timestamp",
+			Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+		},
 	)
 
-	lastServiceDiscoveryScrapeDurationSecondsDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_service_discovery_scrape_duration_seconds"),
-		"Duration of the last scrape of Service Discovery from BOSH.",
-		[]string{},
-		nil,
+	lastServiceDiscoveryScrapeDurationSecondsMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_service_discovery_scrape_duration_seconds",
+			Help:      "Duration of the last scrape of Service Discovery from BOSH.",
+		},
 	)
 
 	collector := &ServiceDiscoveryCollector{
-		serviceDiscoveryFilename:                      serviceDiscoveryFilename,
-		azsFilter:                                     azsFilter,
-		processesFilter:                               processesFilter,
-		lastServiceDiscoveryScrapeTimestampDesc:       lastServiceDiscoveryScrapeTimestampDesc,
-		lastServiceDiscoveryScrapeDurationSecondsDesc: lastServiceDiscoveryScrapeDurationSecondsDesc,
+		serviceDiscoveryFilename:                        serviceDiscoveryFilename,
+		azsFilter:                                       azsFilter,
+		processesFilter:                                 processesFilter,
+		lastServiceDiscoveryScrapeTimestampMetric:       lastServiceDiscoveryScrapeTimestampMetric,
+		lastServiceDiscoveryScrapeDurationSecondsMetric: lastServiceDiscoveryScrapeDurationSecondsMetric,
 		mu: &sync.Mutex{},
 	}
 	return collector
@@ -95,24 +99,18 @@ func (c *ServiceDiscoveryCollector) Collect(deployments []deployments.Deployment
 
 	err := c.writeTargetGroupsToFile(targetGroups)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastServiceDiscoveryScrapeTimestampDesc,
-		prometheus.GaugeValue,
-		float64(time.Now().Unix()),
-	)
+	c.lastServiceDiscoveryScrapeTimestampMetric.Set(float64(time.Now().Unix()))
+	c.lastServiceDiscoveryScrapeTimestampMetric.Collect(ch)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastServiceDiscoveryScrapeDurationSecondsDesc,
-		prometheus.GaugeValue,
-		time.Since(begun).Seconds(),
-	)
+	c.lastServiceDiscoveryScrapeDurationSecondsMetric.Set(time.Since(begun).Seconds())
+	c.lastServiceDiscoveryScrapeDurationSecondsMetric.Collect(ch)
 
 	return err
 }
 
 func (c *ServiceDiscoveryCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.lastServiceDiscoveryScrapeTimestampDesc
-	ch <- c.lastServiceDiscoveryScrapeDurationSecondsDesc
+	c.lastServiceDiscoveryScrapeTimestampMetric.Describe(ch)
+	c.lastServiceDiscoveryScrapeDurationSecondsMetric.Describe(ch)
 }
 
 func (c *ServiceDiscoveryCollector) getDeploymentProcesses(deployment deployments.DeploymentInfo) []ProcessDetails {

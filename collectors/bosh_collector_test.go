@@ -39,11 +39,11 @@ var _ = Describe("BoshCollector", func() {
 		processesFilter    *filters.RegexpFilter
 		boshCollector      *BoshCollector
 
-		totalBoshScrapesDesc              *prometheus.Desc
-		totalBoshScrapeErrorsDesc         *prometheus.Desc
-		lastBoshScrapeErrorDesc           *prometheus.Desc
-		lastBoshScrapeTimestampDesc       *prometheus.Desc
-		lastBoshScrapeDurationSecondsDesc *prometheus.Desc
+		totalBoshScrapesMetric              prometheus.Counter
+		totalBoshScrapeErrorsMetric         prometheus.Counter
+		lastBoshScrapeErrorMetric           prometheus.Gauge
+		lastBoshScrapeTimestampMetric       prometheus.Gauge
+		lastBoshScrapeDurationSecondsMetric prometheus.Gauge
 	)
 
 	BeforeEach(func() {
@@ -62,39 +62,53 @@ var _ = Describe("BoshCollector", func() {
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())
 
-		totalBoshScrapesDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "scrapes_total"),
-			"Total number of times BOSH was scraped for metrics.",
-			[]string{},
-			nil,
+		totalBoshScrapesMetric = prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "scrapes_total",
+				Help:      "Total number of times BOSH was scraped for metrics.",
+			},
 		)
 
-		totalBoshScrapeErrorsDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "scrape_errors_total"),
-			"Total number of times an error occured scraping BOSH.",
-			[]string{},
-			nil,
+		totalBoshScrapesMetric.Inc()
+
+		totalBoshScrapeErrorsMetric = prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "scrape_errors_total",
+				Help:      "Total number of times an error occured scraping BOSH.",
+			},
 		)
 
-		lastBoshScrapeErrorDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "last_scrape_error"),
-			"Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
-			[]string{},
-			nil,
+		lastBoshScrapeErrorMetric = prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_scrape_error",
+				Help:      "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
+			},
 		)
 
-		lastBoshScrapeTimestampDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "last_scrape_timestamp"),
-			"Number of seconds since 1970 since last scrape from BOSH.",
-			[]string{},
-			nil,
+		lastBoshScrapeErrorMetric.Set(float64(0))
+
+		lastBoshScrapeTimestampMetric = prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_scrape_timestamp",
+				Help:      "Number of seconds since 1970 since last scrape from BOSH.",
+			},
 		)
 
-		lastBoshScrapeDurationSecondsDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "last_scrape_duration_seconds"),
-			"Duration of the last scrape from BOSH.",
-			[]string{},
-			nil,
+		lastBoshScrapeDurationSecondsMetric = prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_scrape_duration_seconds",
+				Help:      "Duration of the last scrape from BOSH.",
+			},
 		)
 	})
 
@@ -121,54 +135,33 @@ var _ = Describe("BoshCollector", func() {
 		})
 
 		It("returns a scrapes_total description", func() {
-			Eventually(descriptions).Should(Receive(Equal(totalBoshScrapesDesc)))
+			Eventually(descriptions).Should(Receive(Equal(totalBoshScrapesMetric.Desc())))
 		})
 
 		It("returns a scrape_errors_total description", func() {
-			Eventually(descriptions).Should(Receive(Equal(totalBoshScrapeErrorsDesc)))
+			Eventually(descriptions).Should(Receive(Equal(totalBoshScrapeErrorsMetric.Desc())))
 		})
 
 		It("returns a last_scrape_error description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeErrorDesc)))
+			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeErrorMetric.Desc())))
 		})
 
 		It("returns a last_scrape_timestamp metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeTimestampDesc)))
+			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeTimestampMetric.Desc())))
 		})
 
 		It("returns a last_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeDurationSecondsDesc)))
+			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeDurationSecondsMetric.Desc())))
 		})
 	})
 
 	Describe("Collect", func() {
 		var (
-			metrics                     chan prometheus.Metric
-			totalBoshScrapesMetric      prometheus.Metric
-			totalBoshScrapeErrorsMetric prometheus.Metric
-			lastBoshScrapeErrorMetric   prometheus.Metric
+			metrics chan prometheus.Metric
 		)
 
 		BeforeEach(func() {
 			metrics = make(chan prometheus.Metric)
-
-			totalBoshScrapesMetric = prometheus.MustNewConstMetric(
-				totalBoshScrapesDesc,
-				prometheus.CounterValue,
-				float64(1),
-			)
-
-			totalBoshScrapeErrorsMetric = prometheus.MustNewConstMetric(
-				totalBoshScrapeErrorsDesc,
-				prometheus.CounterValue,
-				float64(0),
-			)
-
-			lastBoshScrapeErrorMetric = prometheus.MustNewConstMetric(
-				lastBoshScrapeErrorDesc,
-				prometheus.GaugeValue,
-				float64(0),
-			)
 		})
 
 		JustBeforeEach(func() {
@@ -191,17 +184,8 @@ var _ = Describe("BoshCollector", func() {
 			BeforeEach(func() {
 				boshClient.DeploymentsReturns([]director.Deployment{}, errors.New("no deployments"))
 
-				totalBoshScrapeErrorsMetric = prometheus.MustNewConstMetric(
-					totalBoshScrapeErrorsDesc,
-					prometheus.CounterValue,
-					float64(1),
-				)
-
-				lastBoshScrapeErrorMetric = prometheus.MustNewConstMetric(
-					lastBoshScrapeErrorDesc,
-					prometheus.GaugeValue,
-					float64(1),
-				)
+				totalBoshScrapeErrorsMetric.Inc()
+				lastBoshScrapeErrorMetric.Set(float64(1))
 			})
 
 			It("returns a scrape_errors_total metric", func() {

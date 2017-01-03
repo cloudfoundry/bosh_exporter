@@ -12,15 +12,13 @@ import (
 )
 
 type BoshCollector struct {
-	enabledCollectors                 []Collector
-	deploymentsFetcher                *deployments.Fetcher
-	totalBoshScrapes                  uint64
-	totalBoshScrapesDesc              *prometheus.Desc
-	totalBoshScrapeErrors             uint64
-	totalBoshScrapeErrorsDesc         *prometheus.Desc
-	lastBoshScrapeErrorDesc           *prometheus.Desc
-	lastBoshScrapeTimestampDesc       *prometheus.Desc
-	lastBoshScrapeDurationSecondsDesc *prometheus.Desc
+	enabledCollectors                   []Collector
+	deploymentsFetcher                  *deployments.Fetcher
+	totalBoshScrapesMetric              prometheus.Counter
+	totalBoshScrapeErrorsMetric         prometheus.Counter
+	lastBoshScrapeErrorMetric           prometheus.Gauge
+	lastBoshScrapeTimestampMetric       prometheus.Gauge
+	lastBoshScrapeDurationSecondsMetric prometheus.Gauge
 }
 
 func NewBoshCollector(
@@ -53,51 +51,59 @@ func NewBoshCollector(
 		enabledCollectors = append(enabledCollectors, serviceDiscoveryCollector)
 	}
 
-	totalBoshScrapesDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "scrapes_total"),
-		"Total number of times BOSH was scraped for metrics.",
-		[]string{},
-		nil,
+	totalBoshScrapesMetric := prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "scrapes_total",
+			Help:      "Total number of times BOSH was scraped for metrics.",
+		},
 	)
 
-	totalBoshScrapeErrorsDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "scrape_errors_total"),
-		"Total number of times an error occured scraping BOSH.",
-		[]string{},
-		nil,
+	totalBoshScrapeErrorsMetric := prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "scrape_errors_total",
+			Help:      "Total number of times an error occured scraping BOSH.",
+		},
 	)
 
-	lastBoshScrapeErrorDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_scrape_error"),
-		"Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
-		[]string{},
-		nil,
+	lastBoshScrapeErrorMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_scrape_error",
+			Help:      "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
+		},
 	)
 
-	lastBoshScrapeTimestampDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_scrape_timestamp"),
-		"Number of seconds since 1970 since last scrape from BOSH.",
-		[]string{},
-		nil,
+	lastBoshScrapeTimestampMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_scrape_timestamp",
+			Help:      "Number of seconds since 1970 since last scrape from BOSH.",
+		},
 	)
 
-	lastBoshScrapeDurationSecondsDesc := prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "last_scrape_duration_seconds"),
-		"Duration of the last scrape from BOSH.",
-		[]string{},
-		nil,
+	lastBoshScrapeDurationSecondsMetric := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_scrape_duration_seconds",
+			Help:      "Duration of the last scrape from BOSH.",
+		},
 	)
 
 	return &BoshCollector{
-		enabledCollectors:                 enabledCollectors,
-		deploymentsFetcher:                deploymentsFetcher,
-		totalBoshScrapes:                  0,
-		totalBoshScrapesDesc:              totalBoshScrapesDesc,
-		totalBoshScrapeErrors:             0,
-		totalBoshScrapeErrorsDesc:         totalBoshScrapeErrorsDesc,
-		lastBoshScrapeErrorDesc:           lastBoshScrapeErrorDesc,
-		lastBoshScrapeTimestampDesc:       lastBoshScrapeTimestampDesc,
-		lastBoshScrapeDurationSecondsDesc: lastBoshScrapeDurationSecondsDesc,
+		enabledCollectors:                   enabledCollectors,
+		deploymentsFetcher:                  deploymentsFetcher,
+		totalBoshScrapesMetric:              totalBoshScrapesMetric,
+		totalBoshScrapeErrorsMetric:         totalBoshScrapeErrorsMetric,
+		lastBoshScrapeErrorMetric:           lastBoshScrapeErrorMetric,
+		lastBoshScrapeTimestampMetric:       lastBoshScrapeTimestampMetric,
+		lastBoshScrapeDurationSecondsMetric: lastBoshScrapeDurationSecondsMetric,
 	}
 }
 
@@ -113,60 +119,43 @@ func (c *BoshCollector) Describe(ch chan<- *prometheus.Desc) {
 	}
 	wg.Wait()
 
-	ch <- c.totalBoshScrapesDesc
-	ch <- c.totalBoshScrapeErrorsDesc
-	ch <- c.lastBoshScrapeErrorDesc
-	ch <- c.lastBoshScrapeTimestampDesc
-	ch <- c.lastBoshScrapeDurationSecondsDesc
+	c.totalBoshScrapesMetric.Describe(ch)
+	c.totalBoshScrapeErrorsMetric.Describe(ch)
+	c.lastBoshScrapeErrorMetric.Describe(ch)
+	c.lastBoshScrapeTimestampMetric.Describe(ch)
+	c.lastBoshScrapeDurationSecondsMetric.Describe(ch)
 }
 
 func (c *BoshCollector) Collect(ch chan<- prometheus.Metric) {
 	var begun = time.Now()
 
 	scrapeError := 0
-	c.totalBoshScrapes++
+	c.totalBoshScrapesMetric.Inc()
 	deployments, err := c.deploymentsFetcher.Deployments()
 	if err != nil {
 		log.Error(err)
 		scrapeError = 1
-		c.totalBoshScrapeErrors++
+		c.totalBoshScrapeErrorsMetric.Inc()
 	} else {
 		if err := c.executeCollectors(deployments, ch); err != nil {
 			log.Error(err)
 			scrapeError = 1
-			c.totalBoshScrapeErrors++
+			c.totalBoshScrapeErrorsMetric.Inc()
 		}
 	}
 
-	ch <- prometheus.MustNewConstMetric(
-		c.totalBoshScrapesDesc,
-		prometheus.CounterValue,
-		float64(c.totalBoshScrapes),
-	)
+	c.totalBoshScrapesMetric.Collect(ch)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.totalBoshScrapeErrorsDesc,
-		prometheus.CounterValue,
-		float64(c.totalBoshScrapeErrors),
-	)
+	c.totalBoshScrapeErrorsMetric.Collect(ch)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastBoshScrapeErrorDesc,
-		prometheus.GaugeValue,
-		float64(scrapeError),
-	)
+	c.lastBoshScrapeErrorMetric.Set(float64(scrapeError))
+	c.lastBoshScrapeErrorMetric.Collect(ch)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastBoshScrapeTimestampDesc,
-		prometheus.GaugeValue,
-		float64(time.Now().Unix()),
-	)
+	c.lastBoshScrapeTimestampMetric.Set(float64(time.Now().Unix()))
+	c.lastBoshScrapeTimestampMetric.Collect(ch)
 
-	ch <- prometheus.MustNewConstMetric(
-		c.lastBoshScrapeDurationSecondsDesc,
-		prometheus.GaugeValue,
-		time.Since(begun).Seconds(),
-	)
+	c.lastBoshScrapeDurationSecondsMetric.Set(time.Since(begun).Seconds())
+	c.lastBoshScrapeDurationSecondsMetric.Collect(ch)
 }
 
 func (c *BoshCollector) executeCollectors(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) error {

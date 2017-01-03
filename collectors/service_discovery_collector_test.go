@@ -25,8 +25,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		processesFilter           *filters.RegexpFilter
 		serviceDiscoveryCollector *ServiceDiscoveryCollector
 
-		lastServiceDiscoveryScrapeTimestampDesc       *prometheus.Desc
-		lastServiceDiscoveryScrapeDurationSecondsDesc *prometheus.Desc
+		lastServiceDiscoveryScrapeTimestampMetric       prometheus.Gauge
+		lastServiceDiscoveryScrapeDurationSecondsMetric prometheus.Gauge
 	)
 
 	BeforeEach(func() {
@@ -37,18 +37,22 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		azsFilter = filters.NewAZsFilter([]string{})
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 
-		lastServiceDiscoveryScrapeTimestampDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "last_service_discovery_scrape_timestamp"),
-			"Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
-			[]string{},
-			nil,
+		lastServiceDiscoveryScrapeTimestampMetric = prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_service_discovery_scrape_timestamp",
+				Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+			},
 		)
 
-		lastServiceDiscoveryScrapeDurationSecondsDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "last_service_discovery_scrape_duration_seconds"),
-			"Duration of the last scrape of Service Discovery from BOSH.",
-			[]string{},
-			nil,
+		lastServiceDiscoveryScrapeDurationSecondsMetric = prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_service_discovery_scrape_duration_seconds",
+				Help:      "Duration of the last scrape of Service Discovery from BOSH.",
+			},
 		)
 	})
 
@@ -75,11 +79,11 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		})
 
 		It("returns a last_service_discovery_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastServiceDiscoveryScrapeTimestampDesc)))
+			Eventually(descriptions).Should(Receive(Equal(lastServiceDiscoveryScrapeTimestampMetric.Desc())))
 		})
 
 		It("returns a last_service_discovery_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastServiceDiscoveryScrapeDurationSecondsDesc)))
+			Eventually(descriptions).Should(Receive(Equal(lastServiceDiscoveryScrapeDurationSecondsMetric.Desc())))
 		})
 	})
 

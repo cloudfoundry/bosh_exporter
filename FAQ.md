@@ -66,7 +66,7 @@ The downside of the above approaches is that you will NOT get the same level of 
 
 ### How can I enable only a particular collector?
 
-The `filter.collectors` command flag allows you to filter what collectors will be enabled. Possible values are `Deployments`, `Jobs`, `ServiceDiscovery` (or a combination of them).
+The `filter.collectors` command flag allows you to filter what collectors will be enabled (if not set, all collectors will be enabled by default). Possible values are `Deployments`, `Jobs`, `ServiceDiscovery` (or a combination of them).
 
 ### How can I filter by a particular BOSH deployment?
 

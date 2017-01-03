@@ -60,7 +60,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | `bosh.ca-cert-file`<br />`BOSH_EXPORTER_BOSH_CA_CERT_FILE` | No | | BOSH CA Certificate file |
 | `filter.deployments`<br />`BOSH_EXPORTER_FILTER_DEPLOYMENTS` | No | | Comma separated deployments to filter |
 | `filter.azs`<br />`BOSH_EXPORTER_FILTER_AZS` | No | | Comma separated AZs to filter |
-| `filter.collectors`<br />`BOSH_EXPORTER_FILTER_COLLECTORS` | No | | Comma separated collectors to filter (`Deployments`, `Jobs`, `ServiceDiscovery`) |
+| `filter.collectors`<br />`BOSH_EXPORTER_FILTER_COLLECTORS` | No | | Comma separated collectors to filter. If not set, all collectors will be enabled  (`Deployments`, `Jobs`, `ServiceDiscovery`) |
 | `metrics.namespace`<br />`BOSH_EXPORTER_METRICS_NAMESPACE` | No | `bosh` | Metrics Namespace |
 | `sd.filename`<br />`BOSH_EXPORTER_SD_FILENAME` | No | `bosh_target_groups.json` | Full path to the Service Discovery output file |
 | `sd.processes_regexp`<br />`BOSH_EXPORTER_SD_PROCESSES_REGEXP` | No | | Regexp to filter Service Discovery processes names |

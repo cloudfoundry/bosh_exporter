@@ -246,6 +246,18 @@
 			"Rev": "fcdb11ccb4389efb1b210b7ffb623ab71c5fdd60"
 		},
 		{
+			"ImportPath": "golang.org/x/crypto/curve25519",
+			"Rev": "f6b343c37ca80bfa8ea539da67a0b621f84fab1d"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ed25519",
+			"Rev": "f6b343c37ca80bfa8ea539da67a0b621f84fab1d"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ed25519/internal/edwards25519",
+			"Rev": "f6b343c37ca80bfa8ea539da67a0b621f84fab1d"
+		},
+		{
 			"ImportPath": "golang.org/x/crypto/ssh",
 			"Rev": "f6b343c37ca80bfa8ea539da67a0b621f84fab1d"
 		},

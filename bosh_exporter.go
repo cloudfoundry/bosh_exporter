@@ -176,8 +176,8 @@ func buildBOSHClient() (director.Director, error) {
 	}
 
 	directorConfig.CACert = boshCACert
-	directorConfig.Username = *boshUsername
-	directorConfig.Password = *boshPassword
+	directorConfig.Client = *boshUsername
+	directorConfig.ClientSecret = *boshPassword
 
 	if *boshUAAURL != "" {
 		uaaConfig, err := uaa.NewConfigFromURL(*boshUAAURL)

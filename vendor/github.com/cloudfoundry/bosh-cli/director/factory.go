@@ -2,6 +2,7 @@ package director
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 
@@ -52,7 +53,7 @@ func (f Factory) httpClient(config Config, taskReporter TaskReporter, fileReport
 	rawClient := boshhttp.CreateDefaultClient(certPool)
 
 	authAdjustment := NewAuthRequestAdjustment(
-		config.TokenFunc, config.Username, config.Password)
+		config.TokenFunc, config.Client, config.ClientSecret)
 
 	rawClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		if len(via) > 10 {
@@ -66,7 +67,7 @@ func (f Factory) httpClient(config Config, taskReporter TaskReporter, fileReport
 			return err
 		}
 
-		req.URL.Host = fmt.Sprintf("%s:%d", config.Host, config.Port)
+		req.URL.Host = net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port))
 
 		req.Header.Del("Referer")
 
@@ -80,7 +81,7 @@ func (f Factory) httpClient(config Config, taskReporter TaskReporter, fileReport
 
 	endpoint := url.URL{
 		Scheme: "https",
-		Host:   fmt.Sprintf("%s:%d", config.Host, config.Port),
+		Host:   net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)),
 	}
 
 	return NewClient(endpoint.String(), httpClient, taskReporter, fileReporter, f.logger), nil

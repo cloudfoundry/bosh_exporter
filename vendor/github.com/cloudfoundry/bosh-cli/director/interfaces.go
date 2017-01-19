@@ -12,6 +12,7 @@ import (
 
 type Director interface {
 	IsAuthenticated() (bool, error)
+	WithContext(id string) Director
 	Info() (Info, error)
 
 	Locks() ([]Lock, error)
@@ -19,6 +20,7 @@ type Director interface {
 	CurrentTasks(TasksFilter) ([]Task, error)
 	RecentTasks(int, TasksFilter) ([]Task, error)
 	FindTask(int) (Task, error)
+	FindTasksByContextId(string) ([]Task, error)
 
 	Events(EventsFilter) ([]Event, error)
 
@@ -109,7 +111,7 @@ type Deployment interface {
 	DeleteSnapshots() error
 	DeleteVM(string) error
 
-	ConfigVars() ([]ConfigVarsResult, error)
+	Variables() ([]VariableResult, error)
 
 	// Deployment, pool or instance specifics
 	Start(slug AllOrInstanceGroupOrInstanceSlug, opts StartOpts) error
@@ -221,6 +223,7 @@ type Task interface {
 	IsError() bool
 	User() string
 	DeploymentName() string
+	ContextID() string
 
 	Description() string
 	Result() string
@@ -263,6 +266,10 @@ type EventsFilter struct {
 	Deployment string
 	Task       string
 	Instance   string
+	User       string
+	Action     string
+	ObjectType string
+	ObjectName string
 }
 
 //go:generate counterfeiter . Event

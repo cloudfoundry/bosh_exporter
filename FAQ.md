@@ -140,7 +140,7 @@ We will be glad to address any questions not answered here. Please, just open a 
 [bosh_director]: http://bosh.io/docs/bosh-components.html#director
 [bosh_exporter_metrics]: https://github.com/cloudfoundry-community/bosh_exporter#metrics
 [bosh_graphite]: http://bosh.io/docs/hm-config.html#graphite
-[bosh_hmforwarder]: https://github.com/cloudfoundry/loggregator/tree/develop/src/boshhmforwarder
+[bosh_hmforwarder]: https://github.com/cloudfoundry/bosh-hm-forwarder
 [bosh_health_monitor]: http://bosh.io/docs/bosh-components.html#health-monitor
 [bosh_lite]: https://github.com/cloudfoundry/bosh-lite
 [bosh_lite_ca_cert]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/bosh-lite-ca.crt

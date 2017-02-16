@@ -23,6 +23,7 @@ type BoshCollector struct {
 
 func NewBoshCollector(
 	namespace string,
+	environment string,
 	serviceDiscoveryFilename string,
 	deploymentsFetcher *deployments.Fetcher,
 	collectorsFilter *filters.CollectorsFilter,
@@ -32,18 +33,19 @@ func NewBoshCollector(
 	enabledCollectors := []Collector{}
 
 	if collectorsFilter.Enabled(filters.DeploymentsCollector) {
-		deploymentsCollector := NewDeploymentsCollector(namespace)
+		deploymentsCollector := NewDeploymentsCollector(namespace, environment)
 		enabledCollectors = append(enabledCollectors, deploymentsCollector)
 	}
 
 	if collectorsFilter.Enabled(filters.JobsCollector) {
-		jobsCollector := NewJobsCollector(namespace, azsFilter)
+		jobsCollector := NewJobsCollector(namespace, environment, azsFilter)
 		enabledCollectors = append(enabledCollectors, jobsCollector)
 	}
 
 	if collectorsFilter.Enabled(filters.ServiceDiscoveryCollector) {
 		serviceDiscoveryCollector := NewServiceDiscoveryCollector(
 			namespace,
+			environment,
 			serviceDiscoveryFilename,
 			azsFilter,
 			processesFilter,
@@ -53,46 +55,51 @@ func NewBoshCollector(
 
 	totalBoshScrapesMetric := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "scrapes_total",
-			Help:      "Total number of times BOSH was scraped for metrics.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "scrapes_total",
+			Help:        "Total number of times BOSH was scraped for metrics.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 
 	totalBoshScrapeErrorsMetric := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "scrape_errors_total",
-			Help:      "Total number of times an error occured scraping BOSH.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "scrape_errors_total",
+			Help:        "Total number of times an error occured scraping BOSH.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 
 	lastBoshScrapeErrorMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_scrape_error",
-			Help:      "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "last_scrape_error",
+			Help:        "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 
 	lastBoshScrapeTimestampMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_scrape_timestamp",
-			Help:      "Number of seconds since 1970 since last scrape from BOSH.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "last_scrape_timestamp",
+			Help:        "Number of seconds since 1970 since last scrape from BOSH.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 
 	lastBoshScrapeDurationSecondsMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_scrape_duration_seconds",
-			Help:      "Duration of the last scrape from BOSH.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "last_scrape_duration_seconds",
+			Help:        "Duration of the last scrape from BOSH.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 

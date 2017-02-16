@@ -17,6 +17,7 @@ import (
 var _ = Describe("JobsCollector", func() {
 	var (
 		namespace     string
+		environment   string
 		azsFilter     *filters.AZsFilter
 		jobsCollector *JobsCollector
 
@@ -78,14 +79,16 @@ var _ = Describe("JobsCollector", func() {
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
+		environment = "test_environment"
 		azsFilter = filters.NewAZsFilter([]string{})
 
 		jobHealthyMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "healthy",
-				Help:      "BOSH Job Healthy (1 for healthy, 0 for unhealthy).",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "healthy",
+				Help:        "BOSH Job Healthy (1 for healthy, 0 for unhealthy).",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -101,10 +104,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobLoadAvg01Metric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "load_avg01",
-				Help:      "BOSH Job Load avg01.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "load_avg01",
+				Help:        "BOSH Job Load avg01.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -120,10 +124,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobLoadAvg05Metric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "load_avg05",
-				Help:      "BOSH Job Load avg05.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "load_avg05",
+				Help:        "BOSH Job Load avg05.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -139,10 +144,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobLoadAvg15Metric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "load_avg15",
-				Help:      "BOSH Job Load avg15.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "load_avg15",
+				Help:        "BOSH Job Load avg15.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -158,10 +164,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobCPUSysMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "cpu_sys",
-				Help:      "BOSH Job CPU System.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "cpu_sys",
+				Help:        "BOSH Job CPU System.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -177,10 +184,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobCPUUserMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "cpu_user",
-				Help:      "BOSH Job CPU User.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "cpu_user",
+				Help:        "BOSH Job CPU User.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -196,10 +204,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobCPUWaitMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "cpu_wait",
-				Help:      "BOSH Job CPU Wait.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "cpu_wait",
+				Help:        "BOSH Job CPU Wait.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -215,10 +224,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobMemKBMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "mem_kb",
-				Help:      "BOSH Job Memory KB.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "mem_kb",
+				Help:        "BOSH Job Memory KB.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -234,10 +244,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobMemPercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "mem_percent",
-				Help:      "BOSH Job Memory Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "mem_percent",
+				Help:        "BOSH Job Memory Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -253,10 +264,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobSwapKBMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "swap_kb",
-				Help:      "BOSH Job Swap KB.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "swap_kb",
+				Help:        "BOSH Job Swap KB.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -272,10 +284,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobSwapPercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "swap_percent",
-				Help:      "BOSH Job Swap Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "swap_percent",
+				Help:        "BOSH Job Swap Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -291,10 +304,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobSystemDiskInodePercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "system_disk_inode_percent",
-				Help:      "BOSH Job System Disk Inode Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "system_disk_inode_percent",
+				Help:        "BOSH Job System Disk Inode Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -310,10 +324,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobSystemDiskPercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "system_disk_percent",
-				Help:      "BOSH Job System Disk Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "system_disk_percent",
+				Help:        "BOSH Job System Disk Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -329,10 +344,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobEphemeralDiskInodePercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "ephemeral_disk_inode_percent",
-				Help:      "BOSH Job Ephemeral Disk Inode Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "ephemeral_disk_inode_percent",
+				Help:        "BOSH Job Ephemeral Disk Inode Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -348,10 +364,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobEphemeralDiskPercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "ephemeral_disk_percent",
-				Help:      "BOSH Job Ephemeral Disk Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "ephemeral_disk_percent",
+				Help:        "BOSH Job Ephemeral Disk Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -367,10 +384,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobPersistentDiskInodePercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "persistent_disk_inode_percent",
-				Help:      "BOSH Job Persistent Disk Inode Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "persistent_disk_inode_percent",
+				Help:        "BOSH Job Persistent Disk Inode Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -386,10 +404,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobPersistentDiskPercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "persistent_disk_percent",
-				Help:      "BOSH Job Persistent Disk Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job",
+				Name:        "persistent_disk_percent",
+				Help:        "BOSH Job Persistent Disk Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
 		)
@@ -405,10 +424,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobProcessHealthyMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "healthy",
-				Help:      "BOSH Job Process Healthy (1 for healthy, 0 for unhealthy).",
+				Namespace:   namespace,
+				Subsystem:   "job_process",
+				Name:        "healthy",
+				Help:        "BOSH Job Process Healthy (1 for healthy, 0 for unhealthy).",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
 		)
@@ -425,10 +445,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobProcessUptimeMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "uptime_seconds",
-				Help:      "BOSH Job Process Uptime in seconds.",
+				Namespace:   namespace,
+				Subsystem:   "job_process",
+				Name:        "uptime_seconds",
+				Help:        "BOSH Job Process Uptime in seconds.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
 		)
@@ -445,10 +466,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobProcessCPUTotalMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "cpu_total",
-				Help:      "BOSH Job Process CPU Total.",
+				Namespace:   namespace,
+				Subsystem:   "job_process",
+				Name:        "cpu_total",
+				Help:        "BOSH Job Process CPU Total.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
 		)
@@ -465,10 +487,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobProcessMemKBMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "mem_kb",
-				Help:      "BOSH Job Process Memory KB.",
+				Namespace:   namespace,
+				Subsystem:   "job_process",
+				Name:        "mem_kb",
+				Help:        "BOSH Job Process Memory KB.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
 		)
@@ -485,10 +508,11 @@ var _ = Describe("JobsCollector", func() {
 
 		jobProcessMemPercentMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "mem_percent",
-				Help:      "BOSH Job Process Memory Percent.",
+				Namespace:   namespace,
+				Subsystem:   "job_process",
+				Name:        "mem_percent",
+				Help:        "BOSH Job Process Memory Percent.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
 		)
@@ -505,25 +529,27 @@ var _ = Describe("JobsCollector", func() {
 
 		lastJobsScrapeTimestampMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_jobs_scrape_timestamp",
-				Help:      "Number of seconds since 1970 since last scrape of Job metrics from BOSH.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "last_jobs_scrape_timestamp",
+				Help:        "Number of seconds since 1970 since last scrape of Job metrics from BOSH.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 
 		lastJobsScrapeDurationSecondsMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_jobs_scrape_duration_seconds",
-				Help:      "Duration of the last scrape of Job metrics from BOSH.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "last_jobs_scrape_duration_seconds",
+				Help:        "Duration of the last scrape of Job metrics from BOSH.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 	})
 
 	JustBeforeEach(func() {
-		jobsCollector = NewJobsCollector(namespace, azsFilter)
+		jobsCollector = NewJobsCollector(namespace, environment, azsFilter)
 	})
 
 	Describe("Describe", func() {

@@ -81,6 +81,11 @@ var (
 		"Metrics Namespace ($BOSH_EXPORTER_METRICS_NAMESPACE).",
 	)
 
+	metricsEnvironment = flag.String(
+		"metrics.environment", "",
+		"Environment label to be attached to metrics ($BOSH_EXPORTER_METRICS_ENVIRONMENT).",
+	)
+
 	sdFilename = flag.String(
 		"sd.filename", "bosh_target_groups.json",
 		"Full path to the Service Discovery output file ($BOSH_EXPORTER_SD_FILENAME).",
@@ -124,6 +129,7 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_FILTER_AZS", filterAZs)
 	overrideWithEnvVar("BOSH_EXPORTER_FILTER_COLLECTORS", filterCollectors)
 	overrideWithEnvVar("BOSH_EXPORTER_METRICS_NAMESPACE", metricsNamespace)
+	overrideWithEnvVar("BOSH_EXPORTER_METRICS_ENVIRONMENT", metricsEnvironment)
 	overrideWithEnvVar("BOSH_EXPORTER_SD_FILENAME", sdFilename)
 	overrideWithEnvVar("BOSH_EXPORTER_SD_PROCESSES_REGEXP", sdProcessesRegexp)
 	overrideWithEnvVar("BOSH_EXPORTER_WEB_LISTEN_ADDRESS", listenAddress)
@@ -267,6 +273,7 @@ func main() {
 
 	boshCollector := collectors.NewBoshCollector(
 		*metricsNamespace,
+		*metricsEnvironment,
 		*sdFilename,
 		deploymentsFetcher,
 		collectorsFilter,

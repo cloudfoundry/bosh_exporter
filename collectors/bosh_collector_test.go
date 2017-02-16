@@ -27,6 +27,7 @@ var _ = Describe("BoshCollector", func() {
 	var (
 		err                      error
 		namespace                string
+		environment              string
 		tmpfile                  *os.File
 		serviceDiscoveryFilename string
 
@@ -48,6 +49,7 @@ var _ = Describe("BoshCollector", func() {
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
+		environment = "test_environment"
 		tmpfile, err = ioutil.TempFile("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
@@ -64,10 +66,11 @@ var _ = Describe("BoshCollector", func() {
 
 		totalBoshScrapesMetric = prometheus.NewCounter(
 			prometheus.CounterOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "scrapes_total",
-				Help:      "Total number of times BOSH was scraped for metrics.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "scrapes_total",
+				Help:        "Total number of times BOSH was scraped for metrics.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 
@@ -75,19 +78,21 @@ var _ = Describe("BoshCollector", func() {
 
 		totalBoshScrapeErrorsMetric = prometheus.NewCounter(
 			prometheus.CounterOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "scrape_errors_total",
-				Help:      "Total number of times an error occured scraping BOSH.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "scrape_errors_total",
+				Help:        "Total number of times an error occured scraping BOSH.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 
 		lastBoshScrapeErrorMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_scrape_error",
-				Help:      "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "last_scrape_error",
+				Help:        "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 
@@ -95,19 +100,21 @@ var _ = Describe("BoshCollector", func() {
 
 		lastBoshScrapeTimestampMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_scrape_timestamp",
-				Help:      "Number of seconds since 1970 since last scrape from BOSH.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "last_scrape_timestamp",
+				Help:        "Number of seconds since 1970 since last scrape from BOSH.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 
 		lastBoshScrapeDurationSecondsMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_scrape_duration_seconds",
-				Help:      "Duration of the last scrape from BOSH.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "last_scrape_duration_seconds",
+				Help:        "Duration of the last scrape from BOSH.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 	})
@@ -118,7 +125,7 @@ var _ = Describe("BoshCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		boshCollector = NewBoshCollector(namespace, serviceDiscoveryFilename, deploymentsFetcher, collectorsFilter, azsFilter, processesFilter)
+		boshCollector = NewBoshCollector(namespace, environment, serviceDiscoveryFilename, deploymentsFetcher, collectorsFilter, azsFilter, processesFilter)
 	})
 
 	Describe("Describe", func() {

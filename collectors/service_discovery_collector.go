@@ -51,25 +51,28 @@ type ServiceDiscoveryCollector struct {
 
 func NewServiceDiscoveryCollector(
 	namespace string,
+	environment string,
 	serviceDiscoveryFilename string,
 	azsFilter *filters.AZsFilter,
 	processesFilter *filters.RegexpFilter,
 ) *ServiceDiscoveryCollector {
 	lastServiceDiscoveryScrapeTimestampMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_service_discovery_scrape_timestamp",
-			Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "last_service_discovery_scrape_timestamp",
+			Help:        "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 
 	lastServiceDiscoveryScrapeDurationSecondsMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_service_discovery_scrape_duration_seconds",
-			Help:      "Duration of the last scrape of Service Discovery from BOSH.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "last_service_discovery_scrape_duration_seconds",
+			Help:        "Duration of the last scrape of Service Discovery from BOSH.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 

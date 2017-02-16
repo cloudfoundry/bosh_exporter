@@ -19,6 +19,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 	var (
 		err                       error
 		namespace                 string
+		environment               string
 		tmpfile                   *os.File
 		serviceDiscoveryFilename  string
 		azsFilter                 *filters.AZsFilter
@@ -39,19 +40,21 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 		lastServiceDiscoveryScrapeTimestampMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_service_discovery_scrape_timestamp",
-				Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "last_service_discovery_scrape_timestamp",
+				Help:        "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 
 		lastServiceDiscoveryScrapeDurationSecondsMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_service_discovery_scrape_duration_seconds",
-				Help:      "Duration of the last scrape of Service Discovery from BOSH.",
+				Namespace:   namespace,
+				Subsystem:   "",
+				Name:        "last_service_discovery_scrape_duration_seconds",
+				Help:        "Duration of the last scrape of Service Discovery from BOSH.",
+				ConstLabels: prometheus.Labels{"environment": environment},
 			},
 		)
 	})
@@ -62,7 +65,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		serviceDiscoveryCollector = NewServiceDiscoveryCollector(namespace, serviceDiscoveryFilename, azsFilter, processesFilter)
+		serviceDiscoveryCollector = NewServiceDiscoveryCollector(namespace, environment, serviceDiscoveryFilename, azsFilter, processesFilter)
 	})
 
 	Describe("Describe", func() {

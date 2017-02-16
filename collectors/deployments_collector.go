@@ -15,42 +15,46 @@ type DeploymentsCollector struct {
 	lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
 }
 
-func NewDeploymentsCollector(namespace string) *DeploymentsCollector {
+func NewDeploymentsCollector(namespace string, environment string) *DeploymentsCollector {
 	deploymentReleaseInfoMetric := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "deployment",
-			Name:      "release_info",
-			Help:      "Labeled BOSH Deployment Release Info with a constant '1' value.",
+			Namespace:   namespace,
+			Subsystem:   "deployment",
+			Name:        "release_info",
+			Help:        "Labeled BOSH Deployment Release Info with a constant '1' value.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 		[]string{"bosh_deployment", "bosh_release_name", "bosh_release_version"},
 	)
 
 	deploymentStemcellInfoMetric := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "deployment",
-			Name:      "stemcell_info",
-			Help:      "Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
+			Namespace:   namespace,
+			Subsystem:   "deployment",
+			Name:        "stemcell_info",
+			Help:        "Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 		[]string{"bosh_deployment", "bosh_stemcell_name", "bosh_stemcell_version", "bosh_stemcell_os_name"},
 	)
 
 	lastDeploymentsScrapeTimestampMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_deployments_scrape_timestamp",
-			Help:      "Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "last_deployments_scrape_timestamp",
+			Help:        "Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 
 	lastDeploymentsScrapeDurationSecondsMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_deployments_scrape_duration_seconds",
-			Help:      "Duration of the last scrape of Deployments metrics from BOSH.",
+			Namespace:   namespace,
+			Subsystem:   "",
+			Name:        "last_deployments_scrape_duration_seconds",
+			Help:        "Duration of the last scrape of Deployments metrics from BOSH.",
+			ConstLabels: prometheus.Labels{"environment": environment},
 		},
 	)
 

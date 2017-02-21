@@ -24,6 +24,8 @@ type BoshCollector struct {
 func NewBoshCollector(
 	namespace string,
 	environment string,
+	boshName string,
+	boshUUID string,
 	serviceDiscoveryFilename string,
 	deploymentsFetcher *deployments.Fetcher,
 	collectorsFilter *filters.CollectorsFilter,
@@ -33,12 +35,12 @@ func NewBoshCollector(
 	enabledCollectors := []Collector{}
 
 	if collectorsFilter.Enabled(filters.DeploymentsCollector) {
-		deploymentsCollector := NewDeploymentsCollector(namespace, environment)
+		deploymentsCollector := NewDeploymentsCollector(namespace, environment, boshName, boshUUID)
 		enabledCollectors = append(enabledCollectors, deploymentsCollector)
 	}
 
 	if collectorsFilter.Enabled(filters.JobsCollector) {
-		jobsCollector := NewJobsCollector(namespace, environment, azsFilter)
+		jobsCollector := NewJobsCollector(namespace, environment, boshName, boshUUID, azsFilter)
 		enabledCollectors = append(enabledCollectors, jobsCollector)
 	}
 
@@ -46,6 +48,8 @@ func NewBoshCollector(
 		serviceDiscoveryCollector := NewServiceDiscoveryCollector(
 			namespace,
 			environment,
+			boshName,
+			boshUUID,
 			serviceDiscoveryFilename,
 			azsFilter,
 			processesFilter,
@@ -55,51 +59,71 @@ func NewBoshCollector(
 
 	totalBoshScrapesMetric := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace:   namespace,
-			Subsystem:   "",
-			Name:        "scrapes_total",
-			Help:        "Total number of times BOSH was scraped for metrics.",
-			ConstLabels: prometheus.Labels{"environment": environment},
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "scrapes_total",
+			Help:      "Total number of times BOSH was scraped for metrics.",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
 		},
 	)
 
 	totalBoshScrapeErrorsMetric := prometheus.NewCounter(
 		prometheus.CounterOpts{
-			Namespace:   namespace,
-			Subsystem:   "",
-			Name:        "scrape_errors_total",
-			Help:        "Total number of times an error occured scraping BOSH.",
-			ConstLabels: prometheus.Labels{"environment": environment},
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "scrape_errors_total",
+			Help:      "Total number of times an error occured scraping BOSH.",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
 		},
 	)
 
 	lastBoshScrapeErrorMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace:   namespace,
-			Subsystem:   "",
-			Name:        "last_scrape_error",
-			Help:        "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
-			ConstLabels: prometheus.Labels{"environment": environment},
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_scrape_error",
+			Help:      "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
 		},
 	)
 
 	lastBoshScrapeTimestampMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace:   namespace,
-			Subsystem:   "",
-			Name:        "last_scrape_timestamp",
-			Help:        "Number of seconds since 1970 since last scrape from BOSH.",
-			ConstLabels: prometheus.Labels{"environment": environment},
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_scrape_timestamp",
+			Help:      "Number of seconds since 1970 since last scrape from BOSH.",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
 		},
 	)
 
 	lastBoshScrapeDurationSecondsMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace:   namespace,
-			Subsystem:   "",
-			Name:        "last_scrape_duration_seconds",
-			Help:        "Duration of the last scrape from BOSH.",
-			ConstLabels: prometheus.Labels{"environment": environment},
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_scrape_duration_seconds",
+			Help:      "Duration of the last scrape from BOSH.",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
 		},
 	)
 

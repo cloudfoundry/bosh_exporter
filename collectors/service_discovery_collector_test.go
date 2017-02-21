@@ -20,6 +20,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		err                       error
 		namespace                 string
 		environment               string
+		boshName                  string
+		boshUUID                  string
 		tmpfile                   *os.File
 		serviceDiscoveryFilename  string
 		azsFilter                 *filters.AZsFilter
@@ -32,6 +34,9 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 	BeforeEach(func() {
 		namespace = "test_exporter"
+		environment = "test_environment"
+		boshName = "test_bosh_name"
+		boshUUID = "test_bosh_uuid"
 		tmpfile, err = ioutil.TempFile("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
@@ -40,21 +45,29 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 		lastServiceDiscoveryScrapeTimestampMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace:   namespace,
-				Subsystem:   "",
-				Name:        "last_service_discovery_scrape_timestamp",
-				Help:        "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
-				ConstLabels: prometheus.Labels{"environment": environment},
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_service_discovery_scrape_timestamp",
+				Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+				ConstLabels: prometheus.Labels{
+					"environment": environment,
+					"bosh_name":   boshName,
+					"bosh_uuid":   boshUUID,
+				},
 			},
 		)
 
 		lastServiceDiscoveryScrapeDurationSecondsMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
-				Namespace:   namespace,
-				Subsystem:   "",
-				Name:        "last_service_discovery_scrape_duration_seconds",
-				Help:        "Duration of the last scrape of Service Discovery from BOSH.",
-				ConstLabels: prometheus.Labels{"environment": environment},
+				Namespace: namespace,
+				Subsystem: "",
+				Name:      "last_service_discovery_scrape_duration_seconds",
+				Help:      "Duration of the last scrape of Service Discovery from BOSH.",
+				ConstLabels: prometheus.Labels{
+					"environment": environment,
+					"bosh_name":   boshName,
+					"bosh_uuid":   boshUUID,
+				},
 			},
 		)
 	})
@@ -65,7 +78,15 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		serviceDiscoveryCollector = NewServiceDiscoveryCollector(namespace, environment, serviceDiscoveryFilename, azsFilter, processesFilter)
+		serviceDiscoveryCollector = NewServiceDiscoveryCollector(
+			namespace,
+			environment,
+			boshName,
+			boshUUID,
+			serviceDiscoveryFilename,
+			azsFilter,
+			processesFilter,
+		)
 	})
 
 	Describe("Describe", func() {

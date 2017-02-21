@@ -274,6 +274,8 @@ func main() {
 	boshCollector := collectors.NewBoshCollector(
 		*metricsNamespace,
 		*metricsEnvironment,
+		boshInfo.Name,
+		boshInfo.UUID,
 		*sdFilename,
 		deploymentsFetcher,
 		collectorsFilter,

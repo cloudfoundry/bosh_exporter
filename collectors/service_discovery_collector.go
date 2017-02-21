@@ -52,27 +52,37 @@ type ServiceDiscoveryCollector struct {
 func NewServiceDiscoveryCollector(
 	namespace string,
 	environment string,
+	boshName string,
+	boshUUID string,
 	serviceDiscoveryFilename string,
 	azsFilter *filters.AZsFilter,
 	processesFilter *filters.RegexpFilter,
 ) *ServiceDiscoveryCollector {
 	lastServiceDiscoveryScrapeTimestampMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace:   namespace,
-			Subsystem:   "",
-			Name:        "last_service_discovery_scrape_timestamp",
-			Help:        "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
-			ConstLabels: prometheus.Labels{"environment": environment},
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_service_discovery_scrape_timestamp",
+			Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
 		},
 	)
 
 	lastServiceDiscoveryScrapeDurationSecondsMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Namespace:   namespace,
-			Subsystem:   "",
-			Name:        "last_service_discovery_scrape_duration_seconds",
-			Help:        "Duration of the last scrape of Service Discovery from BOSH.",
-			ConstLabels: prometheus.Labels{"environment": environment},
+			Namespace: namespace,
+			Subsystem: "",
+			Name:      "last_service_discovery_scrape_duration_seconds",
+			Help:      "Duration of the last scrape of Service Discovery from BOSH.",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
 		},
 	)
 

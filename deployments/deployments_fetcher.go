@@ -67,12 +67,6 @@ func (f *Fetcher) fetchDeploymentInfo(deployment director.Deployment) (*Deployme
 		Name: deployment.Name(),
 	}
 
-	errands, err := f.fetchDeploymentErrands(deployment)
-	if err != nil {
-		return deploymentInfo, err
-	}
-	deploymentInfo.Errands = errands
-
 	instances, err := f.fetchDeploymentInstances(deployment)
 	if err != nil {
 		return deploymentInfo, err
@@ -92,25 +86,6 @@ func (f *Fetcher) fetchDeploymentInfo(deployment director.Deployment) (*Deployme
 	deploymentInfo.Stemcells = stemcells
 
 	return deploymentInfo, nil
-}
-
-func (f *Fetcher) fetchDeploymentErrands(deployment director.Deployment) ([]Errand, error) {
-	deploymentErrands := []Errand{}
-
-	log.Debugf("Reading Errands for deployment `%s`:", deployment.Name())
-	errands, err := deployment.Errands()
-	if err != nil {
-		return deploymentErrands, errors.New(fmt.Sprintf("Error while reading Errands for deployment `%s`: %v", deployment.Name(), err))
-	}
-
-	for _, errand := range errands {
-		deploymentErrand := Errand{
-			Name: errand.Name,
-		}
-		deploymentErrands = append(deploymentErrands, deploymentErrand)
-	}
-
-	return deploymentErrands, nil
 }
 
 func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]Instance, error) {

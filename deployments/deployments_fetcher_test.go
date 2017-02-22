@@ -43,7 +43,6 @@ var _ = Describe("Fetcher", func() {
 	Describe("Deployments", func() {
 		var (
 			deploymentName                = "fake-deployment-name"
-			errandName                    = "fake-errand-name"
 			agentID                       = "fake-agent-id"
 			jobName                       = "fake-job-name"
 			jobID                         = "fake-job-id"
@@ -85,8 +84,6 @@ var _ = Describe("Fetcher", func() {
 			stemcellVersion               = "4.5.6"
 			stemcellOSName                = "fake-stemcell-os-name"
 
-			errand      director.Errand
-			errands     []director.Errand
 			processes   []director.VMInfoProcess
 			vitals      director.VMInfoVitals
 			instances   []director.VMInfo
@@ -102,11 +99,6 @@ var _ = Describe("Fetcher", func() {
 		)
 
 		BeforeEach(func() {
-			errand = director.Errand{
-				Name: errandName,
-			}
-			errands = []director.Errand{errand}
-
 			processes = []director.VMInfoProcess{
 				{
 					Name:   jobProcessName,
@@ -189,7 +181,6 @@ var _ = Describe("Fetcher", func() {
 
 			deployment = &directorfakes.FakeDeployment{
 				NameStub:          func() string { return deploymentName },
-				ErrandsStub:       func() ([]director.Errand, error) { return errands, nil },
 				InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
 				ReleasesStub:      func() ([]director.Release, error) { return releases, nil },
 				StemcellsStub:     func() ([]director.Stemcell, error) { return stemcells, nil },
@@ -201,9 +192,6 @@ var _ = Describe("Fetcher", func() {
 			expectedDeploymentsInfo = []DeploymentInfo{
 				DeploymentInfo{
 					Name: deploymentName,
-					Errands: []Errand{
-						Errand{Name: errandName},
-					},
 					Instances: []Instance{
 						Instance{
 							AgentID:            agentID,
@@ -285,7 +273,6 @@ var _ = Describe("Fetcher", func() {
 				instances[0].VMID = ""
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
-					ErrandsStub:   func() ([]director.Errand, error) { return errands, nil },
 					ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
 					StemcellsStub: func() ([]director.Stemcell, error) { return stemcells, nil },
 				}
@@ -321,45 +308,10 @@ var _ = Describe("Fetcher", func() {
 			})
 		})
 
-		Context("when there are no errands", func() {
-			BeforeEach(func() {
-				deployment = &directorfakes.FakeDeployment{
-					NameStub:          func() string { return deploymentName },
-					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
-					ReleasesStub:      func() ([]director.Release, error) { return releases, nil },
-					StemcellsStub:     func() ([]director.Stemcell, error) { return stemcells, nil },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
-			})
-
-			It("does not return errands", func() {
-				Expect(deploymentsInfo[0].Errands).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
-			})
-		})
-
-		Context("when it fails to get the deployment errands", func() {
-			BeforeEach(func() {
-				deployment = &directorfakes.FakeDeployment{
-					NameStub:    func() string { return deploymentName },
-					ErrandsStub: func() ([]director.Errand, error) { return nil, errors.New("no errands") },
-				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
-			})
-
-			It("does not return deployments", func() {
-				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).To(HaveOccurred())
-			})
-		})
-
 		Context("when there are no instances", func() {
 			BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
-					ErrandsStub:   func() ([]director.Errand, error) { return errands, nil },
 					ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
 					StemcellsStub: func() ([]director.Stemcell, error) { return stemcells, nil },
 				}
@@ -393,7 +345,6 @@ var _ = Describe("Fetcher", func() {
 			BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
-					ErrandsStub:       func() ([]director.Errand, error) { return errands, nil },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
 					StemcellsStub:     func() ([]director.Stemcell, error) { return stemcells, nil },
 				}
@@ -427,7 +378,6 @@ var _ = Describe("Fetcher", func() {
 			BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
-					ErrandsStub:       func() ([]director.Errand, error) { return errands, nil },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
 					ReleasesStub:      func() ([]director.Release, error) { return releases, nil },
 				}

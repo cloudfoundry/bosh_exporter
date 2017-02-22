@@ -2,14 +2,9 @@ package deployments
 
 type DeploymentInfo struct {
 	Name      string
-	Errands   []Errand
 	Instances []Instance
 	Releases  []Release
 	Stemcells []Stemcell
-}
-
-type Errand struct {
-	Name string
 }
 
 type Instance struct {

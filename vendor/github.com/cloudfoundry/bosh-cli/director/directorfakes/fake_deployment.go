@@ -55,6 +55,13 @@ type FakeDeployment struct {
 		result1 director.ExportReleaseResult
 		result2 error
 	}
+	TeamsStub        func() ([]string, error)
+	teamsMutex       sync.RWMutex
+	teamsArgsForCall []struct{}
+	teamsReturns     struct {
+		result1 []string
+		result2 error
+	}
 	StemcellsStub        func() ([]director.Stemcell, error)
 	stemcellsMutex       sync.RWMutex
 	stemcellsArgsForCall []struct{}
@@ -67,6 +74,13 @@ type FakeDeployment struct {
 	vMInfosArgsForCall []struct{}
 	vMInfosReturns     struct {
 		result1 []director.VMInfo
+		result2 error
+	}
+	InstancesStub        func() ([]director.Instance, error)
+	instancesMutex       sync.RWMutex
+	instancesArgsForCall []struct{}
+	instancesReturns     struct {
+		result1 []director.Instance
 		result2 error
 	}
 	InstanceInfosStub        func() ([]director.VMInfo, error)
@@ -83,14 +97,15 @@ type FakeDeployment struct {
 		result1 []director.Errand
 		result2 error
 	}
-	RunErrandStub        func(string, bool) (director.ErrandResult, error)
+	RunErrandStub        func(string, bool, bool) ([]director.ErrandResult, error)
 	runErrandMutex       sync.RWMutex
 	runErrandArgsForCall []struct {
 		arg1 string
 		arg2 bool
+		arg3 bool
 	}
 	runErrandReturns struct {
-		result1 director.ErrandResult
+		result1 []director.ErrandResult
 		result2 error
 	}
 	ScanForProblemsStub        func() ([]director.Problem, error)
@@ -450,6 +465,31 @@ func (fake *FakeDeployment) ExportReleaseReturns(result1 director.ExportReleaseR
 	}{result1, result2}
 }
 
+func (fake *FakeDeployment) Teams() ([]string, error) {
+	fake.teamsMutex.Lock()
+	fake.teamsArgsForCall = append(fake.teamsArgsForCall, struct{}{})
+	fake.recordInvocation("Teams", []interface{}{})
+	fake.teamsMutex.Unlock()
+	if fake.TeamsStub != nil {
+		return fake.TeamsStub()
+	}
+	return fake.teamsReturns.result1, fake.teamsReturns.result2
+}
+
+func (fake *FakeDeployment) TeamsCallCount() int {
+	fake.teamsMutex.RLock()
+	defer fake.teamsMutex.RUnlock()
+	return len(fake.teamsArgsForCall)
+}
+
+func (fake *FakeDeployment) TeamsReturns(result1 []string, result2 error) {
+	fake.TeamsStub = nil
+	fake.teamsReturns = struct {
+		result1 []string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeDeployment) Stemcells() ([]director.Stemcell, error) {
 	fake.stemcellsMutex.Lock()
 	fake.stemcellsArgsForCall = append(fake.stemcellsArgsForCall, struct{}{})
@@ -498,6 +538,32 @@ func (fake *FakeDeployment) VMInfosReturns(result1 []director.VMInfo, result2 er
 	fake.VMInfosStub = nil
 	fake.vMInfosReturns = struct {
 		result1 []director.VMInfo
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeDeployment) Instances() ([]director.Instance, error) {
+	fake.instancesMutex.Lock()
+	fake.instancesArgsForCall = append(fake.instancesArgsForCall, struct{}{})
+	fake.recordInvocation("Instances", []interface{}{})
+	fake.instancesMutex.Unlock()
+	if fake.InstancesStub != nil {
+		return fake.InstancesStub()
+	} else {
+		return fake.instancesReturns.result1, fake.instancesReturns.result2
+	}
+}
+
+func (fake *FakeDeployment) InstancesCallCount() int {
+	fake.instancesMutex.RLock()
+	defer fake.instancesMutex.RUnlock()
+	return len(fake.instancesArgsForCall)
+}
+
+func (fake *FakeDeployment) InstancesReturns(result1 []director.Instance, result2 error) {
+	fake.InstancesStub = nil
+	fake.instancesReturns = struct {
+		result1 []director.Instance
 		result2 error
 	}{result1, result2}
 }
@@ -554,16 +620,17 @@ func (fake *FakeDeployment) ErrandsReturns(result1 []director.Errand, result2 er
 	}{result1, result2}
 }
 
-func (fake *FakeDeployment) RunErrand(arg1 string, arg2 bool) (director.ErrandResult, error) {
+func (fake *FakeDeployment) RunErrand(arg1 string, arg2 bool, arg3 bool) ([]director.ErrandResult, error) {
 	fake.runErrandMutex.Lock()
 	fake.runErrandArgsForCall = append(fake.runErrandArgsForCall, struct {
 		arg1 string
 		arg2 bool
-	}{arg1, arg2})
-	fake.recordInvocation("RunErrand", []interface{}{arg1, arg2})
+		arg3 bool
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("RunErrand", []interface{}{arg1, arg2, arg3})
 	fake.runErrandMutex.Unlock()
 	if fake.RunErrandStub != nil {
-		return fake.RunErrandStub(arg1, arg2)
+		return fake.RunErrandStub(arg1, arg2, arg3)
 	} else {
 		return fake.runErrandReturns.result1, fake.runErrandReturns.result2
 	}
@@ -575,16 +642,16 @@ func (fake *FakeDeployment) RunErrandCallCount() int {
 	return len(fake.runErrandArgsForCall)
 }
 
-func (fake *FakeDeployment) RunErrandArgsForCall(i int) (string, bool) {
+func (fake *FakeDeployment) RunErrandArgsForCall(i int) (string, bool, bool) {
 	fake.runErrandMutex.RLock()
 	defer fake.runErrandMutex.RUnlock()
-	return fake.runErrandArgsForCall[i].arg1, fake.runErrandArgsForCall[i].arg2
+	return fake.runErrandArgsForCall[i].arg1, fake.runErrandArgsForCall[i].arg2, fake.runErrandArgsForCall[i].arg3
 }
 
-func (fake *FakeDeployment) RunErrandReturns(result1 director.ErrandResult, result2 error) {
+func (fake *FakeDeployment) RunErrandReturns(result1 []director.ErrandResult, result2 error) {
 	fake.RunErrandStub = nil
 	fake.runErrandReturns = struct {
-		result1 director.ErrandResult
+		result1 []director.ErrandResult
 		result2 error
 	}{result1, result2}
 }
@@ -1289,10 +1356,14 @@ func (fake *FakeDeployment) Invocations() map[string][][]interface{} {
 	defer fake.releasesMutex.RUnlock()
 	fake.exportReleaseMutex.RLock()
 	defer fake.exportReleaseMutex.RUnlock()
+	fake.teamsMutex.RLock()
+	defer fake.teamsMutex.RUnlock()
 	fake.stemcellsMutex.RLock()
 	defer fake.stemcellsMutex.RUnlock()
 	fake.vMInfosMutex.RLock()
 	defer fake.vMInfosMutex.RUnlock()
+	fake.instancesMutex.RLock()
+	defer fake.instancesMutex.RUnlock()
 	fake.instanceInfosMutex.RLock()
 	defer fake.instanceInfosMutex.RUnlock()
 	fake.errandsMutex.RLock()

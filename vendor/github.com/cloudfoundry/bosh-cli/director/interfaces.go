@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cloudfoundry/bosh-cli/ui"
 	semver "github.com/cppforlife/go-semi-semantic/version"
 )
 
@@ -23,6 +24,7 @@ type Director interface {
 	FindTasksByContextId(string) ([]Task, error)
 
 	Events(EventsFilter) ([]Event, error)
+	Event(string) (Event, error)
 
 	Deployments() ([]Deployment, error)
 	FindDeployment(string) (Deployment, error)
@@ -58,6 +60,8 @@ type Director interface {
 	DownloadResourceUnchecked(blobstoreID string, out io.Writer) error
 }
 
+var _ Director = &DirectorImpl{}
+
 type UploadFile interface {
 	io.ReadCloser
 	Stat() (os.FileInfo, error)
@@ -80,7 +84,7 @@ type StemcellArchive interface {
 //go:generate counterfeiter . FileReporter
 
 type FileReporter interface {
-	TrackUpload(int64, io.ReadCloser) io.ReadCloser
+	TrackUpload(int64, io.ReadCloser) ui.ReadSeekCloser
 	TrackDownload(int64, io.Writer) io.Writer
 }
 
@@ -95,12 +99,15 @@ type Deployment interface {
 	Releases() ([]Release, error)
 	ExportRelease(ReleaseSlug, OSVersionSlug) (ExportReleaseResult, error)
 
+	Teams() ([]string, error)
+
 	Stemcells() ([]Stemcell, error)
 	VMInfos() ([]VMInfo, error)
+	Instances() ([]Instance, error)
 	InstanceInfos() ([]VMInfo, error)
 
 	Errands() ([]Errand, error)
-	RunErrand(string, bool) (ErrandResult, error)
+	RunErrand(string, bool, bool) ([]ErrandResult, error)
 
 	ScanForProblems() ([]Problem, error)
 	ResolveProblems([]ProblemAnswer) error

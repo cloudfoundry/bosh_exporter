@@ -53,7 +53,6 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | `bosh.url`<br />`BOSH_EXPORTER_BOSH_URL` | Yes | | BOSH URL |
 | `bosh.username`<br />`BOSH_EXPORTER_BOSH_USERNAME` | *[1]* | | BOSH Username |
 | `bosh.password`<br />`BOSH_EXPORTER_BOSH_PASSWORD` | *[1]* | | BOSH Password |
-| `bosh.uaa.url`<br />`BOSH_EXPORTER_BOSH_UAA_URL` | *[1]* | | BOSH UAA URL |
 | `bosh.uaa.client-id`<br />`BOSH_EXPORTER_BOSH_UAA_CLIENT_ID` | *[1]* | | BOSH UAA Client ID |
 | `bosh.uaa.client-secret`<br />`BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET` | *[1]* | | BOSH UAA Client Secret |
 | `bosh.log-level`<br />`BOSH_EXPORTER_BOSH_LOG_LEVEL` | No | `ERROR` | BOSH Log Level (`DEBUG`, `INFO`, `WARN`, `ERROR`, `NONE`) |
@@ -72,7 +71,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | `web.tls.cert_file`<br />`BOSH_EXPORTER_WEB_TLS_CERTFILE` | No | | Path to a file that contains the TLS certificate (PEM format). If the certificate is signed by a certificate authority, the file should be the concatenation of the server's certificate, any intermediates, and the CA's certificate |
 | `web.tls.key_file`<br />`BOSH_EXPORTER_WEB_TLS_KEYFILE` | No | | Path to a file that contains the TLS private key (PEM format) |
 
-*[1]* When BOSH delegates user managament to [UAA][bosh_uaa], `bosh.uaa.url`, `bosh.uaa.client-id` and `bosh.uaa.client-secret` flags will be required; otherwise `bosh.username` and `bosh.password` will be required.
+*[1]* When BOSH delegates user managament to [UAA][bosh_uaa], either `bosh.username` and `bosh.password` or `bosh.uaa.client-id` and `bosh.uaa.client-secret` flags may be used; otherwise `bosh.username` and `bosh.password` will be required.
 
 ### Metrics
 

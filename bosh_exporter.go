@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -34,11 +35,6 @@ var (
 	boshPassword = flag.String(
 		"bosh.password", "",
 		"BOSH Password ($BOSH_EXPORTER_BOSH_PASSWORD).",
-	)
-
-	boshUAAURL = flag.String(
-		"bosh.uaa.url", "",
-		"BOSH UAA Url ($BOSH_EXPORTER_BOSH_UAA_URL).",
 	)
 
 	boshUAAClientID = flag.String(
@@ -140,7 +136,6 @@ func overrideFlagsWithEnvVars() {
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_URL", boshURL)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_USERNAME", boshUsername)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_PASSWORD", boshPassword)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_URL", boshUAAURL)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_CLIENT_ID", boshUAAClientID)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET", boshUAAClientSecret)
 	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
@@ -236,20 +231,41 @@ func buildBOSHClient() (director.Director, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	directorConfig.CACert = boshCACert
-	directorConfig.Client = *boshUsername
-	directorConfig.ClientSecret = *boshPassword
 
-	if *boshUAAURL != "" {
-		uaaConfig, err := uaa.NewConfigFromURL(*boshUAAURL)
+	anonymousDirector, err := director.NewFactory(logger).New(directorConfig, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	boshInfo, err := anonymousDirector.Info()
+	if err != nil {
+		return nil, err
+	}
+
+	if boshInfo.Auth.Type != "uaa" {
+		directorConfig.Client = *boshUsername
+		directorConfig.ClientSecret = *boshPassword
+	} else {
+		uaaURL := boshInfo.Auth.Options["url"]
+		uaaURLStr, ok := uaaURL.(string)
+		if !ok {
+			return nil, errors.New(fmt.Sprintf("Expected UAA URL '%s' to be a string", uaaURL))
+		}
+
+		uaaConfig, err := uaa.NewConfigFromURL(uaaURLStr)
 		if err != nil {
 			return nil, err
 		}
 
 		uaaConfig.CACert = boshCACert
-		uaaConfig.Client = *boshUAAClientID
-		uaaConfig.ClientSecret = *boshUAAClientSecret
+
+		if *boshUAAClientID != "" && *boshUAAClientSecret != "" {
+			uaaConfig.Client = *boshUAAClientID
+			uaaConfig.ClientSecret = *boshUAAClientSecret
+		} else {
+			uaaConfig.Client = "bosh_cli"
+		}
 
 		uaaFactory := uaa.NewFactory(logger)
 		uaaClient, err := uaaFactory.New(uaaConfig)
@@ -257,7 +273,27 @@ func buildBOSHClient() (director.Director, error) {
 			return nil, err
 		}
 
-		directorConfig.TokenFunc = uaa.NewClientTokenSession(uaaClient).TokenFunc
+		if *boshUAAClientID != "" && *boshUAAClientSecret != "" {
+			directorConfig.TokenFunc = uaa.NewClientTokenSession(uaaClient).TokenFunc
+		} else {
+			answers := []uaa.PromptAnswer{
+				uaa.PromptAnswer{
+					Key:   "username",
+					Value: *boshUsername,
+				},
+				uaa.PromptAnswer{
+					Key:   "password",
+					Value: *boshPassword,
+				},
+			}
+			accessToken, err := uaaClient.OwnerPasswordCredentialsGrant(answers)
+			if err != nil {
+				return nil, err
+			}
+
+			origToken := uaaClient.NewStaleAccessToken(accessToken.RefreshToken().Value())
+			directorConfig.TokenFunc = uaa.NewAccessTokenSession(origToken).TokenFunc
+		}
 	}
 
 	boshFactory := director.NewFactory(logger)

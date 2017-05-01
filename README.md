@@ -71,7 +71,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | `web.tls.cert_file`<br />`BOSH_EXPORTER_WEB_TLS_CERTFILE` | No | | Path to a file that contains the TLS certificate (PEM format). If the certificate is signed by a certificate authority, the file should be the concatenation of the server's certificate, any intermediates, and the CA's certificate |
 | `web.tls.key_file`<br />`BOSH_EXPORTER_WEB_TLS_KEYFILE` | No | | Path to a file that contains the TLS private key (PEM format) |
 
-*[1]* When BOSH delegates user managament to [UAA][bosh_uaa], either `bosh.username` and `bosh.password` or `bosh.uaa.client-id` and `bosh.uaa.client-secret` flags may be used; otherwise `bosh.username` and `bosh.password` will be required.
+*[1]* When BOSH delegates user managament to [UAA][bosh_uaa], either `bosh.username` and `bosh.password` or `bosh.uaa.client-id` and `bosh.uaa.client-secret` flags may be used; otherwise `bosh.username` and `bosh.password` will be required. When using [UAA][bosh_uaa] and the `bosh.username` and `bosh.password` authentication method, tokens are not refreshed, so after a period of time the exporter will be unable to communicate with the BOSH API, so use this method only when testing the exporter. For production, it is recommended to use the `bosh.uaa.client-id` and `bosh.uaa.client-secret` authentication method.
 
 ### Metrics
 

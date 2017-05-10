@@ -67,7 +67,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | `web.listen-address`<br />`BOSH_EXPORTER_WEB_LISTEN_ADDRESS` | No | `:9190` | Address to listen on for web interface and telemetry |
 | `web.telemetry-path`<br />`BOSH_EXPORTER_WEB_TELEMETRY_PATH` | No | `/metrics` | Path under which to expose Prometheus metrics |
 | `web.auth.username`<br />`BOSH_EXPORTER_WEB_AUTH_USERNAME` | No | | Username for web interface basic auth |
-| `web.auth.pasword`<br />`BOSH_EXPORTER_WEB_AUTH_PASSWORD` | No | | Password for web interface basic auth |
+| `web.auth.password`<br />`BOSH_EXPORTER_WEB_AUTH_PASSWORD` | No | | Password for web interface basic auth |
 | `web.tls.cert_file`<br />`BOSH_EXPORTER_WEB_TLS_CERTFILE` | No | | Path to a file that contains the TLS certificate (PEM format). If the certificate is signed by a certificate authority, the file should be the concatenation of the server's certificate, any intermediates, and the CA's certificate |
 | `web.tls.key_file`<br />`BOSH_EXPORTER_WEB_TLS_KEYFILE` | No | | Path to a file that contains the TLS private key (PEM format) |
 

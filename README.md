@@ -30,7 +30,7 @@ $ bosh_exporter <flags>
 To run the bosh exporter as a Docker container, run:
 
 ```bash
-docker run -p 9190:9190 cfcommunity/bosh-exporter <flags>
+$ docker run -p 9190:9190 cfcommunity/bosh-exporter <flags>
 ```
 
 ### Cloud Foundry

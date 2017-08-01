@@ -108,6 +108,19 @@ var _ = Describe("DeploymentsFilter", func() {
 					Expect(err).To(HaveOccurred())
 				})
 			})
+
+			Context("and the deployment name has leading and/or trailing whitespaces", func() {
+				BeforeEach(func() {
+					filters = []string{"   fake-deployment-name-1  "}
+				})
+
+				It("returns the filtered deployments", func() {
+					Expect(boshClient.FindDeploymentArgsForCall(0)).To(Equal("fake-deployment-name-1"))
+					Expect(deployments).To(ContainElement(deployment1))
+					Expect(deployments).ToNot(ContainElement(deployment2))
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
 		})
 	})
 })

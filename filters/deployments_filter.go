@@ -3,6 +3,7 @@ package filters
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/common/log"
@@ -24,7 +25,7 @@ func (f *DeploymentsFilter) GetDeployments() ([]director.Deployment, error) {
 	if len(f.filters) > 0 {
 		log.Debugf("Filtering deployments by `%v`...", f.filters)
 		for _, deploymentName := range f.filters {
-			deployment, err := f.boshClient.FindDeployment(deploymentName)
+			deployment, err := f.boshClient.FindDeployment(strings.Trim(deploymentName, " "))
 			if err != nil {
 				return deployments, errors.New(fmt.Sprintf("Error while reading deployment `%s`: %v", deploymentName, err))
 			}

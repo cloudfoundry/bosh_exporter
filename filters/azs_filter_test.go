@@ -43,5 +43,15 @@ var _ = Describe("AZsFilter", func() {
 				Expect(azsFilter.Enabled("fake-az-2")).To(BeTrue())
 			})
 		})
+
+		Context("when a filter has leading and/or trailing whitespaces", func() {
+			BeforeEach(func() {
+				filter = []string{"   fake-az-1  "}
+			})
+
+			It("returns true", func() {
+				Expect(azsFilter.Enabled("fake-az-1")).To(BeTrue())
+			})
+		})
 	})
 })

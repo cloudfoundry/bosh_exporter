@@ -1,5 +1,9 @@
 package filters
 
+import (
+	"strings"
+)
+
 type AZsFilter struct {
 	azsEnabled map[string]bool
 }
@@ -8,7 +12,7 @@ func NewAZsFilter(filters []string) *AZsFilter {
 	azsEnabled := make(map[string]bool)
 
 	for _, az := range filters {
-		azsEnabled[az] = true
+		azsEnabled[strings.Trim(az, " ")] = true
 	}
 
 	return &AZsFilter{azsEnabled: azsEnabled}

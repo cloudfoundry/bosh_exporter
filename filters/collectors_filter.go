@@ -3,6 +3,7 @@ package filters
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 const (
@@ -19,7 +20,7 @@ func NewCollectorsFilter(filters []string) (*CollectorsFilter, error) {
 	collectorsEnabled := make(map[string]bool)
 
 	for _, collectorName := range filters {
-		switch collectorName {
+		switch strings.Trim(collectorName, " ") {
 		case DeploymentsCollector:
 			collectorsEnabled[DeploymentsCollector] = true
 		case JobsCollector:

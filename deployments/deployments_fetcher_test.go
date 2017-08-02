@@ -337,7 +337,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).To(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -370,7 +370,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).To(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
@@ -403,7 +403,7 @@ var _ = Describe("Fetcher", func() {
 
 			It("does not return deployments", func() {
 				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).To(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})

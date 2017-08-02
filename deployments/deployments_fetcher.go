@@ -1,7 +1,6 @@
 package deployments
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -30,15 +29,13 @@ func (f *Fetcher) Deployments() ([]DeploymentInfo, error) {
 		return deploymentsInfo, err
 	}
 
-	doneChannel := make(chan bool, 1)
-	errChannel := make(chan error, 1)
 	for _, deployment := range deployments {
 		wg.Add(1)
 		go func(deployment director.Deployment) {
 			defer wg.Done()
 			deploymentInfo, err := f.fetchDeploymentInfo(deployment)
 			if err != nil {
-				errChannel <- err
+				log.Error(err)
 				return
 			}
 
@@ -47,17 +44,7 @@ func (f *Fetcher) Deployments() ([]DeploymentInfo, error) {
 			mutex.Unlock()
 		}(deployment)
 	}
-
-	go func() {
-		wg.Wait()
-		close(doneChannel)
-	}()
-
-	select {
-	case <-doneChannel:
-	case err := <-errChannel:
-		return deploymentsInfo, err
-	}
+	wg.Wait()
 
 	return deploymentsInfo, nil
 }
@@ -94,7 +81,7 @@ func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]In
 	log.Debugf("Reading Instances for deployment `%s`:", deployment.Name())
 	instances, err := deployment.InstanceInfos()
 	if err != nil {
-		return deploymentInstances, errors.New(fmt.Sprintf("Error while reading Instances for deployment `%s`: %v", deployment.Name(), err))
+		return deploymentInstances, fmt.Errorf("Error while reading Instances for deployment `%s`: %v", deployment.Name(), err)
 	}
 
 	for _, instance := range instances {
@@ -178,7 +165,7 @@ func (f *Fetcher) fetchDeploymentReleases(deployment director.Deployment) ([]Rel
 	log.Debugf("Reading Releases for deployment `%s`:", deployment.Name())
 	releases, err := deployment.Releases()
 	if err != nil {
-		return deploymentReleases, errors.New(fmt.Sprintf("Error while reading Releases for deployment `%s`: %v", deployment.Name(), err))
+		return deploymentReleases, fmt.Errorf("Error while reading Releases for deployment `%s`: %v", deployment.Name(), err)
 	}
 
 	for _, release := range releases {
@@ -198,7 +185,7 @@ func (f *Fetcher) fetchDeploymentStemcells(deployment director.Deployment) ([]St
 	log.Debugf("Reading Stemcells for deployment `%s`:", deployment.Name())
 	stemcells, err := deployment.Stemcells()
 	if err != nil {
-		return deploymentStemcells, errors.New(fmt.Sprintf("Error while reading Stemcells for deployment `%s`: %v", deployment.Name(), err))
+		return deploymentStemcells, fmt.Errorf("Error while reading Stemcells for deployment `%s`: %v", deployment.Name(), err)
 	}
 
 	for _, stemcell := range stemcells {

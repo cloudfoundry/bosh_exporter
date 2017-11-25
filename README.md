@@ -1,10 +1,10 @@
-# BOSH Prometheus Exporter [![Build Status](https://travis-ci.org/cloudfoundry-community/bosh_exporter.png)](https://travis-ci.org/cloudfoundry-community/bosh_exporter)
+# BOSH Prometheus Exporter [![Build Status](https://travis-ci.org/bosh-prometheus/bosh_exporter.png)](https://travis-ci.org/bosh-prometheus/bosh_exporter)
 
 A [Prometheus][prometheus] exporter for [BOSH][bosh] metrics. Please refer to the [FAQ][faq] for general questions about this exporter.
 
 ## Architecture overview
 
-![](https://cdn.rawgit.com/cloudfoundry-community/bosh_exporter/master/architecture/architecture.svg)
+![](https://cdn.rawgit.com/bosh-prometheus/bosh_exporter/master/architecture/architecture.svg)
 
 ## Installation
 
@@ -21,7 +21,7 @@ $ ./bosh_exporter <flags>
 Using the standard `go install` (you must have [Go][golang] already installed in your local machine):
 
 ```bash
-$ go install github.com/cloudfoundry-community/bosh_exporter
+$ go install github.com/bosh-prometheus/bosh_exporter
 $ bosh_exporter <flags>
 ```
 
@@ -30,7 +30,7 @@ $ bosh_exporter <flags>
 To run the bosh exporter as a Docker container, run:
 
 ```bash
-$ docker run -p 9190:9190 cfcommunity/bosh-exporter <flags>
+$ docker run -p 9190:9190 boshprometheus/bosh-exporter <flags>
 ```
 
 ### Cloud Foundry
@@ -38,7 +38,7 @@ $ docker run -p 9190:9190 cfcommunity/bosh-exporter <flags>
 The exporter can be deployed to an already existing [Cloud Foundry][cloudfoundry] environment:
 
 ```bash
-$ git clone https://github.com/cloudfoundry-community/bosh_exporter.git
+$ git clone https://github.com/bosh-prometheus/bosh_exporter.git
 $ cd bosh_exporter
 ```
 
@@ -171,15 +171,15 @@ Refer to the [contributing guidelines][contributing].
 
 Apache License 2.0, see [LICENSE][license].
 
-[binaries]: https://github.com/cloudfoundry-community/bosh_exporter/releases
+[binaries]: https://github.com/bosh-prometheus/bosh_exporter/releases
 [bosh]: https://bosh.io
 [bosh_uaa]: http://bosh.io/docs/director-users-uaa.html
 [cloudfoundry]: https://www.cloudfoundry.org/
-[contributing]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/CONTRIBUTING.md
-[faq]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/FAQ.md
+[contributing]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/CONTRIBUTING.md
+[faq]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/FAQ.md
 [file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;
 [golang]: https://golang.org/
-[license]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/LICENSE
-[manifest]: https://github.com/cloudfoundry-community/bosh_exporter/blob/master/manifest.yml
+[license]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/LICENSE
+[manifest]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/manifest.yml
 [prometheus]: https://prometheus.io/
-[prometheus-boshrelease]: https://github.com/cloudfoundry-community/prometheus-boshrelease
+[prometheus-boshrelease]: https://github.com/bosh-prometheus/prometheus-boshrelease

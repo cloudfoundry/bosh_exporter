@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/cloudfoundry-community/bosh_exporter/filters"
+	. "github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
 var _ = Describe("AZsFilter", func() {

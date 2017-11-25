@@ -8,10 +8,10 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cloudfoundry-community/bosh_exporter/deployments"
-	"github.com/cloudfoundry-community/bosh_exporter/filters"
+	"github.com/bosh-prometheus/bosh_exporter/deployments"
+	"github.com/bosh-prometheus/bosh_exporter/filters"
 
-	. "github.com/cloudfoundry-community/bosh_exporter/collectors"
+	. "github.com/bosh-prometheus/bosh_exporter/collectors"
 )
 
 var _ = Describe("JobsCollector", func() {

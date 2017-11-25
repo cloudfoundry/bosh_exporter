@@ -10,7 +10,7 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 
-	. "github.com/cloudfoundry-community/bosh_exporter/filters"
+	. "github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
 func init() {

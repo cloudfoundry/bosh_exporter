@@ -12,9 +12,9 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 	"github.com/cppforlife/go-semi-semantic/version"
 
-	"github.com/cloudfoundry-community/bosh_exporter/filters"
+	"github.com/bosh-prometheus/bosh_exporter/filters"
 
-	. "github.com/cloudfoundry-community/bosh_exporter/deployments"
+	. "github.com/bosh-prometheus/bosh_exporter/deployments"
 )
 
 func init() {

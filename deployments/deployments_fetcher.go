@@ -8,7 +8,7 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/prometheus/common/log"
 
-	"github.com/cloudfoundry-community/bosh_exporter/filters"
+	"github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
 type Fetcher struct {

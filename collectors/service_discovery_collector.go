@@ -13,8 +13,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/model"
 
-	"github.com/cloudfoundry-community/bosh_exporter/deployments"
-	"github.com/cloudfoundry-community/bosh_exporter/filters"
+	"github.com/bosh-prometheus/bosh_exporter/deployments"
+	"github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
 const (

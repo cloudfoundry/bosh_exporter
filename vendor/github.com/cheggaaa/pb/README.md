@@ -1,12 +1,15 @@
 # Terminal progress bar for Go  
 
-Simple progress bar for console programs. 
-    
+[![Join the chat at https://gitter.im/cheggaaa/pb](https://badges.gitter.im/cheggaaa/pb.svg)](https://gitter.im/cheggaaa/pb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+Simple progress bar for console programs.    
+   
+Please check the new version https://github.com/cheggaaa/pb/tree/v2 (currently, it's beta)
 
 ## Installation
 
 ```
-go get github.com/cheggaaa/pb
+go get gopkg.in/cheggaaa/pb.v1
 ```   
 
 ## Usage   
@@ -15,7 +18,7 @@ go get github.com/cheggaaa/pb
 package main
 
 import (
-	"github.com/cheggaaa/pb"
+	"gopkg.in/cheggaaa/pb.v1"
 	"time"
 )
 
@@ -112,6 +115,8 @@ writer := io.MultiWriter(w, bar)
 
 // and copy
 io.Copy(writer, r)
+
+bar.Finish()
 ```
 
 ## Custom Progress Bar Look-and-feel
@@ -121,8 +126,6 @@ bar.Format("<.- >")
 ```
 
 ## Multiple Progress Bars (experimental and unstable)
-
-#####Multiple bars do not works at Windows!!!
 
 Do not print to terminal while pool is active.
 
@@ -134,7 +137,7 @@ import (
     "sync"
     "time"
 
-    "github.com/cheggaaa/pb"
+    "gopkg.in/cheggaaa/pb.v1"
 )
 
 func main() {

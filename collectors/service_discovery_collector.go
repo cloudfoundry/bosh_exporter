@@ -19,18 +19,21 @@ import (
 
 const (
 	boshJobProcessNameLabel = model.MetaLabelPrefix + "bosh_job_process_name"
+	boshDeploymentNameLabel = "bosh_deployment"
 )
 
-type ProcessesDetails map[string][]ProcessDetails
+type LabelGroups map[LabelGroupKey][]string
 
-type ProcessDetails struct {
-	Name           string
+type LabelGroupKey struct {
 	DeploymentName string
-	JobName        string
-	JobID          string
-	JobIndex       string
-	JobAZ          string
-	JobIP          string
+	ProcessName    string
+}
+
+func (k *LabelGroupKey) Labels() model.LabelSet {
+	return model.LabelSet{
+		model.LabelName(boshDeploymentNameLabel): model.LabelValue(k.DeploymentName),
+		model.LabelName(boshJobProcessNameLabel): model.LabelValue(k.ProcessName),
+	}
 }
 
 type TargetGroups []TargetGroup
@@ -100,15 +103,8 @@ func NewServiceDiscoveryCollector(
 func (c *ServiceDiscoveryCollector) Collect(deployments []deployments.DeploymentInfo, ch chan<- prometheus.Metric) error {
 	var begun = time.Now()
 
-	processesDetails := make(ProcessesDetails)
-	for _, deployment := range deployments {
-		processes := c.getDeploymentProcesses(deployment)
-		for _, process := range processes {
-			processesDetails[process.Name] = append(processesDetails[process.Name], process)
-		}
-	}
-
-	targetGroups := c.createTargetGroups(processesDetails)
+	labelGroups := c.createLabelGroups(deployments)
+	targetGroups := c.createTargetGroups(labelGroups)
 
 	err := c.writeTargetGroupsToFile(targetGroups)
 
@@ -126,52 +122,49 @@ func (c *ServiceDiscoveryCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.lastServiceDiscoveryScrapeDurationSecondsMetric.Describe(ch)
 }
 
-func (c *ServiceDiscoveryCollector) getDeploymentProcesses(deployment deployments.DeploymentInfo) []ProcessDetails {
-	processesDetails := []ProcessDetails{}
+func (c *ServiceDiscoveryCollector) getLabelGroupKey(
+	deployment deployments.DeploymentInfo,
+	instance deployments.Instance,
+	process deployments.Process,
+) LabelGroupKey {
+	return LabelGroupKey{
+		DeploymentName: deployment.Name,
+		ProcessName:    process.Name,
+	}
+}
 
-	for _, instance := range deployment.Instances {
-		if len(instance.IPs) == 0 || !c.azsFilter.Enabled(instance.AZ) {
-			continue
-		}
+func (c *ServiceDiscoveryCollector) createLabelGroups(deployments []deployments.DeploymentInfo) LabelGroups {
+	labelGroups := LabelGroups{}
 
-		for _, process := range instance.Processes {
-			if !c.processesFilter.Enabled(process.Name) {
+	for _, deployment := range deployments {
+		for _, instance := range deployment.Instances {
+			if len(instance.IPs) == 0 || !c.azsFilter.Enabled(instance.AZ) {
 				continue
 			}
-
-			processDetails := ProcessDetails{
-				Name:           process.Name,
-				DeploymentName: deployment.Name,
-				JobName:        instance.Name,
-				JobID:          instance.ID,
-				JobIndex:       instance.Index,
-				JobAZ:          instance.AZ,
-				JobIP:          instance.IPs[0],
+			for _, process := range instance.Processes {
+				if !c.processesFilter.Enabled(process.Name) {
+					continue
+				}
+				key := c.getLabelGroupKey(deployment, instance, process)
+				if _, ok := labelGroups[key]; !ok {
+					labelGroups[key] = []string{}
+				}
+				labelGroups[key] = append(labelGroups[key], instance.IPs[0])
 			}
-
-			processesDetails = append(processesDetails, processDetails)
 		}
 	}
 
-	return processesDetails
+	return labelGroups
 }
 
-func (c *ServiceDiscoveryCollector) createTargetGroups(processesDetails ProcessesDetails) TargetGroups {
+func (c *ServiceDiscoveryCollector) createTargetGroups(labelGroups LabelGroups) TargetGroups {
 	targetGroups := TargetGroups{}
 
-	for name, details := range processesDetails {
-		targets := []string{}
-		for _, processDetails := range details {
-			targets = append(targets, processDetails.JobIP)
-		}
-
-		targetGroup := TargetGroup{
+	for key, targets := range labelGroups {
+		targetGroups = append(targetGroups, TargetGroup{
+			Labels:  key.Labels(),
 			Targets: targets,
-			Labels: model.LabelSet{
-				model.LabelName(boshJobProcessNameLabel): model.LabelValue(name),
-			},
-		}
-		targetGroups = append(targetGroups, targetGroup)
+		})
 	}
 
 	return targetGroups

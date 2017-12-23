@@ -47,8 +47,12 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/prometheus/client_model"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/prometheus/common"
 
 [[constraint]]
   name = "github.com/cheggaaa/pb"
-  version = "1.0.4"
+  revision = "c1f48d5ce4f292dfb775ef52aaedd15be323510d"

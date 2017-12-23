@@ -13,7 +13,7 @@ import (
 )
 
 // Current version
-const Version = "1.0.18"
+const Version = "1.0.2"
 
 const (
 	// Default refresh rate - 200ms
@@ -47,6 +47,8 @@ func New64(total int64) *ProgressBar {
 		Units:         U_NO,
 		ManualUpdate:  false,
 		finish:        make(chan struct{}),
+		currentValue:  -1,
+		mu:            new(sync.Mutex),
 	}
 	return pb.Format(FORMAT)
 }
@@ -65,8 +67,7 @@ func StartNew(total int) *ProgressBar {
 type Callback func(out string)
 
 type ProgressBar struct {
-	current  int64 // current must be first member of struct (https://code.google.com/p/go/issues/detail?id=5278)
-	previous int64
+	current int64 // current must be first member of struct (https://code.google.com/p/go/issues/detail?id=5278)
 
 	Total                            int64
 	RefreshRate                      time.Duration
@@ -80,7 +81,6 @@ type ProgressBar struct {
 	Width                            int
 	ForceWidth                       bool
 	ManualUpdate                     bool
-	AutoStat                         bool
 
 	// Default width for the time box.
 	UnitsWidth   int
@@ -90,14 +90,13 @@ type ProgressBar struct {
 	finish     chan struct{}
 	isFinish   bool
 
-	startTime  time.Time
-	startValue int64
-
-	changeTime time.Time
+	startTime    time.Time
+	startValue   int64
+	currentValue int64
 
 	prefix, postfix string
 
-	mu        sync.Mutex
+	mu        *sync.Mutex
 	lastPrint string
 
 	BarStart string
@@ -112,11 +111,10 @@ type ProgressBar struct {
 // Start print
 func (pb *ProgressBar) Start() *ProgressBar {
 	pb.startTime = time.Now()
-	pb.startValue = atomic.LoadInt64(&pb.current)
+	pb.startValue = pb.current
 	if pb.Total == 0 {
 		pb.ShowTimeLeft = false
 		pb.ShowPercent = false
-		pb.AutoStat = false
 	}
 	if !pb.ManualUpdate {
 		pb.Update() // Initial printing of the bar before running the bar refresher.
@@ -128,12 +126,6 @@ func (pb *ProgressBar) Start() *ProgressBar {
 // Increment current value
 func (pb *ProgressBar) Increment() int {
 	return pb.Add(1)
-}
-
-// Get current value
-func (pb *ProgressBar) Get() int64 {
-	c := atomic.LoadInt64(&pb.current)
-	return c
 }
 
 // Set current value
@@ -173,7 +165,7 @@ func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
 // Example: bar.Format("[\x00=\x00>\x00-\x00]") // \x00 is the delimiter
 func (pb *ProgressBar) Format(format string) *ProgressBar {
 	var formatEntries []string
-	if utf8.RuneCountInString(format) == 5 {
+	if len(format) == 5 {
 		formatEntries = strings.Split(format, "")
 	} else {
 		formatEntries = strings.Split(format, "\x00")
@@ -222,33 +214,17 @@ func (pb *ProgressBar) Finish() {
 	pb.finishOnce.Do(func() {
 		close(pb.finish)
 		pb.write(atomic.LoadInt64(&pb.current))
-		pb.mu.Lock()
-		defer pb.mu.Unlock()
-		switch {
-		case pb.Output != nil:
-			fmt.Fprintln(pb.Output)
-		case !pb.NotPrint:
+		if !pb.NotPrint {
 			fmt.Println()
 		}
 		pb.isFinish = true
 	})
 }
 
-// IsFinished return boolean
-func (pb *ProgressBar) IsFinished() bool {
-	pb.mu.Lock()
-	defer pb.mu.Unlock()
-	return pb.isFinish
-}
-
 // End print and write string 'str'
 func (pb *ProgressBar) FinishPrint(str string) {
 	pb.Finish()
-	if pb.Output != nil {
-		fmt.Fprintln(pb.Output, str)
-	} else {
-		fmt.Println(str)
-	}
+	fmt.Println(str)
 }
 
 // implement io.Writer
@@ -266,7 +242,6 @@ func (pb *ProgressBar) Read(p []byte) (n int, err error) {
 }
 
 // Create new proxy reader over bar
-// Takes io.Reader or io.ReadCloser
 func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 	return &Reader{r, pb}
 }
@@ -299,35 +274,32 @@ func (pb *ProgressBar) write(current int64) {
 	}
 
 	// time left
-	pb.mu.Lock()
-	currentFromStart := current - pb.startValue
 	fromStart := time.Now().Sub(pb.startTime)
-	lastChangeTime := pb.changeTime
-	fromChange := lastChangeTime.Sub(pb.startTime)
-	pb.mu.Unlock()
+	currentFromStart := current - pb.startValue
 	select {
 	case <-pb.finish:
 		if pb.ShowFinalTime {
 			var left time.Duration
-			left = (fromStart / time.Second) * time.Second
+			if pb.Total > 0 {
+				left = (fromStart / time.Second) * time.Second
+			} else {
+				left = (time.Duration(currentFromStart) / time.Second) * time.Second
+			}
 			timeLeftBox = fmt.Sprintf(" %s", left.String())
 		}
 	default:
 		if pb.ShowTimeLeft && currentFromStart > 0 {
-			perEntry := fromChange / time.Duration(currentFromStart)
+			perEntry := fromStart / time.Duration(currentFromStart)
 			var left time.Duration
 			if pb.Total > 0 {
 				left = time.Duration(pb.Total-currentFromStart) * perEntry
-				left -= time.Since(lastChangeTime)
 				left = (left / time.Second) * time.Second
 			} else {
 				left = time.Duration(currentFromStart) * perEntry
 				left = (left / time.Second) * time.Second
 			}
-			if left > 0 {
-				timeLeft := Format(int64(left)).To(U_DURATION).String()
-				timeLeftBox = fmt.Sprintf(" %s", timeLeft)
-			}
+			timeLeft := Format(int64(left)).To(U_DURATION).String()
+			timeLeftBox = fmt.Sprintf(" %s", timeLeft)
 		}
 	}
 
@@ -348,32 +320,24 @@ func (pb *ProgressBar) write(current int64) {
 		size := width - barWidth
 		if size > 0 {
 			if pb.Total > 0 {
-				curSize := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
-				emptySize := size - curSize
+				curCount := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
+				emptCount := size - curCount
 				barBox = pb.BarStart
-				if emptySize < 0 {
-					emptySize = 0
+				if emptCount < 0 {
+					emptCount = 0
 				}
-				if curSize > size {
-					curSize = size
+				if curCount > size {
+					curCount = size
 				}
-
-				cursorLen := escapeAwareRuneCountInString(pb.Current)
-				if emptySize <= 0 {
-					barBox += strings.Repeat(pb.Current, curSize/cursorLen)
-				} else if curSize > 0 {
-					cursorEndLen := escapeAwareRuneCountInString(pb.CurrentN)
-					cursorRepetitions := (curSize - cursorEndLen) / cursorLen
-					barBox += strings.Repeat(pb.Current, cursorRepetitions)
-					barBox += pb.CurrentN
+				if emptCount <= 0 {
+					barBox += strings.Repeat(pb.Current, curCount)
+				} else if curCount > 0 {
+					barBox += strings.Repeat(pb.Current, curCount-1) + pb.CurrentN
 				}
-
-				emptyLen := escapeAwareRuneCountInString(pb.Empty)
-				barBox += strings.Repeat(pb.Empty, emptySize/emptyLen)
-				barBox += pb.BarEnd
+				barBox += strings.Repeat(pb.Empty, emptCount) + pb.BarEnd
 			} else {
-				pos := size - int(current)%int(size)
 				barBox = pb.BarStart
+				pos := size - int(current)%int(size)
 				if pos-1 > 0 {
 					barBox += strings.Repeat(pb.Empty, pos-1)
 				}
@@ -388,17 +352,16 @@ func (pb *ProgressBar) write(current int64) {
 
 	// check len
 	out = pb.prefix + countersBox + barBox + percentBox + speedBox + timeLeftBox + pb.postfix
-	if cl := escapeAwareRuneCountInString(out); cl < width {
-		end = strings.Repeat(" ", width-cl)
+	if escapeAwareRuneCountInString(out) < width {
+		end = strings.Repeat(" ", width-utf8.RuneCountInString(out))
 	}
 
 	// and print!
 	pb.mu.Lock()
 	pb.lastPrint = out + end
-	isFinish := pb.isFinish
 	pb.mu.Unlock()
 	switch {
-	case isFinish:
+	case pb.isFinish:
 		return
 	case pb.Output != nil:
 		fmt.Fprint(pb.Output, "\r"+out+end)
@@ -431,28 +394,13 @@ func (pb *ProgressBar) GetWidth() int {
 // Write the current state of the progressbar
 func (pb *ProgressBar) Update() {
 	c := atomic.LoadInt64(&pb.current)
-	p := atomic.LoadInt64(&pb.previous)
-	if p != c {
-		pb.mu.Lock()
-		pb.changeTime = time.Now()
-		pb.mu.Unlock()
-		atomic.StoreInt64(&pb.previous, c)
-	}
-	pb.write(c)
-	if pb.AutoStat {
-		if c == 0 {
-			pb.startTime = time.Now()
-			pb.startValue = 0
-		} else if c >= pb.Total && pb.isFinish != true {
-			pb.Finish()
-		}
+	if pb.AlwaysUpdate || c != pb.currentValue {
+		pb.write(c)
+		pb.currentValue = c
 	}
 }
 
-// String return the last bar print
 func (pb *ProgressBar) String() string {
-	pb.mu.Lock()
-	defer pb.mu.Unlock()
 	return pb.lastPrint
 }
 

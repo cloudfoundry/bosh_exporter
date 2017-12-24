@@ -18,8 +18,8 @@ import (
 )
 
 const (
+	boshDeploymentNameLabel = model.MetaLabelPrefix + "bosh_deployment"
 	boshJobProcessNameLabel = model.MetaLabelPrefix + "bosh_job_process_name"
-	boshDeploymentNameLabel = "bosh_deployment"
 )
 
 type LabelGroups map[LabelGroupKey][]string

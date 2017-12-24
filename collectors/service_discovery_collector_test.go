@@ -120,7 +120,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			jobAZ               = "fake-job-az"
 			jobIP               = "1.2.3.4"
 			jobProcessName      = "fake-process-name"
-			targetGroupsContent = `[{"targets":["1.2.3.4"],"labels":{"__meta_bosh_job_process_name":"fake-process-name","bosh_deployment":"fake-deployment-name"}}]`
+			targetGroupsContent = `[{"targets":["1.2.3.4"],"labels":{"__meta_bosh_job_process_name":"fake-process-name","__meta_bosh_deployment":"fake-deployment-name"}}]`
 
 			processes       []deployments.Process
 			instances       []deployments.Instance

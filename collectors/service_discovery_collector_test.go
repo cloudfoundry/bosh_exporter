@@ -120,7 +120,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			jobAZ               = "fake-job-az"
 			jobIP               = "1.2.3.4"
 			jobProcessName      = "fake-process-name"
-			targetGroupsContent = "[{\"targets\":[\"1.2.3.4\"],\"labels\":{\"__meta_bosh_job_process_name\":\"fake-process-name\"}}]"
+			targetGroupsContent = `[{"targets":["1.2.3.4"],"labels":{"__meta_bosh_job_process_name":"fake-process-name","bosh_deployment":"fake-deployment-name"}}]`
 
 			processes       []deployments.Process
 			instances       []deployments.Instance
@@ -172,7 +172,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			Eventually(metrics).Should(Receive())
 			targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(string(targetGroups)).To(Equal(targetGroupsContent))
+			Expect(string(targetGroups)).To(MatchJSON(targetGroupsContent))
 		})
 
 		It("returns a last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {

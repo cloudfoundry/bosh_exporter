@@ -9,6 +9,7 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 
 	. "github.com/bosh-prometheus/bosh_exporter/collectors"
+	. "github.com/bosh-prometheus/bosh_exporter/utils/test_matchers"
 )
 
 var _ = Describe("DeploymentsCollector", func() {
@@ -202,7 +203,7 @@ var _ = Describe("DeploymentsCollector", func() {
 		})
 
 		It("returns a deployment_release_info metric", func() {
-			Eventually(metrics).Should(Receive(Equal(deploymentReleaseInfoMetric.WithLabelValues(
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentReleaseInfoMetric.WithLabelValues(
 				deploymentName,
 				releaseName,
 				releaseVersion,
@@ -211,7 +212,7 @@ var _ = Describe("DeploymentsCollector", func() {
 		})
 
 		It("returns a deployment_stemcell_info metric", func() {
-			Eventually(metrics).Should(Receive(Equal(deploymentStemcellInfoMetric.WithLabelValues(
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentStemcellInfoMetric.WithLabelValues(
 				deploymentName,
 				stemcellName,
 				stemcellVersion,
@@ -240,7 +241,7 @@ var _ = Describe("DeploymentsCollector", func() {
 			})
 
 			It("should not return a deployment_release_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(Equal(deploymentReleaseInfoMetric.WithLabelValues(
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentReleaseInfoMetric.WithLabelValues(
 					deploymentName,
 					releaseName,
 					releaseVersion,
@@ -256,7 +257,7 @@ var _ = Describe("DeploymentsCollector", func() {
 			})
 
 			It("should not return a deployment_stemcell_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(Equal(deploymentStemcellInfoMetric.WithLabelValues(
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentStemcellInfoMetric.WithLabelValues(
 					deploymentName,
 					stemcellName,
 					stemcellVersion,

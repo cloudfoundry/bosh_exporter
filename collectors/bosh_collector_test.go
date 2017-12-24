@@ -17,6 +17,7 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
 	. "github.com/bosh-prometheus/bosh_exporter/collectors"
+	. "github.com/bosh-prometheus/bosh_exporter/utils/test_matchers"
 )
 
 func init() {
@@ -210,15 +211,15 @@ var _ = Describe("BoshCollector", func() {
 		})
 
 		It("returns a scrapes_total metric", func() {
-			Eventually(metrics).Should(Receive(Equal(totalBoshScrapesMetric)))
+			Eventually(metrics).Should(Receive(PrometheusMetric(totalBoshScrapesMetric)))
 		})
 
 		It("returns a scrape_errors_total metric", func() {
-			Eventually(metrics).Should(Receive(Equal(totalBoshScrapeErrorsMetric)))
+			Eventually(metrics).Should(Receive(PrometheusMetric(totalBoshScrapeErrorsMetric)))
 		})
 
 		It("returns a last_scrape_error metric", func() {
-			Eventually(metrics).Should(Receive(Equal(lastBoshScrapeErrorMetric)))
+			Eventually(metrics).Should(Receive(PrometheusMetric(lastBoshScrapeErrorMetric)))
 		})
 
 		Context("when it fails to get the deployment", func() {
@@ -230,11 +231,11 @@ var _ = Describe("BoshCollector", func() {
 			})
 
 			It("returns a scrape_errors_total metric", func() {
-				Eventually(metrics).Should(Receive(Equal(totalBoshScrapeErrorsMetric)))
+				Eventually(metrics).Should(Receive(PrometheusMetric(totalBoshScrapeErrorsMetric)))
 			})
 
 			It("returns a last_scrape_error metric", func() {
-				Eventually(metrics).Should(Receive(Equal(lastBoshScrapeErrorMetric)))
+				Eventually(metrics).Should(Receive(PrometheusMetric(lastBoshScrapeErrorMetric)))
 			})
 		})
 	})

@@ -113,48 +113,78 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 	Describe("Collect", func() {
 		var (
-			deploymentName      = "fake-deployment-name"
-			jobName             = "fake-job-name"
-			jobID               = "fake-job-id"
-			jobIndex            = "0"
-			jobAZ               = "fake-job-az"
-			jobIP               = "1.2.3.4"
-			jobProcessName      = "fake-process-name"
-			targetGroupsContent = `[{"targets":["1.2.3.4"],"labels":{"__meta_bosh_job_process_name":"fake-process-name","__meta_bosh_deployment":"fake-deployment-name"}}]`
+			deployment1Name     = "fake-deployment-1-name"
+			deployment2Name     = "fake-deployment-2-name"
+			job1Name            = "fake-job-1-name"
+			job2Name            = "fake-job-2-name"
+			job1AZ              = "fake-job-1-az"
+			job2AZ              = "fake-job-2-az"
+			job1IP              = "1.2.3.4"
+			job2IP              = "5.6.7.8"
+			jobProcess1Name     = "fake-process-1-name"
+			jobProcess2Name     = "fake-process-2-name"
+			targetGroupsContent = `[
+				{"targets":["1.2.3.4"],"labels":{"__meta_bosh_deployment":"fake-deployment-1-name","__meta_bosh_job_process_name":"fake-process-1-name"}},
+				{"targets":["1.2.3.4"],"labels":{"__meta_bosh_deployment":"fake-deployment-1-name","__meta_bosh_job_process_name":"fake-process-2-name"}},
+				{"targets":["5.6.7.8"],"labels":{"__meta_bosh_deployment":"fake-deployment-2-name","__meta_bosh_job_process_name":"fake-process-2-name"}}
+			]`
 
-			processes       []deployments.Process
-			instances       []deployments.Instance
-			deploymentInfo  deployments.DeploymentInfo
-			deploymentsInfo []deployments.DeploymentInfo
+			deployment1Processes []deployments.Process
+			deployment2Processes []deployments.Process
+			deployment1Instances []deployments.Instance
+			deployment2Instances []deployments.Instance
+			deployment1Info      deployments.DeploymentInfo
+			deployment2Info      deployments.DeploymentInfo
+			deploymentsInfo      []deployments.DeploymentInfo
 
 			metrics    chan prometheus.Metric
 			errMetrics chan error
 		)
 
 		BeforeEach(func() {
-			processes = []deployments.Process{
+			deployment1Processes = []deployments.Process{
 				{
-					Name: jobProcessName,
+					Name: jobProcess1Name,
+				},
+				{
+					Name: jobProcess2Name,
 				},
 			}
 
-			instances = []deployments.Instance{
+			deployment2Processes = []deployments.Process{
 				{
-					Name:      jobName,
-					ID:        jobID,
-					Index:     jobIndex,
-					IPs:       []string{jobIP},
-					AZ:        jobAZ,
-					Processes: processes,
+					Name: jobProcess2Name,
+				},
+			}
+			deployment1Instances = []deployments.Instance{
+				{
+					Name:      job1Name,
+					IPs:       []string{job1IP},
+					AZ:        job1AZ,
+					Processes: deployment1Processes,
 				},
 			}
 
-			deploymentInfo = deployments.DeploymentInfo{
-				Name:      deploymentName,
-				Instances: instances,
+			deployment2Instances = []deployments.Instance{
+				{
+					Name:      job2Name,
+					IPs:       []string{job2IP},
+					AZ:        job2AZ,
+					Processes: deployment2Processes,
+				},
 			}
 
-			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
+			deployment1Info = deployments.DeploymentInfo{
+				Name:      deployment1Name,
+				Instances: deployment1Instances,
+			}
+
+			deployment2Info = deployments.DeploymentInfo{
+				Name:      deployment2Name,
+				Instances: deployment2Instances,
+			}
+
+			deploymentsInfo = []deployments.DeploymentInfo{deployment1Info, deployment2Info}
 
 			metrics = make(chan prometheus.Metric)
 			errMetrics = make(chan error, 1)
@@ -204,8 +234,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 		Context("when there are no instances", func() {
 			BeforeEach(func() {
-				deploymentInfo.Instances = []deployments.Instance{}
-				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
+				deployment1Info.Instances = []deployments.Instance{}
+				deploymentsInfo = []deployments.DeploymentInfo{deployment1Info}
 			})
 
 			It("writes an empty target groups file", func() {
@@ -225,8 +255,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 		Context("when instance has no IP", func() {
 			BeforeEach(func() {
-				deploymentInfo.Instances[0].IPs = []string{}
-				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
+				deployment1Info.Instances[0].IPs = []string{}
+				deploymentsInfo = []deployments.DeploymentInfo{deployment1Info}
 			})
 
 			It("writes an empty target groups file", func() {
@@ -246,8 +276,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 		Context("when there are no processes", func() {
 			BeforeEach(func() {
-				deploymentInfo.Instances[0].Processes = []deployments.Process{}
-				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
+				deployment1Info.Instances[0].Processes = []deployments.Process{}
+				deploymentsInfo = []deployments.DeploymentInfo{deployment1Info}
 			})
 
 			It("writes an empty target groups file", func() {

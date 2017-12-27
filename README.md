@@ -64,12 +64,12 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | `bosh.uaa.client-id`<br />`BOSH_EXPORTER_BOSH_UAA_CLIENT_ID` | *[1]* | | BOSH UAA Client ID |
 | `bosh.uaa.client-secret`<br />`BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET` | *[1]* | | BOSH UAA Client Secret |
 | `bosh.log-level`<br />`BOSH_EXPORTER_BOSH_LOG_LEVEL` | No | `ERROR` | BOSH Log Level (`DEBUG`, `INFO`, `WARN`, `ERROR`, `NONE`) |
-| `bosh.ca-cert-file`<br />`BOSH_EXPORTER_BOSH_CA_CERT_FILE` | No | | BOSH CA Certificate file |
+| `bosh.ca-cert-file`<br />`BOSH_EXPORTER_BOSH_CA_CERT_FILE` | Yes | | BOSH CA Certificate file |
 | `filter.deployments`<br />`BOSH_EXPORTER_FILTER_DEPLOYMENTS` | No | | Comma separated deployments to filter |
 | `filter.azs`<br />`BOSH_EXPORTER_FILTER_AZS` | No | | Comma separated AZs to filter |
 | `filter.collectors`<br />`BOSH_EXPORTER_FILTER_COLLECTORS` | No | | Comma separated collectors to filter. If not set, all collectors will be enabled  (`Deployments`, `Jobs`, `ServiceDiscovery`) |
 | `metrics.namespace`<br />`BOSH_EXPORTER_METRICS_NAMESPACE` | No | `bosh` | Metrics Namespace |
-| `metrics.environment`<br />`BOSH_EXPORTER_METRICS_ENVIRONMENT` | No | | Environment label to be attached to metrics |
+| `metrics.environment`<br />`BOSH_EXPORTER_METRICS_ENVIRONMENT` | Yes | | Environment label to be attached to metrics |
 | `sd.filename`<br />`BOSH_EXPORTER_SD_FILENAME` | No | `bosh_target_groups.json` | Full path to the Service Discovery output file |
 | `sd.processes_regexp`<br />`BOSH_EXPORTER_SD_PROCESSES_REGEXP` | No | | Regexp to filter Service Discovery processes names |
 | `web.listen-address`<br />`BOSH_EXPORTER_WEB_LISTEN_ADDRESS` | No | `:9190` | Address to listen on for web interface and telemetry |

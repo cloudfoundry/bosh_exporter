@@ -1,1 +1,1 @@
-web: bosh_exporter -web.listen-address=":$PORT"
+web: bosh_exporter --web.listen-address=":$PORT"

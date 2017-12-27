@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
+	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/bosh-prometheus/bosh_exporter/collectors"
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
@@ -22,144 +22,89 @@ import (
 )
 
 var (
-	boshURL = flag.String(
-		"bosh.url", "",
-		"BOSH URL ($BOSH_EXPORTER_BOSH_URL).",
-	)
+	boshURL = kingpin.Flag(
+		"bosh.url", "BOSH URL ($BOSH_EXPORTER_BOSH_URL)",
+	).Envar("BOSH_EXPORTER_BOSH_URL").Required().String()
 
-	boshUsername = flag.String(
-		"bosh.username", "",
-		"BOSH Username ($BOSH_EXPORTER_BOSH_USERNAME).",
-	)
+	boshUsername = kingpin.Flag(
+		"bosh.username", "BOSH Username ($BOSH_EXPORTER_BOSH_USERNAME)",
+	).Envar("BOSH_EXPORTER_BOSH_USERNAME").String()
 
-	boshPassword = flag.String(
-		"bosh.password", "",
-		"BOSH Password ($BOSH_EXPORTER_BOSH_PASSWORD).",
-	)
+	boshPassword = kingpin.Flag(
+		"bosh.password", "BOSH Password ($BOSH_EXPORTER_BOSH_PASSWORD)",
+	).Envar("BOSH_EXPORTER_BOSH_PASSWORD").String()
 
-	boshUAAClientID = flag.String(
-		"bosh.uaa.client-id", "",
-		"BOSH UAA Client ID ($BOSH_EXPORTER_BOSH_UAA_CLIENT_ID).",
-	)
+	boshUAAClientID = kingpin.Flag(
+		"bosh.uaa.client-id", "BOSH UAA Client ID ($BOSH_EXPORTER_BOSH_UAA_CLIENT_ID)",
+	).Envar("BOSH_EXPORTER_BOSH_UAA_CLIENT_ID").String()
 
-	boshUAAClientSecret = flag.String(
-		"bosh.uaa.client-secret", "",
-		"BOSH UAA Client Secret ($BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET).",
-	)
+	boshUAAClientSecret = kingpin.Flag(
+		"bosh.uaa.client-secret", "BOSH UAA Client Secret ($BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET)",
+	).Envar("BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET").String()
 
-	boshLogLevel = flag.String(
-		"bosh.log-level", "ERROR",
-		"BOSH Log Level ($BOSH_EXPORTER_BOSH_LOG_LEVEL).",
-	)
+	boshLogLevel = kingpin.Flag(
+		"bosh.log-level", "BOSH Log Level ($BOSH_EXPORTER_BOSH_LOG_LEVEL)",
+	).Envar("BOSH_EXPORTER_BOSH_LOG_LEVEL").Default("ERROR").String()
 
-	boshCACertFile = flag.String(
-		"bosh.ca-cert-file", "",
-		"BOSH CA Certificate file ($BOSH_EXPORTER_BOSH_CA_CERT_FILE).",
-	)
+	boshCACertFile = kingpin.Flag(
+		"bosh.ca-cert-file", "BOSH CA Certificate file ($BOSH_EXPORTER_BOSH_CA_CERT_FILE)",
+	).Envar("BOSH_EXPORTER_BOSH_CA_CERT_FILE").Required().ExistingFile()
 
-	filterDeployments = flag.String(
-		"filter.deployments", "",
-		"Comma separated deployments to filter ($BOSH_EXPORTER_FILTER_DEPLOYMENTS).",
-	)
+	filterDeployments = kingpin.Flag(
+		"filter.deployments", "Comma separated deployments to filter ($BOSH_EXPORTER_FILTER_DEPLOYMENTS)",
+	).Envar("BOSH_EXPORTER_FILTER_DEPLOYMENTS").Default("").String()
 
-	filterAZs = flag.String(
-		"filter.azs", "",
-		"Comma separated AZs to filter ($BOSH_EXPORTER_FILTER_AZS).",
-	)
+	filterAZs = kingpin.Flag(
+		"filter.azs", "Comma separated AZs to filter ($BOSH_EXPORTER_FILTER_AZS)",
+	).Envar("BOSH_EXPORTER_FILTER_AZS").Default("").String()
 
-	filterCollectors = flag.String(
-		"filter.collectors", "",
-		"Comma separated collectors to filter (Deployments,Jobs,ServiceDiscovery) ($BOSH_EXPORTER_FILTER_COLLECTORS).",
-	)
+	filterCollectors = kingpin.Flag(
+		"filter.collectors", "Comma separated collectors to filter (Deployments,Jobs,ServiceDiscovery) ($BOSH_EXPORTER_FILTER_COLLECTORS)",
+	).Envar("BOSH_EXPORTER_FILTER_COLLECTORS").Default("").String()
 
-	metricsNamespace = flag.String(
-		"metrics.namespace", "bosh",
-		"Metrics Namespace ($BOSH_EXPORTER_METRICS_NAMESPACE).",
-	)
+	metricsNamespace = kingpin.Flag(
+		"metrics.namespace", "Metrics Namespace ($BOSH_EXPORTER_METRICS_NAMESPACE)",
+	).Envar("BOSH_EXPORTER_METRICS_NAMESPACE").Default("bosh").String()
 
-	metricsEnvironment = flag.String(
-		"metrics.environment", "",
-		"Environment label to be attached to metrics ($BOSH_EXPORTER_METRICS_ENVIRONMENT).",
-	)
+	metricsEnvironment = kingpin.Flag(
+		"metrics.environment", "Environment label to be attached to metrics ($BOSH_EXPORTER_METRICS_ENVIRONMENT)",
+	).Envar("BOSH_EXPORTER_METRICS_ENVIRONMENT").Required().String()
 
-	sdFilename = flag.String(
-		"sd.filename", "bosh_target_groups.json",
-		"Full path to the Service Discovery output file ($BOSH_EXPORTER_SD_FILENAME).",
-	)
+	sdFilename = kingpin.Flag(
+		"sd.filename", "Full path to the Service Discovery output file ($BOSH_EXPORTER_SD_FILENAME)",
+	).Envar("BOSH_EXPORTER_SD_FILENAME").Default("bosh_target_groups.json").String()
 
-	sdProcessesRegexp = flag.String(
-		"sd.processes_regexp", "",
-		"Regexp to filter Service Discovery processes names ($BOSH_EXPORTER_SD_PROCESSES_REGEXP).",
-	)
+	sdProcessesRegexp = kingpin.Flag(
+		"sd.processes_regexp", "Regexp to filter Service Discovery processes names ($BOSH_EXPORTER_SD_PROCESSES_REGEXP)",
+	).Envar("BOSH_EXPORTER_SD_PROCESSES_REGEXP").Default("").String()
 
-	showVersion = flag.Bool(
-		"version", false,
-		"Print version information.",
-	)
+	listenAddress = kingpin.Flag(
+		"web.listen-address", "Address to listen on for web interface and telemetry ($BOSH_EXPORTER_WEB_LISTEN_ADDRESS)",
+	).Envar("BOSH_EXPORTER_WEB_LISTEN_ADDRESS").Default(":9190").String()
 
-	listenAddress = flag.String(
-		"web.listen-address", ":9190",
-		"Address to listen on for web interface and telemetry ($BOSH_EXPORTER_WEB_LISTEN_ADDRESS).",
-	)
+	metricsPath = kingpin.Flag(
+		"web.telemetry-path", "Path under which to expose Prometheus metrics ($BOSH_EXPORTER_WEB_TELEMETRY_PATH)",
+	).Envar("BOSH_EXPORTER_WEB_TELEMETRY_PATH").Default("/metrics").String()
 
-	metricsPath = flag.String(
-		"web.telemetry-path", "/metrics",
-		"Path under which to expose Prometheus metrics ($BOSH_EXPORTER_WEB_TELEMETRY_PATH).",
-	)
+	authUsername = kingpin.Flag(
+		"web.auth.username", "Username for web interface basic auth ($BOSH_EXPORTER_WEB_AUTH_USERNAME)",
+	).Envar("BOSH_EXPORTER_WEB_AUTH_USERNAME").String()
 
-	authUsername = flag.String(
-		"web.auth.username", "",
-		"Username for web interface basic auth ($BOSH_EXPORTER_WEB_AUTH_USERNAME).",
-	)
+	authPassword = kingpin.Flag(
+		"web.auth.password", "Password for web interface basic auth ($BOSH_EXPORTER_WEB_AUTH_PASSWORD)",
+	).Envar("BOSH_EXPORTER_WEB_AUTH_PASSWORD").String()
 
-	authPassword = flag.String(
-		"web.auth.password", "",
-		"Password for web interface basic auth ($BOSH_EXPORTER_WEB_AUTH_PASSWORD).",
-	)
+	tlsCertFile = kingpin.Flag(
+		"web.tls.cert_file", "Path to a file that contains the TLS certificate (PEM format). If the certificate is signed by a certificate authority, the file should be the concatenation of the server's certificate, any intermediates, and the CA's certificate ($BOSH_EXPORTER_WEB_TLS_CERTFILE)",
+	).Envar("BOSH_EXPORTER_WEB_TLS_CERTFILE").ExistingFile()
 
-	tlsCertFile = flag.String(
-		"web.tls.cert_file", "",
-		"Path to a file that contains the TLS certificate (PEM format). If the certificate is signed by a certificate authority, the file should be the concatenation of the server's certificate, any intermediates, and the CA's certificate ($BOSH_EXPORTER_WEB_TLS_CERTFILE).",
-	)
-
-	tlsKeyFile = flag.String(
-		"web.tls.key_file", "",
-		"Path to a file that contains the TLS private key (PEM format) ($BOSH_EXPORTER_WEB_TLS_KEYFILE).",
-	)
+	tlsKeyFile = kingpin.Flag(
+		"web.tls.key_file", "Path to a file that contains the TLS private key (PEM format) ($BOSH_EXPORTER_WEB_TLS_KEYFILE)",
+	).Envar("BOSH_EXPORTER_WEB_TLS_KEYFILE").ExistingFile()
 )
 
 func init() {
 	prometheus.MustRegister(version.NewCollector(*metricsNamespace))
-}
-
-func overrideFlagsWithEnvVars() {
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_URL", boshURL)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_USERNAME", boshUsername)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_PASSWORD", boshPassword)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_CLIENT_ID", boshUAAClientID)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_UAA_CLIENT_SECRET", boshUAAClientSecret)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_LOG_LEVEL", boshLogLevel)
-	overrideWithEnvVar("BOSH_EXPORTER_BOSH_CA_CERT_FILE", boshCACertFile)
-	overrideWithEnvVar("BOSH_EXPORTER_FILTER_DEPLOYMENTS", filterDeployments)
-	overrideWithEnvVar("BOSH_EXPORTER_FILTER_AZS", filterAZs)
-	overrideWithEnvVar("BOSH_EXPORTER_FILTER_COLLECTORS", filterCollectors)
-	overrideWithEnvVar("BOSH_EXPORTER_METRICS_NAMESPACE", metricsNamespace)
-	overrideWithEnvVar("BOSH_EXPORTER_METRICS_ENVIRONMENT", metricsEnvironment)
-	overrideWithEnvVar("BOSH_EXPORTER_SD_FILENAME", sdFilename)
-	overrideWithEnvVar("BOSH_EXPORTER_SD_PROCESSES_REGEXP", sdProcessesRegexp)
-	overrideWithEnvVar("BOSH_EXPORTER_WEB_LISTEN_ADDRESS", listenAddress)
-	overrideWithEnvVar("BOSH_EXPORTER_WEB_TELEMETRY_PATH", metricsPath)
-	overrideWithEnvVar("BOSH_EXPORTER_WEB_AUTH_USERNAME", authUsername)
-	overrideWithEnvVar("BOSH_EXPORTER_WEB_AUTH_PASSWORD", authPassword)
-	overrideWithEnvVar("BOSH_EXPORTER_WEB_TLS_CERTFILE", tlsCertFile)
-	overrideWithEnvVar("BOSH_EXPORTER_WEB_TLS_KEYFILE", tlsKeyFile)
-}
-
-func overrideWithEnvVar(name string, value *string) {
-	envValue := os.Getenv(name)
-	if envValue != "" {
-		*value = envValue
-	}
 }
 
 type basicAuthHandler struct {
@@ -306,13 +251,10 @@ func buildBOSHClient() (director.Director, error) {
 }
 
 func main() {
-	flag.Parse()
-	overrideFlagsWithEnvVars()
-
-	if *showVersion {
-		fmt.Fprintln(os.Stdout, version.Print("bosh_exporter"))
-		os.Exit(0)
-	}
+	log.AddFlags(kingpin.CommandLine)
+	kingpin.Version(version.Print("fbosh_exporter"))
+	kingpin.HelpFlag.Short('h')
+	kingpin.Parse()
 
 	log.Infoln("Starting bosh_exporter", version.Info())
 	log.Infoln("Build context", version.BuildContext())

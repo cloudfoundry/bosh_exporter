@@ -2,7 +2,6 @@ package deployments_test
 
 import (
 	"errors"
-	"flag"
 	"strconv"
 
 	. "github.com/onsi/ginkgo"
@@ -11,6 +10,7 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 	"github.com/cppforlife/go-semi-semantic/version"
+	"github.com/prometheus/common/log"
 
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	flag.Set("log.level", "fatal")
+	log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("Fetcher", func() {

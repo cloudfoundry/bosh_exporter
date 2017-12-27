@@ -2,19 +2,19 @@ package filters_test
 
 import (
 	"errors"
-	"flag"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
+	"github.com/prometheus/common/log"
 
 	. "github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
 func init() {
-	flag.Set("log.level", "fatal")
+	log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("DeploymentsFilter", func() {

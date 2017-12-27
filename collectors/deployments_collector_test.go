@@ -5,12 +5,17 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
 
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 
 	. "github.com/bosh-prometheus/bosh_exporter/collectors"
 	. "github.com/bosh-prometheus/bosh_exporter/utils/test_matchers"
 )
+
+func init() {
+	log.Base().SetLevel("fatal")
+}
 
 var _ = Describe("DeploymentsCollector", func() {
 	var (

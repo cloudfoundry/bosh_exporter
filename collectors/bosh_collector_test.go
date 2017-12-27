@@ -2,7 +2,6 @@ package collectors_test
 
 import (
 	"errors"
-	"flag"
 	"io/ioutil"
 	"os"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
 
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 	"github.com/bosh-prometheus/bosh_exporter/filters"
@@ -21,7 +21,7 @@ import (
 )
 
 func init() {
-	flag.Set("log.level", "fatal")
+	log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("BoshCollector", func() {

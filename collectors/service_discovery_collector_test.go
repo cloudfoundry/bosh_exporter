@@ -8,12 +8,17 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
 
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
 	. "github.com/bosh-prometheus/bosh_exporter/collectors"
 )
+
+func init() {
+	log.Base().SetLevel("fatal")
+}
 
 var _ = Describe("ServiceDiscoveryCollector", func() {
 	var (

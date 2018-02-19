@@ -8,3 +8,4 @@ applications:
       BOSH_EXPORTER_BOSH_USERNAME: "Your BOSH Username"
       BOSH_EXPORTER_BOSH_PASSWORD: "Your BOSH Password"
       BOSH_EXPORTER_BOSH_CA_CERT_FILE: "bosh-lite-ca.crt"
+      BOSH_EXPORTER_METRICS_ENVIRONMENT: "Environment label to be attached to metrics"

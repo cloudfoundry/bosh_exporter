@@ -10,7 +10,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/alecthomas/template"
-  packages = [".","parse"]
+  packages = [
+    ".",
+    "parse"
+  ]
   revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
 
 [[projects]]
@@ -18,6 +21,12 @@
   name = "github.com/alecthomas/units"
   packages = ["."]
   revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/armon/go-socks5"
+  packages = ["."]
+  revision = "e75332964ef517daa070d7c38a9466a0d687e0a5"
 
 [[projects]]
   branch = "master"
@@ -44,21 +53,35 @@
 
 [[projects]]
   name = "github.com/cloudfoundry/bosh-cli"
-  packages = ["director","director/directorfakes","uaa","ui","ui/fmt","ui/table"]
-  revision = "d20879988632b019eb3f195cced2afb2b3eedabb"
-  version = "v2.0.45"
+  packages = [
+    "director",
+    "director/directorfakes",
+    "uaa",
+    "ui",
+    "ui/fmt",
+    "ui/table"
+  ]
+  revision = "712bfd7271b478ba03c3f604339e2eefbec4647c"
+  version = "v3.0.1"
 
 [[projects]]
   branch = "master"
   name = "github.com/cloudfoundry/bosh-utils"
-  packages = ["crypto","errors","httpclient","logger","retrystrategy","system","uuid"]
-  revision = "1a26ad52ff67437229527c43d17254e2a9dffcc6"
+  packages = [
+    "crypto",
+    "errors",
+    "httpclient",
+    "logger",
+    "retrystrategy",
+    "system",
+    "uuid"
+  ]
+  revision = "c6a922e299b8eb5eaadad8a2842e3ab7e043dc5d"
 
 [[projects]]
-  branch = "master"
   name = "github.com/cloudfoundry/socks5-proxy"
   packages = ["."]
-  revision = "4c5a6f4a4516f42756f84f04cc5b523f471c9387"
+  revision = "6afb711f4b32a266b51160288e98fd3c4b28f0cb"
 
 [[projects]]
   branch = "master"
@@ -75,20 +98,14 @@
 [[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
-  revision = "570b54cabe6b8eb0bc2dfce68d964677d63b5260"
-  version = "v1.5.0"
+  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
+  version = "v1.6.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/genevievelesperance/go-socks5"
-  packages = ["."]
-  revision = "f07e0bb84629ba30f60da69274cd1d9dbb4a1d08"
-
-[[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
+  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -116,21 +133,53 @@
 
 [[projects]]
   name = "github.com/onsi/ginkgo"
-  packages = [".","config","internal/codelocation","internal/containernode","internal/failer","internal/leafnodes","internal/remote","internal/spec","internal/spec_iterator","internal/specrunner","internal/suite","internal/testingtproxy","internal/writer","reporters","reporters/stenographer","reporters/stenographer/support/go-colorable","reporters/stenographer/support/go-isatty","types"]
+  packages = [
+    ".",
+    "config",
+    "internal/codelocation",
+    "internal/containernode",
+    "internal/failer",
+    "internal/leafnodes",
+    "internal/remote",
+    "internal/spec",
+    "internal/spec_iterator",
+    "internal/specrunner",
+    "internal/suite",
+    "internal/testingtproxy",
+    "internal/writer",
+    "reporters",
+    "reporters/stenographer",
+    "reporters/stenographer/support/go-colorable",
+    "reporters/stenographer/support/go-isatty",
+    "types"
+  ]
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
   version = "v1.4.0"
 
 [[projects]]
   name = "github.com/onsi/gomega"
-  packages = [".","format","internal/assertion","internal/asyncassertion","internal/oraclematcher","internal/testingtsupport","matchers","matchers/support/goraph/bipartitegraph","matchers/support/goraph/edge","matchers/support/goraph/node","matchers/support/goraph/util","types"]
-  revision = "c893efa28eb45626cdaa76c9f653b62488858837"
-  version = "v1.2.0"
+  packages = [
+    ".",
+    "format",
+    "internal/assertion",
+    "internal/asyncassertion",
+    "internal/oraclematcher",
+    "internal/testingtsupport",
+    "matchers",
+    "matchers/support/goraph/bipartitegraph",
+    "matchers/support/goraph/edge",
+    "matchers/support/goraph/node",
+    "matchers/support/goraph/util",
+    "types"
+  ]
+  revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/pivotal-cf/paraphernalia"
   packages = ["secure/tlsconfig"]
-  revision = "4272315231ce0d2636eeb44ed0479e56ca165581"
+  revision = "a64ae2051c20c5cde13292a41db01029566134ba"
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
@@ -147,50 +196,100 @@
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/common"
-  packages = ["expfmt","internal/bitbucket.org/ww/goautoneg","log","model","version"]
-  revision = "2e54d0b93cba2fd133edc32211dcc32c06ef72ca"
+  packages = [
+    "expfmt",
+    "internal/bitbucket.org/ww/goautoneg",
+    "log",
+    "model",
+    "version"
+  ]
+  revision = "e4aa40a9169a88835b849a6efb71e05dc04b88f0"
 
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/procfs"
-  packages = [".","xfs"]
-  revision = "8f918ac9ab4be3a790338bda8624fec5d71260b3"
+  packages = [
+    ".",
+    "internal/util",
+    "nfs",
+    "xfs"
+  ]
+  revision = "54d17b57dd7d4a3aa092476596b3f8a933bde349"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
-  branch = "master"
   name = "github.com/vito/go-interact"
-  packages = ["interact","interact/terminal"]
+  packages = [
+    "interact",
+    "interact/terminal"
+  ]
   revision = "fa338ed9e9ecbb0e9c2e6c7a0160d9fc9b0efbd9"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","ssh","ssh/terminal"]
-  revision = "d585fd2cc9195196078f516b69daff6744ef5e84"
+  packages = [
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "internal/chacha20",
+    "poly1305",
+    "ssh",
+    "ssh/terminal"
+  ]
+  revision = "80db560fac1fb3e6ac81dbc7f8ae4c061f5257bd"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","html","html/atom","html/charset","proxy"]
-  revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
+  packages = [
+    "context",
+    "html",
+    "html/atom",
+    "html/charset",
+    "proxy"
+  ]
+  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix","windows","windows/registry","windows/svc/eventlog"]
-  revision = "83801418e1b59fb1880e363299581ee543af32ca"
+  packages = [
+    "unix",
+    "windows",
+    "windows/registry",
+    "windows/svc/eventlog"
+  ]
+  revision = "7ceb54c8418b8f9cdf0177b511d5cbb06e9fae39"
 
 [[projects]]
-  branch = "master"
   name = "golang.org/x/text"
-  packages = ["encoding","encoding/charmap","encoding/htmlindex","encoding/internal","encoding/internal/identifier","encoding/japanese","encoding/korean","encoding/simplifiedchinese","encoding/traditionalchinese","encoding/unicode","internal/gen","internal/tag","internal/utf8internal","language","runes","transform","unicode/cldr"]
-  revision = "eb22672bea55af56d225d4e35405f4d2e9f062a0"
+  packages = [
+    "encoding",
+    "encoding/charmap",
+    "encoding/htmlindex",
+    "encoding/internal",
+    "encoding/internal/identifier",
+    "encoding/japanese",
+    "encoding/korean",
+    "encoding/simplifiedchinese",
+    "encoding/traditionalchinese",
+    "encoding/unicode",
+    "internal/gen",
+    "internal/tag",
+    "internal/utf8internal",
+    "language",
+    "runes",
+    "transform",
+    "unicode/cldr"
+  ]
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
 
 [[projects]]
   name = "gopkg.in/alecthomas/kingpin.v2"
@@ -199,14 +298,14 @@
   version = "v2.2.6"
 
 [[projects]]
-  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "287cf08546ab5e7e37d55a84f7ed3fd1db036de5"
+  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
+  version = "v2.1.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1e4d942d4be992ec413ad78aea2441b4f5422102f424bda9f775baf03ed47c52"
+  inputs-digest = "2f9ee5b80f7bba51237ccbfb027a0a0fa80231abb51f18660880291419c84bb1"
   solver-name = "gps-cdcl"
   solver-version = 1

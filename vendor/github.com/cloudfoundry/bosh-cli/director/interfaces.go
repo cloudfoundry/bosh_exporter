@@ -39,15 +39,19 @@ type Director interface {
 
 	Stemcells() ([]Stemcell, error)
 	HasStemcell(name, version string) (bool, error)
+	StemcellNeedsUpload(StemcellInfo) (bool, bool, error)
 	FindStemcell(StemcellSlug) (Stemcell, error)
 	UploadStemcellURL(url, sha1 string, fix bool) error
 	UploadStemcellFile(file UploadFile, fix bool) error
 
 	LatestConfig(configType string, name string) (Config, error)
-	ListConfigs(filter ConfigsFilter) ([]ConfigListItem, error)
-	UpdateConfig(configType string, name string, content []byte) error
+	LatestConfigByID(configID string) (Config, error)
+	ListConfigs(limit int, filter ConfigsFilter) ([]Config, error)
+	UpdateConfig(configType string, name string, content []byte) (Config, error)
 	DeleteConfig(configType string, name string) (bool, error)
+	DeleteConfigByID(configID string) (bool, error)
 	DiffConfig(configType string, name string, manifest []byte) (ConfigDiff, error)
+	DiffConfigByID(fromID string, toID string) (ConfigDiff, error)
 
 	LatestCloudConfig() (CloudConfig, error)
 	UpdateCloudConfig([]byte) error

@@ -7,16 +7,18 @@ import (
 
 	gourl "net/url"
 
+	"strconv"
+
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 )
 
 type Config struct {
-	Content string
-}
-
-type ConfigListItem struct {
-	Name string
-	Type string
+	ID        string
+	Name      string
+	Type      string
+	CreatedAt string `json:"created_at"`
+	Team      string
+	Content   string
 }
 
 type ConfigsFilter struct {
@@ -44,14 +46,40 @@ func (d DirectorImpl) LatestConfig(configType string, name string) (Config, erro
 	return resps[0], nil
 }
 
-func (d DirectorImpl) ListConfigs(filter ConfigsFilter) ([]ConfigListItem, error) {
-	return d.client.listConfigs(filter)
+func (d DirectorImpl) LatestConfigByID(configID string) (Config, error) {
+	return d.client.latestConfigByID(configID)
 }
 
-func (d DirectorImpl) UpdateConfig(configType string, name string, content []byte) error {
+func (c Client) latestConfigByID(configID string) (Config, error) {
+	var config Config
+
+	path := fmt.Sprintf("/configs/%s", configID)
+
+	respBody, response, err := c.clientRequest.RawGet(path, nil, nil)
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusNotFound {
+			return config, bosherr.WrapErrorf(err, "No config")
+		}
+		return config, bosherr.WrapErrorf(err, "Finding config")
+	}
+
+	err = json.Unmarshal(respBody, &config)
+
+	if err != nil {
+		return config, bosherr.WrapError(err, "Unmarshaling Director response")
+	}
+
+	return config, nil
+}
+
+func (d DirectorImpl) ListConfigs(limit int, filter ConfigsFilter) ([]Config, error) {
+	return d.client.listConfigs(limit, filter)
+}
+
+func (d DirectorImpl) UpdateConfig(configType string, name string, content []byte) (Config, error) {
 	body, err := json.Marshal(UpdateConfigBody{configType, name, string(content)})
 	if err != nil {
-		return bosherr.WrapError(err, "Can't marshal request body")
+		return Config{}, bosherr.WrapError(err, "Can't marshal request body")
 	}
 	return d.client.updateConfig(body)
 }
@@ -60,12 +88,17 @@ func (d DirectorImpl) DeleteConfig(configType string, name string) (bool, error)
 	return d.client.deleteConfig(configType, name)
 }
 
+func (d DirectorImpl) DeleteConfigByID(configID string) (bool, error) {
+	return d.client.deleteConfigByID(configID)
+}
+
 func (c Client) latestConfig(configType string, name string) ([]Config, error) {
 	var resps []Config
 
 	query := gourl.Values{}
 	query.Add("type", configType)
 	query.Add("name", name)
+	query.Add("limit", "1")
 	query.Add("latest", "true")
 	path := fmt.Sprintf("/configs?%s", query.Encode())
 
@@ -77,17 +110,18 @@ func (c Client) latestConfig(configType string, name string) ([]Config, error) {
 	return resps, nil
 }
 
-func (c Client) listConfigs(filter ConfigsFilter) ([]ConfigListItem, error) {
-	var resps []ConfigListItem
+func (c Client) listConfigs(limit int, filter ConfigsFilter) ([]Config, error) {
+	var resps []Config
 
 	query := gourl.Values{}
-	query.Add("latest", "true")
 	if filter.Type != "" {
 		query.Add("type", filter.Type)
 	}
 	if filter.Name != "" {
 		query.Add("name", filter.Name)
 	}
+	query.Add("limit", fmt.Sprintf("%d", limit))
+	query.Add("latest", strconv.FormatBool(limit == 1))
 	path := fmt.Sprintf("/configs?%s", query.Encode())
 
 	err := c.clientRequest.Get(path, &resps)
@@ -98,17 +132,24 @@ func (c Client) listConfigs(filter ConfigsFilter) ([]ConfigListItem, error) {
 	return resps, nil
 }
 
-func (c Client) updateConfig(content []byte) error {
+func (c Client) updateConfig(content []byte) (Config, error) {
+	var config Config
+
 	setHeaders := func(req *http.Request) {
 		req.Header.Add("Content-Type", "application/json")
 	}
 
-	_, _, err := c.clientRequest.RawPost("/configs", content, setHeaders)
+	respBody, _, err := c.clientRequest.RawPost("/configs", content, setHeaders)
 	if err != nil {
-		return bosherr.WrapErrorf(err, "Updating config")
+		return config, bosherr.WrapErrorf(err, "Updating config")
 	}
 
-	return nil
+	err = json.Unmarshal(respBody, &config)
+	if err != nil {
+		return config, bosherr.WrapError(err, "Unmarshaling Director response")
+	}
+
+	return config, nil
 }
 
 func (c Client) deleteConfig(configType string, name string) (bool, error) {
@@ -116,6 +157,20 @@ func (c Client) deleteConfig(configType string, name string) (bool, error) {
 	query.Add("type", configType)
 	query.Add("name", name)
 	path := fmt.Sprintf("/configs?%s", query.Encode())
+
+	_, response, err := c.clientRequest.RawDelete(path)
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, bosherr.WrapErrorf(err, "Deleting config")
+	}
+
+	return true, nil
+}
+
+func (c Client) deleteConfigByID(configID string) (bool, error) {
+	path := fmt.Sprintf("/configs/%s", configID)
 
 	_, response, err := c.clientRequest.RawDelete(path)
 	if err != nil {

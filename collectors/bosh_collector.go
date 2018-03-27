@@ -31,6 +31,7 @@ func NewBoshCollector(
 	collectorsFilter *filters.CollectorsFilter,
 	azsFilter *filters.AZsFilter,
 	processesFilter *filters.RegexpFilter,
+	cidrsFilter *filters.CidrFilter,
 ) *BoshCollector {
 	enabledCollectors := []Collector{}
 
@@ -40,7 +41,7 @@ func NewBoshCollector(
 	}
 
 	if collectorsFilter.Enabled(filters.JobsCollector) {
-		jobsCollector := NewJobsCollector(namespace, environment, boshName, boshUUID, azsFilter)
+		jobsCollector := NewJobsCollector(namespace, environment, boshName, boshUUID, azsFilter, cidrsFilter)
 		enabledCollectors = append(enabledCollectors, jobsCollector)
 	}
 
@@ -53,6 +54,7 @@ func NewBoshCollector(
 			serviceDiscoveryFilename,
 			azsFilter,
 			processesFilter,
+			cidrsFilter,
 		)
 		enabledCollectors = append(enabledCollectors, serviceDiscoveryCollector)
 	}

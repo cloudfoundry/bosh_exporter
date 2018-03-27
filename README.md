@@ -56,6 +56,8 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 
 ### Flags
 
+
+
 | Flag / Environment Variable | Required | Default | Description |
 | --------------------------- | -------- | ------- | ----------- |
 | `bosh.url`<br />`BOSH_EXPORTER_BOSH_URL` | Yes | | BOSH URL |
@@ -68,6 +70,7 @@ This exporter can be deployed using the [Prometheus BOSH Release][prometheus-bos
 | `filter.deployments`<br />`BOSH_EXPORTER_FILTER_DEPLOYMENTS` | No | | Comma separated deployments to filter |
 | `filter.azs`<br />`BOSH_EXPORTER_FILTER_AZS` | No | | Comma separated AZs to filter |
 | `filter.collectors`<br />`BOSH_EXPORTER_FILTER_COLLECTORS` | No | | Comma separated collectors to filter. If not set, all collectors will be enabled  (`Deployments`, `Jobs`, `ServiceDiscovery`) |
+| `filter.cidrs`<br />`BOSH_EXPORTER_FILTER_CIDRS` | No | `0.0.0.0/0` | Comma separated CIDR to filter instance IPs |
 | `metrics.namespace`<br />`BOSH_EXPORTER_METRICS_NAMESPACE` | No | `bosh` | Metrics Namespace |
 | `metrics.environment`<br />`BOSH_EXPORTER_METRICS_ENVIRONMENT` | Yes | | Environment label to be attached to metrics |
 | `sd.filename`<br />`BOSH_EXPORTER_SD_FILENAME` | No | `bosh_target_groups.json` | Full path to the Service Discovery output file |
@@ -162,6 +165,16 @@ If the `ServiceDiscovery` collector is enabled, the exporter will write a `json`
 ```
 
 The list of targets can be filtered using the `sd.processes_regexp` flag.
+
+
+## Filtering IPs
+
+Available instance IPs can be filtered using the `filter.cidrs` flag. 
+
+The first IP that matches a CIDR is used as target. 
+CIDRs are tested in the order specified by the comma-seperated list. 
+The instance is dropped if no IP is included in any of the CIDRs.
+
 
 ## Contributing
 

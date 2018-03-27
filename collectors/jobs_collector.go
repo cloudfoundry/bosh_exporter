@@ -14,6 +14,7 @@ import (
 
 type JobsCollector struct {
 	azsFilter                           *filters.AZsFilter
+	cidrsFilter                         *filters.CidrFilter
 	jobHealthyMetric                    *prometheus.GaugeVec
 	jobLoadAvg01Metric                  *prometheus.GaugeVec
 	jobLoadAvg05Metric                  *prometheus.GaugeVec
@@ -46,6 +47,7 @@ func NewJobsCollector(
 	boshName string,
 	boshUUID string,
 	azsFilter *filters.AZsFilter,
+	cidrsFilter *filters.CidrFilter,
 ) *JobsCollector {
 	jobHealthyMetric := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -407,6 +409,7 @@ func NewJobsCollector(
 
 	collector := &JobsCollector{
 		azsFilter:                           azsFilter,
+		cidrsFilter:                         cidrsFilter,
 		jobHealthyMetric:                    jobHealthyMetric,
 		jobLoadAvg01Metric:                  jobLoadAvg01Metric,
 		jobLoadAvg05Metric:                  jobLoadAvg05Metric,
@@ -538,10 +541,7 @@ func (c *JobsCollector) reportJobMetrics(deployment deployments.DeploymentInfo, 
 		jobID := instance.ID
 		jobIndex := instance.Index
 		jobAZ := instance.AZ
-		jobIP := ""
-		if len(instance.IPs) > 0 {
-			jobIP = instance.IPs[0]
-		}
+		jobIP, _ := c.cidrsFilter.Select(instance.IPs)
 
 		err = c.jobHealthyMetrics(ch, instance.Healthy, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)
 		err = c.jobLoadAvgMetrics(ch, instance.Vitals.Load, deploymentName, jobName, jobID, jobIndex, jobAZ, jobIP)

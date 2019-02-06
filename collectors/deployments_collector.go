@@ -155,7 +155,7 @@ func (c *DeploymentsCollector) reportDeploymentStemcellInfoMetrics(
 	deployment deployments.DeploymentInfo,
 	ch chan<- prometheus.Metric,
 ) {
-	for _, stemcell := range deployment.Stemcells {e
+	for _, stemcell := range deployment.Stemcells {
 		c.deploymentStemcellInfoMetric.WithLabelValues(
 			deployment.Name,
 			stemcell.Name,

@@ -11,7 +11,7 @@ import (
 type DeploymentsCollector struct {
 	deploymentReleaseInfoMetric                *prometheus.GaugeVec
 	deploymentStemcellInfoMetric               *prometheus.GaugeVec
-	deploymentVMTypeCountMetric                *prometheus.GaugeVec
+	deploymentInstanceCountMetric              *prometheus.GaugeVec
 	lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
 	lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
 }

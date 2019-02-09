@@ -167,14 +167,11 @@ If the `ServiceDiscovery` collector is enabled, the exporter will write a `json`
 The list of targets can be filtered using the `sd.processes_regexp` flag.
 
 
-## Filtering IPs
+### Filtering IPs
 
 Available instance IPs can be filtered using the `filter.cidrs` flag. 
 
-The first IP that matches a CIDR is used as target. 
-CIDRs are tested in the order specified by the comma-seperated list. 
-The instance is dropped if no IP is included in any of the CIDRs.
-
+The first IP that matches a CIDR is used as target. CIDRs are tested in the order specified by the comma-seperated list. The instance is dropped if no IP is included in any of the CIDRs.
 
 ## Contributing
 

@@ -67,7 +67,7 @@ var _ = Describe("BoshCollector", func() {
 		collectorsFilter, err = filters.NewCollectorsFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())
 		azsFilter = filters.NewAZsFilter([]string{})
-		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
+		cidrsFilter, err = filters.NewCidrFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())

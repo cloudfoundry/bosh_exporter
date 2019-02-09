@@ -282,6 +282,26 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			})
 		})
 
+		Context("when no IP is found for an instance", func() {
+			BeforeEach(func() {
+				cidrsFilter, err = filters.NewCidrFilter([]string{"10.254.0.0/16"})
+			})
+
+			It("writes an empty target groups file", func() {
+				Eventually(metrics).Should(Receive())
+				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(string(targetGroups)).To(Equal("[]"))
+			})
+
+			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				Eventually(metrics).Should(Receive())
+				Eventually(metrics).Should(Receive())
+				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
+			})
+		})
+
 		Context("when there are no processes", func() {
 			BeforeEach(func() {
 				deployment1Info.Instances[0].Processes = []deployments.Process{}

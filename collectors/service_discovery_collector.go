@@ -92,10 +92,10 @@ func NewServiceDiscoveryCollector(
 	)
 
 	collector := &ServiceDiscoveryCollector{
-		serviceDiscoveryFilename:                        serviceDiscoveryFilename,
-		azsFilter:                                       azsFilter,
-		processesFilter:                                 processesFilter,
-		cidrsFilter:                                     cidrsFilter,
+		serviceDiscoveryFilename: serviceDiscoveryFilename,
+		azsFilter:                azsFilter,
+		processesFilter:          processesFilter,
+		cidrsFilter:              cidrsFilter,
 		lastServiceDiscoveryScrapeTimestampMetric:       lastServiceDiscoveryScrapeTimestampMetric,
 		lastServiceDiscoveryScrapeDurationSecondsMetric: lastServiceDiscoveryScrapeDurationSecondsMetric,
 		mu: &sync.Mutex{},

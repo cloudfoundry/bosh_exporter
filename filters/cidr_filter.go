@@ -8,18 +8,18 @@ type CidrFilter struct {
 	cidrFilters []*net.IPNet
 }
 
-func NewCidrFilter(cidrs []string) (*CidrFilter, error) {
-	nets := []*net.IPNet{}
-	for _, c := range cidrs {
-		_, net, err := net.ParseCIDR(c)
+func NewCidrFilter(filters []string) (*CidrFilter, error) {
+	cidrFilters := []*net.IPNet{}
+
+	for _, filter := range filters {
+		_, net, err := net.ParseCIDR(filter)
 		if err != nil {
 			return nil, err
 		}
-		nets = append(nets, net)
+		cidrFilters = append(cidrFilters, net)
 	}
-	return &CidrFilter{
-		cidrFilters: nets,
-	}, nil
+
+	return &CidrFilter{cidrFilters: cidrFilters}, nil
 }
 
 func (f *CidrFilter) Select(ips []string) (string, bool) {
@@ -34,5 +34,6 @@ func (f *CidrFilter) Select(ips []string) (string, bool) {
 			}
 		}
 	}
+
 	return "", false
 }

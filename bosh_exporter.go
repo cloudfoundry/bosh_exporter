@@ -14,7 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
-	"gopkg.in/alecthomas/kingpin.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/bosh-prometheus/bosh_exporter/collectors"
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
@@ -61,6 +61,10 @@ var (
 	filterCollectors = kingpin.Flag(
 		"filter.collectors", "Comma separated collectors to filter (Deployments,Jobs,ServiceDiscovery) ($BOSH_EXPORTER_FILTER_COLLECTORS)",
 	).Envar("BOSH_EXPORTER_FILTER_COLLECTORS").Default("").String()
+
+	filterCIDRs = kingpin.Flag(
+		"filter.cidrs", "Comma separated CIDR to filter available instance IPs ($BOSH_EXPORTER_FILTER_CIDRS)",
+	).Envar("BOSH_EXPORTER_FILTER_CIDRS").Default("0.0.0.0.0/0").String()
 
 	metricsNamespace = kingpin.Flag(
 		"metrics.namespace", "Metrics Namespace ($BOSH_EXPORTER_METRICS_NAMESPACE)",
@@ -295,6 +299,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	var cidrFilters []string
+	if *filterCIDRs != "" {
+		cidrFilters = strings.Split(*filterCIDRs, ",")
+	}
+	cidrsFilter, err := filters.NewCidrFilter(cidrFilters)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
 	var processesFilters []string
 	if *sdProcessesRegexp != "" {
 		processesFilters = []string{*sdProcessesRegexp}
@@ -315,6 +329,7 @@ func main() {
 		collectorsFilter,
 		azsFilter,
 		processesFilter,
+		cidrsFilter,
 	)
 	prometheus.MustRegister(boshCollector)
 

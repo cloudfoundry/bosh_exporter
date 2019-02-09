@@ -32,6 +32,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		serviceDiscoveryFilename  string
 		azsFilter                 *filters.AZsFilter
 		processesFilter           *filters.RegexpFilter
+		cidrsFilter               *filters.CidrFilter
 		serviceDiscoveryCollector *ServiceDiscoveryCollector
 
 		lastServiceDiscoveryScrapeTimestampMetric       prometheus.Gauge
@@ -47,6 +48,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
 		azsFilter = filters.NewAZsFilter([]string{})
+		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 
 		lastServiceDiscoveryScrapeTimestampMetric = prometheus.NewGauge(
@@ -92,6 +94,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			serviceDiscoveryFilename,
 			azsFilter,
 			processesFilter,
+			cidrsFilter,
 		)
 	})
 
@@ -263,6 +266,26 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			BeforeEach(func() {
 				deployment1Info.Instances[0].IPs = []string{}
 				deploymentsInfo = []deployments.DeploymentInfo{deployment1Info}
+			})
+
+			It("writes an empty target groups file", func() {
+				Eventually(metrics).Should(Receive())
+				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(string(targetGroups)).To(Equal("[]"))
+			})
+
+			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				Eventually(metrics).Should(Receive())
+				Eventually(metrics).Should(Receive())
+				Consistently(metrics).ShouldNot(Receive())
+				Consistently(errMetrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when no IP is found for an instance", func() {
+			BeforeEach(func() {
+				cidrsFilter, err = filters.NewCidrFilter([]string{"10.254.0.0/16"})
 			})
 
 			It("writes an empty target groups file", func() {

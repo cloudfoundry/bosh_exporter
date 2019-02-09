@@ -41,6 +41,7 @@ var _ = Describe("BoshCollector", func() {
 		collectorsFilter   *filters.CollectorsFilter
 		azsFilter          *filters.AZsFilter
 		processesFilter    *filters.RegexpFilter
+		cidrsFilter        *filters.CidrFilter
 		boshCollector      *BoshCollector
 
 		totalBoshScrapesMetric              prometheus.Counter
@@ -66,6 +67,8 @@ var _ = Describe("BoshCollector", func() {
 		collectorsFilter, err = filters.NewCollectorsFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())
 		azsFilter = filters.NewAZsFilter([]string{})
+		cidrsFilter, err = filters.NewCidrFilter([]string{})
+		Expect(err).ToNot(HaveOccurred())
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 		Expect(err).ToNot(HaveOccurred())
 
@@ -160,6 +163,7 @@ var _ = Describe("BoshCollector", func() {
 			collectorsFilter,
 			azsFilter,
 			processesFilter,
+			cidrsFilter,
 		)
 	})
 

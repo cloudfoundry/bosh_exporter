@@ -22,11 +22,13 @@ func init() {
 
 var _ = Describe("JobsCollector", func() {
 	var (
+		err           error
 		namespace     string
 		environment   string
 		boshName      string
 		boshUUID      string
 		azsFilter     *filters.AZsFilter
+		cidrsFilter   *filters.CidrFilter
 		jobsCollector *JobsCollector
 
 		jobHealthyMetric                    *prometheus.GaugeVec
@@ -91,6 +93,8 @@ var _ = Describe("JobsCollector", func() {
 		boshName = "test_bosh_name"
 		boshUUID = "test_bosh_uuid"
 		azsFilter = filters.NewAZsFilter([]string{})
+		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
+		Expect(err).ToNot(HaveOccurred())
 
 		jobHealthyMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
@@ -655,7 +659,7 @@ var _ = Describe("JobsCollector", func() {
 	})
 
 	JustBeforeEach(func() {
-		jobsCollector = NewJobsCollector(namespace, environment, boshName, boshUUID, azsFilter)
+		jobsCollector = NewJobsCollector(namespace, environment, boshName, boshUUID, azsFilter, cidrsFilter)
 	})
 
 	Describe("Describe", func() {

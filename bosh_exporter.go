@@ -64,7 +64,7 @@ var (
 
 	filterCIDRs = kingpin.Flag(
 		"filter.cidrs", "Comma separated CIDR to filter available instance IPs ($BOSH_EXPORTER_FILTER_CIDRS)",
-	).Envar("BOSH_EXPORTER_FILTER_CIDRS").Default("0.0.0.0.0/0").String()
+	).Envar("BOSH_EXPORTER_FILTER_CIDRS").Default("0.0.0.0/0").String()
 
 	metricsNamespace = kingpin.Flag(
 		"metrics.namespace", "Metrics Namespace ($BOSH_EXPORTER_METRICS_NAMESPACE)",
@@ -182,7 +182,7 @@ func buildBOSHClient() (director.Director, error) {
 	}
 	directorConfig.CACert = boshCACert
 
-	anonymousDirector, err := director.NewFactory(logger).New(directorConfig, nil, nil)
+	anonymousDirector, err := director.NewFactory(logger).New(directorConfig, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -240,13 +240,18 @@ func buildBOSHClient() (director.Director, error) {
 				return nil, err
 			}
 
-			origToken := uaaClient.NewStaleAccessToken(accessToken.RefreshToken().Value())
-			directorConfig.TokenFunc = uaa.NewAccessTokenSession(origToken).TokenFunc
+			refreshToken := ""
+			if refreshableToken, ok := accessToken.(uaa.RefreshableAccessToken); ok {
+				refreshToken = refreshableToken.RefreshValue()
+			}
+
+			origToken := uaa.NewRefreshableAccessToken(accessToken.Type(), accessToken.Value(), refreshToken)
+			directorConfig.TokenFunc = uaa.NewAccessTokenSession(uaaClient, origToken, nil, "").TokenFunc
 		}
 	}
 
 	boshFactory := director.NewFactory(logger)
-	boshClient, err := boshFactory.New(directorConfig, director.NewNoopTaskReporter(), director.NewNoopFileReporter())
+	boshClient, err := boshFactory.New(directorConfig, nil, director.NewNoopTaskReporter(), director.NewNoopFileReporter())
 	if err != nil {
 		return nil, err
 	}

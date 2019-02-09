@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	log.Base().SetLevel("fatal")
+	_ = log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("DeploymentsCollector", func() {
@@ -27,6 +27,7 @@ var _ = Describe("DeploymentsCollector", func() {
 
 		deploymentReleaseInfoMetric                *prometheus.GaugeVec
 		deploymentStemcellInfoMetric               *prometheus.GaugeVec
+		deploymentInstanceCountMetric              *prometheus.GaugeVec
 		lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
 		lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
 
@@ -36,6 +37,7 @@ var _ = Describe("DeploymentsCollector", func() {
 		stemcellName    = "fake-stemcell-name"
 		stemcellVersion = "4.5.6"
 		stemcellOSName  = "fake-stemcell-os-name"
+		vmType          = "large"
 	)
 
 	BeforeEach(func() {
@@ -85,6 +87,26 @@ var _ = Describe("DeploymentsCollector", func() {
 			stemcellName,
 			stemcellVersion,
 			stemcellOSName,
+		).Set(float64(1))
+
+		deploymentInstanceCountMetric = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: "deployment",
+				Name:      "instance_count",
+				Help:      "Number of instances in this deployment",
+				ConstLabels: prometheus.Labels{
+					"environment": environment,
+					"bosh_name":   boshName,
+					"bosh_uuid":   boshUUID,
+				},
+			},
+			[]string{"bosh_deployment", "bosh_vm_type"},
+		)
+
+		deploymentInstanceCountMetric.WithLabelValues(
+			deploymentName,
+			vmType,
 		).Set(float64(1))
 
 		lastDeploymentsScrapeTimestampMetric = prometheus.NewGauge(
@@ -155,6 +177,13 @@ var _ = Describe("DeploymentsCollector", func() {
 			).Desc())))
 		})
 
+		It("returns a deployment_instance_count metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(deploymentInstanceCountMetric.WithLabelValues(
+				deploymentName,
+				vmType,
+			).Desc())))
+		})
+
 		It("returns a last_deployments_scrape_timestamp metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(lastDeploymentsScrapeTimestampMetric.Desc())))
 		})
@@ -179,6 +208,18 @@ var _ = Describe("DeploymentsCollector", func() {
 			}
 			stemcells = []deployments.Stemcell{stemcell}
 
+			instances = []deployments.Instance{
+				{
+					VMType:    "small",
+				},
+				{
+					VMType:    "medium",
+				},
+				{
+					VMType:    "large",
+				},
+			}
+
 			deploymentInfo deployments.DeploymentInfo
 
 			deploymentsInfo []deployments.DeploymentInfo
@@ -192,6 +233,7 @@ var _ = Describe("DeploymentsCollector", func() {
 				Name:      deploymentName,
 				Releases:  releases,
 				Stemcells: stemcells,
+				Instances: instances,
 			}
 			deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 
@@ -222,6 +264,14 @@ var _ = Describe("DeploymentsCollector", func() {
 				stemcellName,
 				stemcellVersion,
 				stemcellOSName,
+			))))
+			Consistently(errMetrics).ShouldNot(Receive())
+		})
+
+		It("returns a deployment_instance_count", func() {
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstanceCountMetric.WithLabelValues(
+				deploymentName,
+				vmType,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -267,6 +317,21 @@ var _ = Describe("DeploymentsCollector", func() {
 					stemcellName,
 					stemcellVersion,
 					stemcellOSName,
+				))))
+				Consistently(errMetrics).ShouldNot(Receive())
+			})
+		})
+
+		Context("when there are no instances", func() {
+			BeforeEach(func() {
+				deploymentInfo.Instances = []deployments.Instance{}
+				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
+			})
+
+			It("should not return a deployment_instance_count metric", func() {
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentInstanceCountMetric.WithLabelValues(
+					deploymentName,
+					vmType,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})

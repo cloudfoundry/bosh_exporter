@@ -47,6 +47,7 @@ type ServiceDiscoveryCollector struct {
 	serviceDiscoveryFilename                        string
 	azsFilter                                       *filters.AZsFilter
 	processesFilter                                 *filters.RegexpFilter
+	cidrsFilter                                     *filters.CidrFilter
 	lastServiceDiscoveryScrapeTimestampMetric       prometheus.Gauge
 	lastServiceDiscoveryScrapeDurationSecondsMetric prometheus.Gauge
 	mu                                              *sync.Mutex
@@ -60,6 +61,7 @@ func NewServiceDiscoveryCollector(
 	serviceDiscoveryFilename string,
 	azsFilter *filters.AZsFilter,
 	processesFilter *filters.RegexpFilter,
+	cidrsFilter *filters.CidrFilter,
 ) *ServiceDiscoveryCollector {
 	lastServiceDiscoveryScrapeTimestampMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -93,6 +95,7 @@ func NewServiceDiscoveryCollector(
 		serviceDiscoveryFilename:                        serviceDiscoveryFilename,
 		azsFilter:                                       azsFilter,
 		processesFilter:                                 processesFilter,
+		cidrsFilter:                                     cidrsFilter,
 		lastServiceDiscoveryScrapeTimestampMetric:       lastServiceDiscoveryScrapeTimestampMetric,
 		lastServiceDiscoveryScrapeDurationSecondsMetric: lastServiceDiscoveryScrapeDurationSecondsMetric,
 		mu: &sync.Mutex{},
@@ -138,9 +141,11 @@ func (c *ServiceDiscoveryCollector) createLabelGroups(deployments []deployments.
 
 	for _, deployment := range deployments {
 		for _, instance := range deployment.Instances {
-			if len(instance.IPs) == 0 || !c.azsFilter.Enabled(instance.AZ) {
+			ip, found := c.cidrsFilter.Select(instance.IPs)
+			if !found || !c.azsFilter.Enabled(instance.AZ) {
 				continue
 			}
+
 			for _, process := range instance.Processes {
 				if !c.processesFilter.Enabled(process.Name) {
 					continue
@@ -149,7 +154,7 @@ func (c *ServiceDiscoveryCollector) createLabelGroups(deployments []deployments.
 				if _, ok := labelGroups[key]; !ok {
 					labelGroups[key] = []string{}
 				}
-				labelGroups[key] = append(labelGroups[key], instance.IPs[0])
+				labelGroups[key] = append(labelGroups[key], ip)
 			}
 		}
 	}

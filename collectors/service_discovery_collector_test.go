@@ -31,6 +31,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		serviceDiscoveryFilename  string
 		azsFilter                 *filters.AZsFilter
 		processesFilter           *filters.RegexpFilter
+		cidrsFilter               *filters.CidrFilter
 		serviceDiscoveryCollector *ServiceDiscoveryCollector
 
 		lastServiceDiscoveryScrapeTimestampMetric       prometheus.Gauge
@@ -46,6 +47,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
 		azsFilter = filters.NewAZsFilter([]string{})
+		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 
 		lastServiceDiscoveryScrapeTimestampMetric = prometheus.NewGauge(
@@ -91,6 +93,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			serviceDiscoveryFilename,
 			azsFilter,
 			processesFilter,
+			cidrsFilter,
 		)
 	})
 

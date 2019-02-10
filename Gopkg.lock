@@ -29,6 +29,14 @@
   revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
 
 [[projects]]
+  digest = "1:cfd43114294fda4b19fec74456f9299e7bd178eb7b87844f09e389c030072b7a"
+  name = "github.com/benjamintf1/unmarshalledmatchers"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f49d1795d752929500b8ed2289f1e21f10414667"
+  version = "1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
   name = "github.com/beorn7/perks"
@@ -396,6 +404,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/benjamintf1/unmarshalledmatchers",
     "github.com/cloudfoundry/bosh-cli/director",
     "github.com/cloudfoundry/bosh-cli/director/directorfakes",
     "github.com/cloudfoundry/bosh-cli/uaa",

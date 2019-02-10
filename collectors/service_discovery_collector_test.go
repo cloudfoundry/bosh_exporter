@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	. "github.com/benjamintf1/unmarshalledmatchers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -210,7 +211,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			Eventually(metrics).Should(Receive())
 			targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(string(targetGroups)).To(MatchJSON(targetGroupsContent))
+			Expect(string(targetGroups)).To(MatchUnorderedJSON(targetGroupsContent))
 		})
 
 		It("returns a last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {

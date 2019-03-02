@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/cloudfoundry/bosh-cli"
-  version = "3.0.1"
+  version = "5.4.0"
 
 [[constraint]]
   branch = "master"
@@ -43,7 +43,7 @@
 
 [[constraint]]
   name = "github.com/onsi/gomega"
-  version = "1.3.0"
+  version = "1.4.3"
 
 [[constraint]]
   name = "github.com/benjamintf1/unmarshalledmatchers"
@@ -65,10 +65,9 @@
   name = "gopkg.in/alecthomas/kingpin.v2"
   version = "2.2.6"
 
-
 [[override]]
   name = "github.com/cloudfoundry/socks5-proxy"
-  revision = "6afb711f4b32a266b51160288e98fd3c4b28f0cb"
+  revision = "3659db090cb23a57807b53e2f8580b2427dc2659"
 
 [prune]
   go-tests = true

@@ -7,7 +7,7 @@
   name = "code.cloudfoundry.org/clock"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e9dc86bbf0e5bbe6bf7ff5a6f71e048959b61f71"
+  revision = "02e53af36e6c978af692887ed449b74026d76fec"
 
 [[projects]]
   branch = "master"
@@ -29,23 +29,6 @@
   revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
 
 [[projects]]
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
-  digest = "1:cfd43114294fda4b19fec74456f9299e7bd178eb7b87844f09e389c030072b7a"
-  name = "github.com/benjamintf1/unmarshalledmatchers"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "f49d1795d752929500b8ed2289f1e21f10414667"
-  version = "1.0.0"
-=======
-  branch = "master"
-  digest = "1:5a91fc342af1f94bce8b760a80d5b709fe53ea10c870a5daf1dc7e9fada8525f"
-  name = "github.com/armon/go-socks5"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "e75332964ef517daa070d7c38a9466a0d687e0a5"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
-
-[[projects]]
   digest = "1:cfd43114294fda4b19fec74456f9299e7bd178eb7b87844f09e389c030072b7a"
   name = "github.com/benjamintf1/unmarshalledmatchers"
   packages = ["."]
@@ -55,7 +38,6 @@
 
 [[projects]]
   branch = "master"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -69,21 +51,6 @@
   pruneopts = "UT"
   revision = "85a78806aa1b4707d1dbace9be592cf1ece91ab3"
   version = "v1.1.1"
-=======
-  digest = "1:5bb36304653e73c2ced864d49c9f344e7141a7ceef852442edcea212094ebc3c"
-  name = "github.com/beorn7/perks"
-  packages = ["quantile"]
-  pruneopts = "UT"
-  revision = "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9"
-
-[[projects]]
-  digest = "1:5702fe0fef33e81d351e37d3cfb9e88fe16bc68c821d973c439c63112899384b"
-  name = "github.com/bmatcuk/doublestar"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
-  version = "v1.0.9"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
 
 [[projects]]
   branch = "master"
@@ -94,7 +61,6 @@
   revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
 
 [[projects]]
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   branch = "master"
   digest = "1:94cad6e2359d57da6652e689189c5b6ef19f99db6304d2c41de54f6632e15143"
   name = "github.com/cheggaaa/pb"
@@ -104,16 +70,6 @@
 
 [[projects]]
   digest = "1:853f38cb32c5ada7dd13c4ba7d2396c830e3c6bf9c1c99afbcb692c4d448d79c"
-=======
-  digest = "1:dd375e376046ed022d314a93eb1a1047786133253123f7c011e339d99b9a556c"
-  name = "github.com/cheggaaa/pb"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c1f48d5ce4f292dfb775ef52aaedd15be323510d"
-
-[[projects]]
-  digest = "1:fb302672fa560f0a9c186e58a6b4ba91d1e55ce9e3734d0accb270f5b2afd370"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "github.com/cloudfoundry/bosh-cli"
   packages = [
     "cmd/config",
@@ -125,21 +81,12 @@
     "ui/table",
   ]
   pruneopts = "UT"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   revision = "891ff634a896de0839feb5a316d7341fb26ed458"
   version = "v5.4.0"
 
 [[projects]]
   branch = "master"
   digest = "1:696df7595ddc9ab217102e9193e365c481cbed7eb5ef7dce15d28ffd4c3cf8cb"
-=======
-  revision = "712bfd7271b478ba03c3f604339e2eefbec4647c"
-  version = "v3.0.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:c20334d497f4dcf9a5711f74d71e8aff85bf3b0f37105b3cbb214deecd928eaa"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "github.com/cloudfoundry/bosh-utils"
   packages = [
     "crypto",
@@ -152,7 +99,6 @@
     "uuid",
   ]
   pruneopts = "UT"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   revision = "9a0affed2bf1b1cd41515ce2356335ca4c6e6f98"
 
 [[projects]]
@@ -169,16 +115,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "3659db090cb23a57807b53e2f8580b2427dc2659"
-=======
-  revision = "c6a922e299b8eb5eaadad8a2842e3ab7e043dc5d"
-
-[[projects]]
-  digest = "1:51d45ca990d6940fd13ccbc1d7b550831b3494f5c22dee14a2933c1075cd33c3"
-  name = "github.com/cloudfoundry/socks5-proxy"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6afb711f4b32a266b51160288e98fd3c4b28f0cb"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
 
 [[projects]]
   branch = "master"
@@ -189,7 +125,6 @@
   revision = "576b6af77ae4f3ccef356902fb3b9a9ae22e0b11"
 
 [[projects]]
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   digest = "1:6f9339c912bbdda81302633ad7e99a28dfa5a639c864061f1929510a9a64aa74"
   name = "github.com/dustin/go-humanize"
   packages = ["."]
@@ -222,32 +157,6 @@
   version = "v1.0.1"
 
 [[projects]]
-=======
-  branch = "master"
-  digest = "1:ee7fe6a68ba9f21bc748293d4e1e66ad327f64a89b0f5ba2d021430babd4b8c9"
-  name = "github.com/dustin/go-humanize"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
-
-[[projects]]
-  digest = "1:4bb94bb2d837b5c7489d9e5e1fcffbc81fa1cb43024cbb4fe827787378f01e3b"
-  name = "github.com/fatih/color"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
-  version = "v1.6.0"
-
-[[projects]]
-  digest = "1:ffc060c551980d37ee9e428ef528ee2813137249ccebb0bfc412ef83071cac91"
-  name = "github.com/golang/protobuf"
-  packages = ["proto"]
-  pruneopts = "UT"
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
-
-[[projects]]
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
@@ -256,7 +165,6 @@
   version = "v0.0.9"
 
 [[projects]]
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
@@ -279,22 +187,6 @@
   pruneopts = "UT"
   revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
   version = "v1.0.1"
-=======
-  digest = "1:d4d17353dbd05cb52a2a52b7fe1771883b682806f68db442b436294926bbfafb"
-  name = "github.com/mattn/go-isatty"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
-  version = "v0.0.3"
-
-[[projects]]
-  digest = "1:5985ef4caf91ece5d54817c11ea25f182697534f8ae6521eadcd628c142ac4b6"
-  name = "github.com/matttproud/golang_protobuf_extensions"
-  packages = ["pbutil"]
-  pruneopts = "UT"
-  revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
-  version = "v1.0.0"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
 
 [[projects]]
   branch = "master"
@@ -332,11 +224,7 @@
   version = "v1.4.0"
 
 [[projects]]
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   digest = "1:7a137fb7718928e473b7d805434ae563ec41790d3d227cdc64e8b14d1cab8a1f"
-=======
-  digest = "1:038734db8a70cdd73d4215081b22236e2aed3e65ca0727f6afd0ed839630e738"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -353,13 +241,8 @@
     "types",
   ]
   pruneopts = "UT"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   revision = "65fb64232476ad9046e57c26cd0bff3d3a8dc6cd"
   version = "v1.4.3"
-=======
-  revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
-  version = "v1.3.0"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
 
 [[projects]]
   branch = "master"
@@ -379,7 +262,6 @@
 
 [[projects]]
   branch = "master"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   digest = "1:2d5cd61daa5565187e1d96bae64dbbc6080dacf741448e9629c64fd93203b0d4"
   name = "github.com/prometheus/client_model"
   packages = ["go"]
@@ -389,17 +271,6 @@
 [[projects]]
   branch = "master"
   digest = "1:9fa0d109922b9e3a004d2cf85022579759c4be33626cb0bf1de617aca6180a38"
-=======
-  digest = "1:32d10bdfa8f09ecf13598324dba86ab891f11db3c538b6a34d1c3b5b99d7c36b"
-  name = "github.com/prometheus/client_model"
-  packages = ["go"]
-  pruneopts = "UT"
-  revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
-
-[[projects]]
-  branch = "master"
-  digest = "1:96193307e7fa11cd77819186f658df19cfa502b56e8431158010e27b4870c0c7"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "github.com/prometheus/common"
   packages = [
     "expfmt",
@@ -409,19 +280,11 @@
     "version",
   ]
   pruneopts = "UT"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   revision = "f866ba39776a736ba5d34760f5fae4ad74e63f2e"
 
 [[projects]]
   branch = "master"
   digest = "1:c65f369bae3dff3a0382e38f3fe4f62cdfecba59cb6429ee323b75afdd4f3ba3"
-=======
-  revision = "e4aa40a9169a88835b849a6efb71e05dc04b88f0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:0df99e9e59e256acf7b5f2701a8e41dbc591982667eda659136d4f2ec9da37da"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "github.com/prometheus/procfs"
   packages = [
     ".",
@@ -430,7 +293,6 @@
     "xfs",
   ]
   pruneopts = "UT"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   revision = "de1b801bf34b80cd00f14087dc5a994bfe0296bc"
 
 [[projects]]
@@ -440,17 +302,6 @@
   pruneopts = "UT"
   revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
   version = "v1.3.0"
-=======
-  revision = "54d17b57dd7d4a3aa092476596b3f8a933bde349"
-
-[[projects]]
-  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
 
 [[projects]]
   digest = "1:b54b140b8d4a69b461f678f7ed57c89ef5e5c6343497542c8b697228cb7c8a51"
@@ -464,11 +315,7 @@
 
 [[projects]]
   branch = "master"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   digest = "1:b204ba2b606620bfa28e96d6006ca58337410a0b6ff4c77112cf972e21255ef1"
-=======
-  digest = "1:ae38a56e386a576a45ca89870c379224062f1cc9a9763f7b165567f3f317f4a1"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -481,26 +328,17 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   revision = "193df9c0f06f8bb35fba505183eaf0acc0136505"
 
 [[projects]]
   branch = "master"
   digest = "1:c0c7a1d054e25c08b451b234a45a8fc783cddc052c52abd20648bfc5a0851ed1"
-=======
-  revision = "80db560fac1fb3e6ac81dbc7f8ae4c061f5257bd"
-
-[[projects]]
-  branch = "master"
-  digest = "1:958cbc7e1b980a4e8995875b597d6acad3746e49a4dc5a0fc3c02845d081680c"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "golang.org/x/net"
   packages = [
     "context",
     "html",
     "html/atom",
     "html/charset",
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
     "internal/socks",
     "proxy",
   ]
@@ -510,16 +348,6 @@
 [[projects]]
   branch = "master"
   digest = "1:71e4ba118d08b5d6c0e0e9b33393aa39264d632b29e7dea5f01892f6d338ca03"
-=======
-    "proxy",
-  ]
-  pruneopts = "UT"
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
-
-[[projects]]
-  branch = "master"
-  digest = "1:1212ea3718897b3bd9daecd1545cbb8e5632354e662ed1a94006d763316c6084"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
   name = "golang.org/x/sys"
   packages = [
     "unix",
@@ -528,11 +356,7 @@
     "windows/svc/eventlog",
   ]
   pruneopts = "UT"
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   revision = "41f3e6584952bb034a481797859f6ab34b6803bd"
-=======
-  revision = "7ceb54c8418b8f9cdf0177b511d5cbb06e9fae39"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
 
 [[projects]]
   digest = "1:aa4d6967a3237f8367b6bf91503964a77183ecf696f1273e8ad3551bb4412b5f"
@@ -569,21 +393,12 @@
   version = "v2.2.6"
 
 [[projects]]
-<<<<<<< 7d446edf4059ee6844d52bd650ec4df1869b58fc
   digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
   revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
   version = "v2.2.2"
-=======
-  digest = "1:2a81c6e126d36ad027328cffaa4888fc3be40f09dc48028d1f93705b718130b9"
-  name = "gopkg.in/yaml.v2"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
-  version = "v2.1.1"
->>>>>>> Fixed test case writes a target group file by using MatchUnorderedJSON rather than MatchJSON as the json contained a list structure
 
 [solve-meta]
   analyzer-name = "dep"

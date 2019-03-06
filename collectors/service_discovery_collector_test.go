@@ -7,7 +7,6 @@ import (
 	. "github.com/benjamintf1/unmarshalledmatchers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/benjamintf1/unmarshalledmatchers"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"

@@ -285,7 +285,7 @@ func main() {
 	if *filterDeployments != "" {
 		deploymentsFilters = strings.Split(*filterDeployments, ",")
 	}
-	deploymentsFilter := filters.NewDeploymentsFilter	(deploymentsFilters, boshClient)
+	deploymentsFilter := filters.NewDeploymentsFilter(deploymentsFilters, boshClient)
 	deploymentsFetcher := deployments.NewFetcher(*deploymentsFilter)
 
 	var azsFilters []string

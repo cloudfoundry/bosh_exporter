@@ -219,24 +219,12 @@ var _ = Describe("DeploymentsCollector", func() {
 			stemcells = []deployments.Stemcell{stemcell}
 
 			instances = []deployments.Instance{
-				{
-					VMType: vmTypeSmall,
-				},
-				{
-					VMType: vmTypeMedium,
-				},
-				{
-					VMType: vmTypeMedium,
-				},
-				{
-					VMType: vmTypeLarge,
-				},
-				{
-					VMType: vmTypeLarge,
-				},
-				{
-					VMType: vmTypeLarge,
-				},
+				{VMType: vmTypeSmall},
+				{VMType: vmTypeMedium},
+				{VMType: vmTypeMedium},
+				{VMType: vmTypeLarge},
+				{VMType: vmTypeLarge},
+				{VMType: vmTypeLarge},
 			}
 
 			deploymentInfo deployments.DeploymentInfo
@@ -287,15 +275,23 @@ var _ = Describe("DeploymentsCollector", func() {
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
-		It("returns a deployment_instances", func() {
+		It("returns a deployment_instances for small vmType instance", func() {
 			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
 				vmTypeSmall,
 			))))
+			Consistently(errMetrics).ShouldNot(Receive())
+		})
+
+		It("returns a deployment_instances for medium vmType instance", func() {
 			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
 				vmTypeMedium,
 			))))
+			Consistently(errMetrics).ShouldNot(Receive())
+		})
+
+		It("returns a deployment_instances for large vmType instance", func() {
 			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
 				vmTypeLarge,

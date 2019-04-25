@@ -102,6 +102,7 @@ The exporter returns the following `Deployments` metrics:
 | ------ | ----------- | ------ |
 | *metrics.namespace*_deployment_release_info | Labeled BOSH Deployment Release Info with a constant `1` value | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_release_name`, `bosh_release_version` |
 | *metrics.namespace*_deployment_stemcell_info | Labeled BOSH Deployment Stemcell Info with a constant `1` value | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_stemcell_name`, `bosh_stemcell_version`, `bosh_stemcell_os_name` |
+| *metrics.namespace*_deployment_instances | Number of instances in the deployment | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_vm_type` |
 | *metrics.namespace*_last_deployments_scrape_timestamp | Number of seconds since 1970 since last scrape of Deployments metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
 | *metrics.namespace*_last_deployments_scrape_duration_seconds | Duration of the last scrape of Deployments metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
 

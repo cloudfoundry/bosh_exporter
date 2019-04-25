@@ -7,6 +7,7 @@ The BOSH Prometheus Exporter gets the metrics from the [BOSH Director][bosh_dire
 * Deployment metrics:
   * Releases in use
   * Stemcells in use
+  * Number of Instances
 * Job metrics:
   * Health status
   * CPU

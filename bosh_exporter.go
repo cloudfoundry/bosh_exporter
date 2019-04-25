@@ -129,6 +129,15 @@ func (h *basicAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+type boshConfigUpdater struct{}
+
+func (cu boshConfigUpdater) UpdateConfigWithToken(environment string, token uaa.AccessToken) error {
+	return nil
+}
+func (cu boshConfigUpdater) Save() error {
+	return nil
+}
+
 func prometheusHandler() http.Handler {
 	handler := prometheus.Handler()
 
@@ -246,7 +255,7 @@ func buildBOSHClient() (director.Director, error) {
 			}
 
 			origToken := uaa.NewRefreshableAccessToken(accessToken.Type(), accessToken.Value(), refreshToken)
-			directorConfig.TokenFunc = uaa.NewAccessTokenSession(uaaClient, origToken, nil, "").TokenFunc
+			directorConfig.TokenFunc = uaa.NewAccessTokenSession(uaaClient, origToken, boshConfigUpdater{}, "").TokenFunc
 		}
 	}
 

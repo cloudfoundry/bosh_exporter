@@ -11,6 +11,7 @@ import (
 type DeploymentsCollector struct {
 	deploymentReleaseInfoMetric                *prometheus.GaugeVec
 	deploymentStemcellInfoMetric               *prometheus.GaugeVec
+	deploymentInstanceCountMetric              *prometheus.GaugeVec
 	lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
 	lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
 }
@@ -51,6 +52,21 @@ func NewDeploymentsCollector(
 		[]string{"bosh_deployment", "bosh_stemcell_name", "bosh_stemcell_version", "bosh_stemcell_os_name"},
 	)
 
+	deploymentInstanceCountMetric := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: "deployment",
+			Name:      "instance_count",
+			Help:      "Number of instances in this deployment",
+			ConstLabels: prometheus.Labels{
+				"environment": environment,
+				"bosh_name":   boshName,
+				"bosh_uuid":   boshUUID,
+			},
+		},
+		[]string{"bosh_deployment", "bosh_vm_type"},
+	)
+
 	lastDeploymentsScrapeTimestampMetric := prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -82,6 +98,7 @@ func NewDeploymentsCollector(
 	collector := &DeploymentsCollector{
 		deploymentReleaseInfoMetric:                deploymentReleaseInfoMetric,
 		deploymentStemcellInfoMetric:               deploymentStemcellInfoMetric,
+		deploymentInstanceCountMetric:              deploymentInstanceCountMetric,
 		lastDeploymentsScrapeTimestampMetric:       lastDeploymentsScrapeTimestampMetric,
 		lastDeploymentsScrapeDurationSecondsMetric: lastDeploymentsScrapeDurationSecondsMetric,
 	}
@@ -97,10 +114,12 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 	for _, deployment := range deployments {
 		c.reportDeploymentReleaseInfoMetrics(deployment, ch)
 		c.reportDeploymentStemcellInfoMetrics(deployment, ch)
+		c.reportDeploymentInstanceCountMetrics(deployment, ch)
 	}
 
 	c.deploymentReleaseInfoMetric.Collect(ch)
 	c.deploymentStemcellInfoMetric.Collect(ch)
+	c.deploymentInstanceCountMetric.Collect(ch)
 
 	c.lastDeploymentsScrapeTimestampMetric.Set(float64(time.Now().Unix()))
 	c.lastDeploymentsScrapeTimestampMetric.Collect(ch)
@@ -114,6 +133,7 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 func (c *DeploymentsCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.deploymentReleaseInfoMetric.Describe(ch)
 	c.deploymentStemcellInfoMetric.Describe(ch)
+	c.deploymentInstanceCountMetric.Describe(ch)
 	c.lastDeploymentsScrapeTimestampMetric.Describe(ch)
 	c.lastDeploymentsScrapeDurationSecondsMetric.Describe(ch)
 }
@@ -142,5 +162,23 @@ func (c *DeploymentsCollector) reportDeploymentStemcellInfoMetrics(
 			stemcell.Version,
 			stemcell.OSName,
 		).Set(float64(1))
+	}
+}
+
+func (c *DeploymentsCollector) reportDeploymentInstanceCountMetrics(
+	deployment deployments.DeploymentInfo,
+	ch chan<- prometheus.Metric,
+) {
+	vm_type_count := make(map[string]int)
+
+	for _, instance := range deployment.Instances {
+		vm_type_count[instance.VMType] = vm_type_count[instance.VMType] + 1
+	}
+
+	for vm_type, count := range vm_type_count {
+		c.deploymentInstanceCountMetric.WithLabelValues(
+			deployment.Name,
+			vm_type,
+		).Set(float64(count))
 	}
 }

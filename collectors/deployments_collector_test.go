@@ -27,7 +27,7 @@ var _ = Describe("DeploymentsCollector", func() {
 
 		deploymentReleaseInfoMetric                *prometheus.GaugeVec
 		deploymentStemcellInfoMetric               *prometheus.GaugeVec
-		deploymentInstanceCountMetric              *prometheus.GaugeVec
+		deploymentInstancesMetric                  *prometheus.GaugeVec
 		lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
 		lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
 
@@ -37,7 +37,9 @@ var _ = Describe("DeploymentsCollector", func() {
 		stemcellName    = "fake-stemcell-name"
 		stemcellVersion = "4.5.6"
 		stemcellOSName  = "fake-stemcell-os-name"
-		vmType          = "large"
+		vmTypeSmall     = "fake-vm-type-small"
+		vmTypeMedium    = "fake-vm-type-medium"
+		vmTypeLarge     = "fake-vm-type-large"
 	)
 
 	BeforeEach(func() {
@@ -89,11 +91,11 @@ var _ = Describe("DeploymentsCollector", func() {
 			stemcellOSName,
 		).Set(float64(1))
 
-		deploymentInstanceCountMetric = prometheus.NewGaugeVec(
+		deploymentInstancesMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
 				Subsystem: "deployment",
-				Name:      "instance_count",
+				Name:      "instances",
 				Help:      "Number of instances in this deployment",
 				ConstLabels: prometheus.Labels{
 					"environment": environment,
@@ -104,10 +106,18 @@ var _ = Describe("DeploymentsCollector", func() {
 			[]string{"bosh_deployment", "bosh_vm_type"},
 		)
 
-		deploymentInstanceCountMetric.WithLabelValues(
+		deploymentInstancesMetric.WithLabelValues(
 			deploymentName,
-			vmType,
+			vmTypeSmall,
 		).Set(float64(1))
+		deploymentInstancesMetric.WithLabelValues(
+			deploymentName,
+			vmTypeMedium,
+		).Set(float64(2))
+		deploymentInstancesMetric.WithLabelValues(
+			deploymentName,
+			vmTypeLarge,
+		).Set(float64(3))
 
 		lastDeploymentsScrapeTimestampMetric = prometheus.NewGauge(
 			prometheus.GaugeOpts{
@@ -177,10 +187,10 @@ var _ = Describe("DeploymentsCollector", func() {
 			).Desc())))
 		})
 
-		It("returns a deployment_instance_count metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentInstanceCountMetric.WithLabelValues(
+		It("returns a deployment_instances metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
-				vmType,
+				vmTypeSmall,
 			).Desc())))
 		})
 
@@ -210,13 +220,22 @@ var _ = Describe("DeploymentsCollector", func() {
 
 			instances = []deployments.Instance{
 				{
-					VMType:    "small",
+					VMType: vmTypeSmall,
 				},
 				{
-					VMType:    "medium",
+					VMType: vmTypeMedium,
 				},
 				{
-					VMType:    "large",
+					VMType: vmTypeMedium,
+				},
+				{
+					VMType: vmTypeLarge,
+				},
+				{
+					VMType: vmTypeLarge,
+				},
+				{
+					VMType: vmTypeLarge,
 				},
 			}
 
@@ -268,10 +287,18 @@ var _ = Describe("DeploymentsCollector", func() {
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
-		It("returns a deployment_instance_count", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstanceCountMetric.WithLabelValues(
+		It("returns a deployment_instances", func() {
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
-				vmType,
+				vmTypeSmall,
+			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
+				deploymentName,
+				vmTypeMedium,
+			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
+				deploymentName,
+				vmTypeLarge,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -328,10 +355,10 @@ var _ = Describe("DeploymentsCollector", func() {
 				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
-			It("should not return a deployment_instance_count metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentInstanceCountMetric.WithLabelValues(
+			It("should not return a deployment_instances metric", func() {
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 					deploymentName,
-					vmType,
+					vmTypeSmall,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})

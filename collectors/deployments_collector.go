@@ -110,6 +110,7 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 
 	c.deploymentReleaseInfoMetric.Reset()
 	c.deploymentStemcellInfoMetric.Reset()
+	c.deploymentInstancesMetric.Reset()
 
 	for _, deployment := range deployments {
 		c.reportDeploymentReleaseInfoMetrics(deployment, ch)

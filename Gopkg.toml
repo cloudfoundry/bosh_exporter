@@ -24,50 +24,9 @@
 #   go-tests = true
 #   unused-packages = true
 
-
-[[constraint]]
-  name = "github.com/cloudfoundry/bosh-cli"
-  version = "5.4.0"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/cloudfoundry/bosh-utils"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/cppforlife/go-semi-semantic"
-
-[[constraint]]
-  name = "github.com/onsi/ginkgo"
-  version = "1.4.0"
-
-[[constraint]]
-  name = "github.com/onsi/gomega"
-  version = "1.4.3"
-
-[[constraint]]
-  name = "github.com/benjamintf1/unmarshalledmatchers"
-  version = "1.0.0"
-
-[[constraint]]
-  name = "github.com/prometheus/client_golang"
-  version = "0.8.0"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/prometheus/client_model"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/prometheus/common"
-
-[[constraint]]
-  name = "gopkg.in/alecthomas/kingpin.v2"
-  version = "2.2.6"
-
 [[override]]
-  name = "github.com/cloudfoundry/socks5-proxy"
-  revision = "3659db090cb23a57807b53e2f8580b2427dc2659"
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
 
 [prune]
   go-tests = true

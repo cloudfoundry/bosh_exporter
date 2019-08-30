@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cloudfoundry/bosh-cli/ui"
+	bio "github.com/cloudfoundry/bosh-cli/io"
 	biproperty "github.com/cloudfoundry/bosh-utils/property"
 	semver "github.com/cppforlife/go-semi-semantic/version"
 )
@@ -23,6 +23,7 @@ type Director interface {
 	RecentTasks(int, TasksFilter) ([]Task, error)
 	FindTask(int) (Task, error)
 	FindTasksByContextId(string) ([]Task, error)
+	CancelTasks(TasksFilter) error
 
 	Events(EventsFilter) ([]Event, error)
 	Event(string) (Event, error)
@@ -80,6 +81,8 @@ type Director interface {
 	DownloadResourceUnchecked(blobstoreID string, out io.Writer) error
 
 	OrphanedVMs() ([]OrphanedVM, error)
+
+	CertificateExpiry() ([]CertificateExpiryInfo, error)
 }
 
 var _ Director = &DirectorImpl{}
@@ -120,7 +123,7 @@ type StemcellArchive interface {
 //go:generate counterfeiter . FileReporter
 
 type FileReporter interface {
-	TrackUpload(int64, io.ReadCloser) ui.ReadSeekCloser
+	TrackUpload(int64, io.ReadCloser) bio.ReadSeekCloser
 	TrackDownload(int64, io.Writer) io.Writer
 }
 
@@ -180,6 +183,7 @@ type Deployment interface {
 type StartOpts struct {
 	Canaries    string
 	MaxInFlight string
+	Converge    bool
 }
 
 type StopOpts struct {
@@ -188,6 +192,7 @@ type StopOpts struct {
 	Force       bool
 	SkipDrain   bool
 	Hard        bool
+	Converge    bool
 }
 
 type RestartOpts struct {
@@ -195,6 +200,7 @@ type RestartOpts struct {
 	MaxInFlight string
 	Force       bool
 	SkipDrain   bool
+	Converge    bool
 }
 
 type RecreateOpts struct {
@@ -204,6 +210,7 @@ type RecreateOpts struct {
 	Fix         bool
 	SkipDrain   bool
 	DryRun      bool
+	Converge    bool
 }
 
 type UpdateOpts struct {
@@ -222,6 +229,7 @@ type UpdateOpts struct {
 type ReleaseSeries interface {
 	Name() string
 	Delete(force bool) error
+	Exists() (bool, error)
 }
 
 //go:generate counterfeiter . Release
@@ -229,6 +237,7 @@ type ReleaseSeries interface {
 type Release interface {
 	Name() string
 	Version() semver.Version
+	Exists() (bool, error)
 	VersionMark(mark string) string
 	CommitHashWithMark(mark string) string
 
@@ -256,12 +265,14 @@ type Stemcell interface {
 type TasksFilter struct {
 	All        bool
 	Deployment string
+	Types      []string
+	States     []string
 }
 
 type Task interface {
 	ID() int
 	StartedAt() time.Time
-	LastActivityAt() time.Time
+	FinishedAt() time.Time
 
 	State() string
 	IsError() bool
@@ -350,4 +361,10 @@ type Event interface {
 	Instance() string
 	Context() map[string]interface{}
 	Error() string
+}
+
+type CertificateExpiryInfo struct {
+	Path     string `json:"certificate_path"`
+	Expiry   string `json:"expiry"`
+	DaysLeft int    `json:"days_left"`
 }

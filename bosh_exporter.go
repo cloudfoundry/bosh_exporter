@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -192,7 +191,7 @@ func buildBOSHClient() (director.Director, error) {
 	}
 	directorConfig.CACert = boshCACert
 
-	anonymousDirector, err := director.NewFactory(logger).New(directorConfig, nil, nil, nil)
+	anonymousDirector, err := director.NewFactory(logger).New(directorConfig, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +208,7 @@ func buildBOSHClient() (director.Director, error) {
 		uaaURL := boshInfo.Auth.Options["url"]
 		uaaURLStr, ok := uaaURL.(string)
 		if !ok {
-			return nil, errors.New(fmt.Sprintf("Expected UAA URL '%s' to be a string", uaaURL))
+			return nil, fmt.Errorf("Expected UAA URL '%s' to be a string", uaaURL)
 		}
 
 		uaaConfig, err := uaa.NewConfigFromURL(uaaURLStr)
@@ -261,7 +260,7 @@ func buildBOSHClient() (director.Director, error) {
 	}
 
 	boshFactory := director.NewFactory(logger)
-	boshClient, err := boshFactory.New(directorConfig, nil, director.NewNoopTaskReporter(), director.NewNoopFileReporter())
+	boshClient, err := boshFactory.New(directorConfig, director.NewNoopTaskReporter(), director.NewNoopFileReporter())
 	if err != nil {
 		return nil, err
 	}

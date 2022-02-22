@@ -1,10 +1,13 @@
 verbose: false
 go:
   cgo: false
+  version: 1.17
 repository:
   path: github.com/bosh-prometheus/bosh_exporter
 build:
-  flags: -a -tags 'netgo static_build'
+  binaries:
+    - name: bosh_exporter
+  flags: -mod=vendor -a -tags 'netgo static_build'
   ldflags: |
     -X {{repoPath}}/vendor/github.com/prometheus/common/version.Version={{.Version}}
     -X {{repoPath}}/vendor/github.com/prometheus/common/version.Revision={{.Revision}}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"sync"
@@ -182,7 +181,7 @@ func (c *ServiceDiscoveryCollector) writeTargetGroupsToFile(targetGroups TargetG
 	}
 
 	dir, name := path.Split(c.serviceDiscoveryFilename)
-	f, err := ioutil.TempFile(dir, name)
+	f, err := os.CreateTemp(dir, name)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error creating temp file: %v", err))
 	}

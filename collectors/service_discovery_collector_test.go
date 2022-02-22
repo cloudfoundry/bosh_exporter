@@ -1,7 +1,6 @@
 package collectors_test
 
 import (
-	"io/ioutil"
 	"os"
 
 	. "github.com/benjamintf1/unmarshalledmatchers"
@@ -44,7 +43,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		environment = "test_environment"
 		boshName = "test_bosh_name"
 		boshUUID = "test_bosh_uuid"
-		tmpfile, err = ioutil.TempFile("", "service_discovery_collector_test_")
+		tmpfile, err = os.CreateTemp("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
 		azsFilter = filters.NewAZsFilter([]string{})
@@ -209,7 +208,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 		It("writes a target groups file", func() {
 			Eventually(metrics).Should(Receive())
-			targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+			targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(targetGroups)).To(MatchUnorderedJSON(targetGroupsContent))
 		})
@@ -228,7 +227,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 			It("writes an empty target groups file", func() {
 				Eventually(metrics).Should(Receive())
-				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(targetGroups)).To(Equal("[]"))
 			})
@@ -249,7 +248,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 			It("writes an empty target groups file", func() {
 				Eventually(metrics).Should(Receive())
-				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(targetGroups)).To(Equal("[]"))
 			})
@@ -270,7 +269,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 			It("writes an empty target groups file", func() {
 				Eventually(metrics).Should(Receive())
-				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(targetGroups)).To(Equal("[]"))
 			})
@@ -290,7 +289,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 			It("writes an empty target groups file", func() {
 				Eventually(metrics).Should(Receive())
-				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(targetGroups)).To(Equal("[]"))
 			})
@@ -311,7 +310,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 			It("writes an empty target groups file", func() {
 				Eventually(metrics).Should(Receive())
-				targetGroups, err := ioutil.ReadFile(serviceDiscoveryFilename)
+				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(string(targetGroups)).To(Equal("[]"))
 			})

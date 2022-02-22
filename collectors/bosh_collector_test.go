@@ -2,7 +2,6 @@ package collectors_test
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -56,7 +55,7 @@ var _ = Describe("BoshCollector", func() {
 		environment = "test_environment"
 		boshName = "test_bosh_name"
 		boshUUID = "test_bosh_uuid"
-		tmpfile, err = ioutil.TempFile("", "service_discovery_collector_test_")
+		tmpfile, err = os.CreateTemp("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
 

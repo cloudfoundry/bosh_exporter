@@ -16,7 +16,7 @@ JsonMatchers()
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/Benjamintf1/ExpandedUnmarshalledMatchers"
+	. "github.com/benjamintf1/unmarshalledmatchers"
 )
 
 //Match with list ordering and optional json list keys exceptions

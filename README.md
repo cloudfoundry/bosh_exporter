@@ -90,57 +90,57 @@ The exporter returns the following metrics:
 
 | Metric | Description | Labels |
 | ------ | ----------- | ------ |
-| *metrics.namespace*_scrapes_total | Total number of times BOSH was scraped for metrics | `environment`, `bosh_name`, `bosh_uuid` |
-| *metrics.namespace*_scrape_errors_total | Total number of times an error occured scraping BOSH | `environment`, `bosh_name`, `bosh_uuid` |
-| *metrics.namespace*_last_scrape_error | Whether the last scrape of metrics from BOSH resulted in an error (`1` for error, `0` for success) | `environment`, `bosh_name`, `bosh_uuid` |
-| *metrics.namespace*_last_scrape_timestamp | Number of seconds since 1970 since last scrape from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
-| *metrics.namespace*_last_scrape_duration_seconds | Duration of the last scrape from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_scrapes\_total | Total number of times BOSH was scraped for metrics | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_scrape\_errors\_total | Total number of times an error occured scraping BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_last\_scrape\_error | Whether the last scrape of metrics from BOSH resulted in an error (`1` for error, `0` for success) | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_last\_scrape\_timestamp | Number of seconds since 1970 since last scrape from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_last\_scrape\_duration\_seconds | Duration of the last scrape from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
 
 The exporter returns the following `Deployments` metrics:
 
 | Metric | Description | Labels |
 | ------ | ----------- | ------ |
-| *metrics.namespace*_deployment_release_info | Labeled BOSH Deployment Release Info with a constant `1` value | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_release_name`, `bosh_release_version` |
-| *metrics.namespace*_deployment_stemcell_info | Labeled BOSH Deployment Stemcell Info with a constant `1` value | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_stemcell_name`, `bosh_stemcell_version`, `bosh_stemcell_os_name` |
-| *metrics.namespace*_deployment_instances | Number of instances in the deployment | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_vm_type` |
-| *metrics.namespace*_last_deployments_scrape_timestamp | Number of seconds since 1970 since last scrape of Deployments metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
-| *metrics.namespace*_last_deployments_scrape_duration_seconds | Duration of the last scrape of Deployments metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_deployment\_release\_info | Labeled BOSH Deployment Release Info with a constant `1` value | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_release_name`, `bosh_release_version` |
+| *metrics.namespace*\_deployment\_stemcell\_info | Labeled BOSH Deployment Stemcell Info with a constant `1` value | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_stemcell_name`, `bosh_stemcell_version`, `bosh_stemcell_os_name` |
+| *metrics.namespace*\_deployment\_instances | Number of instances in the deployment | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_vm_type` |
+| *metrics.namespace*\_last\_deployments\_scrape\_timestamp | Number of seconds since 1970 since last scrape of Deployments metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_last\_deployments\_scrape\_duration\_seconds | Duration of the last scrape of Deployments metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
 
 The exporter returns the following `Jobs` metrics:
 
 | Metric | Description | Labels |
 | ------ | ----------- | ------ |
-| *metrics.namespace*_job_healthy | BOSH Job Healthy (1 for healthy, 0 for unhealthy) | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_load_avg01 | BOSH Job Load avg01 | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_load_avg05 | BOSH Job Load avg05 | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_load_avg15 | BOSH Job Load avg15 | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_cpu_sys | BOSH Job CPU System | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_cpu_user | BOSH Job CPU User | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_cpu_wait | BOSH Job CPU Wait | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_mem_kb | BOSH Job Memory KB | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_mem_percent | BOSH Job Memory Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_swap_kb | BOSH Job Swap KB | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_swap_percent | BOSH Job Swap Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_system_disk_inode_percent | BOSH Job System Disk Inode Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_system_disk_percent | BOSH Job System Disk Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_ephemeral_disk_inode_percent | BOSH Job Ephemeral Disk Inode Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_ephemeral_disk_percent | BOSH Job Ephemeral Disk Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_persistent_disk_inode_percent | BOSH Job Persistent Disk Inode Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_persistent_disk_percent | BOSH Job Persistent Disk Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
-| *metrics.namespace*_job_process_healthy | BOSH Job Process Healthy (1 for healthy, 0 for unhealthy) | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
-| *metrics.namespace*_job_process_uptime_seconds | BOSH Job Process Uptime in seconds | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
-| *metrics.namespace*_job_process_cpu_total | BOSH Job Process CPU Total | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
-| *metrics.namespace*_job_process_mem_kb | BOSH Job Process Memory KB | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
-| *metrics.namespace*_job_process_mem_percent | BOSH Job Process Memory Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
-| *metrics.namespace*_last_jobs_scrape_timestamp | Number of seconds since 1970 since last scrape of Job metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
-| *metrics.namespace*_last_jobs_scrape_duration_seconds | Duration of the last scrape of Job metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_job\_healthy | BOSH Job Healthy (1 for healthy, 0 for unhealthy) | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_load\_avg01 | BOSH Job Load avg01 | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_load\_avg05 | BOSH Job Load avg05 | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_load\_avg15 | BOSH Job Load avg15 | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_cpu\_sys | BOSH Job CPU System | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_cpu\_user | BOSH Job CPU User | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_cpu\_wait | BOSH Job CPU Wait | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_mem\_kb | BOSH Job Memory KB | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_mem\_percent | BOSH Job Memory Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_swap\_kb | BOSH Job Swap KB | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_swap\_percent | BOSH Job Swap Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_system\_disk\_inode\_percent | BOSH Job System Disk Inode Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_system\_disk\_percent | BOSH Job System Disk Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_ephemeral\_disk\_inode\_percent | BOSH Job Ephemeral Disk Inode Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_ephemeral\_disk\_percent | BOSH Job Ephemeral Disk Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_persistent\_disk\_inode\_percent | BOSH Job Persistent Disk Inode Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_persistent\_disk\_percent | BOSH Job Persistent Disk Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip` |
+| *metrics.namespace*\_job\_process\_healthy | BOSH Job Process Healthy (1 for healthy, 0 for unhealthy) | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
+| *metrics.namespace*\_job\_process\_uptime\_seconds | BOSH Job Process Uptime in seconds | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
+| *metrics.namespace*\_job\_process\_cpu\_total | BOSH Job Process CPU Total | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
+| *metrics.namespace*\_job\_process\_mem\_kb | BOSH Job Process Memory KB | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
+| *metrics.namespace*\_job\_process\_mem\_percent | BOSH Job Process Memory Percent | `environment`, `bosh_name`, `bosh_uuid`, `bosh_deployment`, `bosh_job_name`, `bosh_job_id`, `bosh_job_index`, `bosh_job_az`, `bosh_job_ip`, `bosh_job_process_name` |
+| *metrics.namespace*\_last\_jobs\_scrape\_timestamp | Number of seconds since 1970 since last scrape of Job metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_last\_jobs\_scrape\_duration\_seconds | Duration of the last scrape of Job metrics from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
 
 The exporter returns the following `ServiceDiscovery` metrics:
 
 | Metric | Description | Labels |
 | ------ | ----------- | ------ |
-| *metrics.namespace*_last_service_discovery_scrape_timestamp | Number of seconds since 1970 since last scrape of Service Discovery from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
-| *metrics.namespace*_last_service_discovery_scrape_duration_seconds | Duration of the last scrape of Service Discovery from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_last\_service\_discovery\_scrape\_timestamp | Number of seconds since 1970 since last scrape of Service Discovery from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
+| *metrics.namespace*\_last\_service\_discovery\_scrape\_duration\_seconds | Duration of the last scrape of Service Discovery from BOSH | `environment`, `bosh_name`, `bosh_uuid` |
 
 ### Service Discovery
 
@@ -184,12 +184,12 @@ Apache License 2.0, see [LICENSE][license].
 
 [binaries]: https://github.com/bosh-prometheus/bosh_exporter/releases
 [bosh]: https://bosh.io
-[bosh_uaa]: http://bosh.io/docs/director-users-uaa.html
+[bosh_uaa]: https://bosh.io/docs/director-users-uaa/
 [cloudfoundry]: https://www.cloudfoundry.org/
 [contributing]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/CONTRIBUTING.md
 [faq]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/FAQ.md
-[file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;
-[golang]: https://golang.org/
+[file_sd_config]: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#file_sd_config
+[golang]: https://go.dev/
 [license]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/LICENSE
 [manifest]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/manifest.yml
 [prometheus]: https://prometheus.io/

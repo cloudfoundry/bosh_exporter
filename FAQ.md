@@ -27,7 +27,7 @@ If you want to get more detailed VM system metrics, like disk I/O, network traff
 
 ### What are the caveats when using this exporter?
 
-In order to get the metrics, the exporter calls the [BOSH Director][bosh_director] [Instance details][instance_details] endpoint. This request result in potentially long running operations against each [BOSH Agent][bosh_agent], so such requests start a [Director Task][director_task]. Therefore, each exporter scrape will generate a new [Director Task][director_task] per deployment. This will NOT hurt your BOSH performance, but has the nasty effect that generates thousand of tasks per scrape (i.e. scrapping each minute will generate 1440 tasks per deployment per day).
+In order to get the metrics, the exporter calls the [BOSH Director][bosh_director] [Instance details][instance_details] endpoint. This request results in potentially long running operations against each [BOSH Agent][bosh_agent], so such requests start a [Director Task][director_task]. Therefore, each exporter scrape will generate a new [Director Task][director_task] per deployment. This will NOT hurt your BOSH performance, but has the nasty effect that generates thousand of tasks per scrape (i.e. scrapping each minute will generate 1440 tasks per deployment per day).
 
 It is, therefore, recommended to increase the `scrape interval` and the `scrape timeout` for this exporter:
 
@@ -59,7 +59,7 @@ Then you will need to enable the [Graphite Health Monitor plugin][bosh_graphite]
 
 #### BOSH HM metrics forwarder
 
-Another alternative approach is to use the [BOSH HM metrics forwarder][bosh_hmforwarder], that will forward BOSH health metrics into Loggregator thus making them available in the [Cloud Foundry Firehose][firehose]. Later, you can use the [Cloud Foundry Firehose Exporter ][firehose_exporter] to get BOSH metrics.
+Another alternative approach is to use the [BOSH HM metrics forwarder][bosh_hmforwarder] that will forward BOSH health metrics into Loggregator thus making them available in the [Cloud Foundry Firehose][firehose]. Later, you can use the [Cloud Foundry Firehose Exporter][firehose_exporter] to get BOSH metrics.
 
 #### Downsides
 
@@ -75,7 +75,7 @@ The `filter.deployments` command flag allows you to filter what BOSH deployments
 
 ### How can I filter by a particular BOSH AZ?
 
-The *filter.azs* command flag allows you to filter what [BOSH AZs][bosh_azs] will be reported.
+The `filter.azs` command flag allows you to filter what [BOSH AZs][bosh_azs] will be reported.
 
 ### Can I target multiple BOSH Directors with a single exporter instance?
 
@@ -83,7 +83,7 @@ No, this exporter only supports targetting a single [BOSH Director][bosh_directo
 
 ### How can I get the BOSH CA certificate?
 
-Comunication between the exporter and the [BOSH Director][bosh_director] uses HTTPS. Actually, there is no way to disable the SSL certificate validation, so therefore, the certificates must be created setting a [Subject Alternative Name][san] (SAN) with the IP address of the [BOSH Director][bosh_director], otherwise, you will get the following error message:
+Communication between the exporter and the [BOSH Director][bosh_director] uses HTTPS. Actually, there is no way to disable the SSL certificate validation, so therefore, the certificates must be created setting a [Subject Alternative Name][san] (SAN) with the IP address of the [BOSH Director][bosh_director]; otherwise, you will get the following error message:
 
 ```
 x509: cannot validate certificate for X.X.X.X because it doesn't contain any IP SANs
@@ -117,13 +117,13 @@ scrape_configs:
 
 ### How can I filter the Service Discovery output file by a particular exporter?
 
-Yes, the `sd.processes_regexp` command flag allows you to filter what BOSH Job processes will be reported.
+The `sd.processes_regexp` command flag allows you to filter what BOSH Job processes will be reported.
 
 ### Why is the BOSH Service Discovery a collector?
 
 There are mainly two reasons:
 
-* Prometheus Service Discovery is not pluggable, that means that you either incorporate the BOSH Service Discovery as part of the official [Prometheus core code][prometheus_github] or you create a separate executable that produces an output file that can be used by the Prometheus [file-based service discovery][file_sd_config] mechanism. We decided to use the [file-based service discovery][file_sd_config] mechanism because it was easier for us to test this approach.
+* Prometheus Service Discovery is not pluggable, which means that you either incorporate the BOSH Service Discovery as part of the official [Prometheus core code][prometheus_github] or you create a separate executable that produces an output file that can be used by the Prometheus [file-based service discovery][file_sd_config] mechanism. We decided to use the [file-based service discovery][file_sd_config] mechanism because it was easier for us to test this approach.
 * We want to minimize the number of calls to the [BOSH Director][bosh_director] (see the above [caveats](#how-can-i-get-bosh-metrics-without-the-above-caveats)). Having a different executable means that in order to get the BOSH Job IPs and processes we will need to generate a new [Director Task][director_task]. Using a new collector within this exporter allows us to reuse the same deployment calls.
 
 ### What is the recommended deployment strategy?
@@ -136,26 +136,26 @@ But the downside of the above advice is when using the Service Discovery mechani
 
 We will be glad to address any questions not answered here. Please, just open a [new issue][issues].
 
-[bosh_agent]: https://bosh.io/docs/bosh-components.html#agent
-[bosh_azs]: http://bosh.io/docs/azs.html
-[bosh_director]: http://bosh.io/docs/bosh-components.html#director
+[bosh_agent]: https://bosh.io/docs/bosh-components/#agent
+[bosh_azs]: https://bosh.io/docs/azs/
+[bosh_director]: https://bosh.io/docs/bosh-components/#director
 [bosh_exporter_metrics]: https://github.com/bosh-prometheus/bosh_exporter#metrics
-[bosh_graphite]: http://bosh.io/docs/hm-config.html#graphite
-[bosh_hmforwarder]: https://github.com/cloudfoundry/bosh-hm-forwarder
-[bosh_health_monitor]: http://bosh.io/docs/bosh-components.html#health-monitor
+[bosh_graphite]: https://bosh.io/docs/hm-config/#graphite
+[bosh_hmforwarder]: https://github.com/cloudfoundry-attic/bosh-hm-forwarder
+[bosh_health_monitor]: https://bosh.io/docs/bosh-components/#health-monitor
 [bosh_lite]: https://github.com/cloudfoundry/bosh-lite
 [bosh_lite_ca_cert]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/bosh-lite-ca.crt
-[director_certs]: http://bosh.io/docs/director-certs.html
-[director_task]: http://bosh.io/docs/director-tasks.html
-[file_sd_config]: https://prometheus.io/docs/operating/configuration/#&lt;file_sd_config&gt;
+[director_certs]: https://bosh.io/docs/director-certs/
+[director_task]: https://bosh.io/docs/director-tasks/
+[file_sd_config]: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#file_sd_config
 [firehose]: https://docs.cloudfoundry.org/loggregator/architecture.html#firehose
 [firehose_exporter]: https://github.com/bosh-prometheus/firehose_exporter
 [graphite_exporter]: https://github.com/prometheus/graphite_exporter
 [graphite_mapping]: https://github.com/prometheus/graphite_exporter#metric-mapping-and-configuration
-[instance_details]: https://bosh.io/docs/director-api-v1.html#list-instances-detailed
+[instance_details]: https://bosh.io/docs/director-api-v1/#list-instances-detailed
 [issues]: https://github.com/bosh-prometheus/bosh_exporter/issues
 [node_exporter]: https://github.com/prometheus/node_exporter
 [prometheus_github]: https://github.com/prometheus/prometheus
-[relabel_config]: https://prometheus.io/docs/operating/configuration/#<relabel_config>
+[relabel_config]: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
 [san]: https://en.wikipedia.org/wiki/Subject_Alternative_Name
-[generate_certificates]: https://github.com/cloudfoundry/bosh-lite/blob/master/ca/generate.sh
+[generate_certificates]: https://github.com/cloudfoundry-attic/bosh-lite/blob/master/ca/generate.sh

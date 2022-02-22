@@ -32,16 +32,20 @@ type FakeDirector struct {
 		result1 []director.CertificateExpiryInfo
 		result2 error
 	}
-	CleanUpStub        func(bool) error
+	CleanUpStub        func(bool, bool, bool) (director.CleanUp, error)
 	cleanUpMutex       sync.RWMutex
 	cleanUpArgsForCall []struct {
 		arg1 bool
+		arg2 bool
+		arg3 bool
 	}
 	cleanUpReturns struct {
-		result1 error
+		result1 director.CleanUp
+		result2 error
 	}
 	cleanUpReturnsOnCall map[int]struct {
-		result1 error
+		result1 director.CleanUp
+		result2 error
 	}
 	CurrentTasksStub        func(director.TasksFilter) ([]director.Task, error)
 	currentTasksMutex       sync.RWMutex
@@ -336,20 +340,6 @@ type FakeDirector struct {
 		result1 bool
 		result2 error
 	}
-	HasStemcellStub        func(string, string) (bool, error)
-	hasStemcellMutex       sync.RWMutex
-	hasStemcellArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	hasStemcellReturns struct {
-		result1 bool
-		result2 error
-	}
-	hasStemcellReturnsOnCall map[int]struct {
-		result1 bool
-		result2 error
-	}
 	InfoStub        func() (director.Info, error)
 	infoMutex       sync.RWMutex
 	infoArgsForCall []struct {
@@ -576,20 +566,18 @@ type FakeDirector struct {
 		result1 []director.Release
 		result2 error
 	}
-	StemcellNeedsUploadStub        func(director.StemcellInfo) (bool, bool, error)
+	StemcellNeedsUploadStub        func(director.StemcellInfo) (bool, error)
 	stemcellNeedsUploadMutex       sync.RWMutex
 	stemcellNeedsUploadArgsForCall []struct {
 		arg1 director.StemcellInfo
 	}
 	stemcellNeedsUploadReturns struct {
 		result1 bool
-		result2 bool
-		result3 error
+		result2 error
 	}
 	stemcellNeedsUploadReturnsOnCall map[int]struct {
 		result1 bool
-		result2 bool
-		result3 error
+		result2 error
 	}
 	StemcellsStub        func() ([]director.Stemcell, error)
 	stemcellsMutex       sync.RWMutex
@@ -835,22 +823,24 @@ func (fake *FakeDirector) CertificateExpiryReturnsOnCall(i int, result1 []direct
 	}{result1, result2}
 }
 
-func (fake *FakeDirector) CleanUp(arg1 bool) error {
+func (fake *FakeDirector) CleanUp(arg1 bool, arg2 bool, arg3 bool) (director.CleanUp, error) {
 	fake.cleanUpMutex.Lock()
 	ret, specificReturn := fake.cleanUpReturnsOnCall[len(fake.cleanUpArgsForCall)]
 	fake.cleanUpArgsForCall = append(fake.cleanUpArgsForCall, struct {
 		arg1 bool
-	}{arg1})
-	fake.recordInvocation("CleanUp", []interface{}{arg1})
+		arg2 bool
+		arg3 bool
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("CleanUp", []interface{}{arg1, arg2, arg3})
 	fake.cleanUpMutex.Unlock()
 	if fake.CleanUpStub != nil {
-		return fake.CleanUpStub(arg1)
+		return fake.CleanUpStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
 	fakeReturns := fake.cleanUpReturns
-	return fakeReturns.result1
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeDirector) CleanUpCallCount() int {
@@ -859,40 +849,43 @@ func (fake *FakeDirector) CleanUpCallCount() int {
 	return len(fake.cleanUpArgsForCall)
 }
 
-func (fake *FakeDirector) CleanUpCalls(stub func(bool) error) {
+func (fake *FakeDirector) CleanUpCalls(stub func(bool, bool, bool) (director.CleanUp, error)) {
 	fake.cleanUpMutex.Lock()
 	defer fake.cleanUpMutex.Unlock()
 	fake.CleanUpStub = stub
 }
 
-func (fake *FakeDirector) CleanUpArgsForCall(i int) bool {
+func (fake *FakeDirector) CleanUpArgsForCall(i int) (bool, bool, bool) {
 	fake.cleanUpMutex.RLock()
 	defer fake.cleanUpMutex.RUnlock()
 	argsForCall := fake.cleanUpArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeDirector) CleanUpReturns(result1 error) {
+func (fake *FakeDirector) CleanUpReturns(result1 director.CleanUp, result2 error) {
 	fake.cleanUpMutex.Lock()
 	defer fake.cleanUpMutex.Unlock()
 	fake.CleanUpStub = nil
 	fake.cleanUpReturns = struct {
-		result1 error
-	}{result1}
+		result1 director.CleanUp
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeDirector) CleanUpReturnsOnCall(i int, result1 error) {
+func (fake *FakeDirector) CleanUpReturnsOnCall(i int, result1 director.CleanUp, result2 error) {
 	fake.cleanUpMutex.Lock()
 	defer fake.cleanUpMutex.Unlock()
 	fake.CleanUpStub = nil
 	if fake.cleanUpReturnsOnCall == nil {
 		fake.cleanUpReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 director.CleanUp
+			result2 error
 		})
 	}
 	fake.cleanUpReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+		result1 director.CleanUp
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeDirector) CurrentTasks(arg1 director.TasksFilter) ([]director.Task, error) {
@@ -2309,70 +2302,6 @@ func (fake *FakeDirector) HasReleaseReturnsOnCall(i int, result1 bool, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeDirector) HasStemcell(arg1 string, arg2 string) (bool, error) {
-	fake.hasStemcellMutex.Lock()
-	ret, specificReturn := fake.hasStemcellReturnsOnCall[len(fake.hasStemcellArgsForCall)]
-	fake.hasStemcellArgsForCall = append(fake.hasStemcellArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("HasStemcell", []interface{}{arg1, arg2})
-	fake.hasStemcellMutex.Unlock()
-	if fake.HasStemcellStub != nil {
-		return fake.HasStemcellStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.hasStemcellReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeDirector) HasStemcellCallCount() int {
-	fake.hasStemcellMutex.RLock()
-	defer fake.hasStemcellMutex.RUnlock()
-	return len(fake.hasStemcellArgsForCall)
-}
-
-func (fake *FakeDirector) HasStemcellCalls(stub func(string, string) (bool, error)) {
-	fake.hasStemcellMutex.Lock()
-	defer fake.hasStemcellMutex.Unlock()
-	fake.HasStemcellStub = stub
-}
-
-func (fake *FakeDirector) HasStemcellArgsForCall(i int) (string, string) {
-	fake.hasStemcellMutex.RLock()
-	defer fake.hasStemcellMutex.RUnlock()
-	argsForCall := fake.hasStemcellArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeDirector) HasStemcellReturns(result1 bool, result2 error) {
-	fake.hasStemcellMutex.Lock()
-	defer fake.hasStemcellMutex.Unlock()
-	fake.HasStemcellStub = nil
-	fake.hasStemcellReturns = struct {
-		result1 bool
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeDirector) HasStemcellReturnsOnCall(i int, result1 bool, result2 error) {
-	fake.hasStemcellMutex.Lock()
-	defer fake.hasStemcellMutex.Unlock()
-	fake.HasStemcellStub = nil
-	if fake.hasStemcellReturnsOnCall == nil {
-		fake.hasStemcellReturnsOnCall = make(map[int]struct {
-			result1 bool
-			result2 error
-		})
-	}
-	fake.hasStemcellReturnsOnCall[i] = struct {
-		result1 bool
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeDirector) Info() (director.Info, error) {
 	fake.infoMutex.Lock()
 	ret, specificReturn := fake.infoReturnsOnCall[len(fake.infoArgsForCall)]
@@ -3428,7 +3357,7 @@ func (fake *FakeDirector) ReleasesReturnsOnCall(i int, result1 []director.Releas
 	}{result1, result2}
 }
 
-func (fake *FakeDirector) StemcellNeedsUpload(arg1 director.StemcellInfo) (bool, bool, error) {
+func (fake *FakeDirector) StemcellNeedsUpload(arg1 director.StemcellInfo) (bool, error) {
 	fake.stemcellNeedsUploadMutex.Lock()
 	ret, specificReturn := fake.stemcellNeedsUploadReturnsOnCall[len(fake.stemcellNeedsUploadArgsForCall)]
 	fake.stemcellNeedsUploadArgsForCall = append(fake.stemcellNeedsUploadArgsForCall, struct {
@@ -3440,10 +3369,10 @@ func (fake *FakeDirector) StemcellNeedsUpload(arg1 director.StemcellInfo) (bool,
 		return fake.StemcellNeedsUploadStub(arg1)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2, ret.result3
+		return ret.result1, ret.result2
 	}
 	fakeReturns := fake.stemcellNeedsUploadReturns
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeDirector) StemcellNeedsUploadCallCount() int {
@@ -3452,7 +3381,7 @@ func (fake *FakeDirector) StemcellNeedsUploadCallCount() int {
 	return len(fake.stemcellNeedsUploadArgsForCall)
 }
 
-func (fake *FakeDirector) StemcellNeedsUploadCalls(stub func(director.StemcellInfo) (bool, bool, error)) {
+func (fake *FakeDirector) StemcellNeedsUploadCalls(stub func(director.StemcellInfo) (bool, error)) {
 	fake.stemcellNeedsUploadMutex.Lock()
 	defer fake.stemcellNeedsUploadMutex.Unlock()
 	fake.StemcellNeedsUploadStub = stub
@@ -3465,33 +3394,30 @@ func (fake *FakeDirector) StemcellNeedsUploadArgsForCall(i int) director.Stemcel
 	return argsForCall.arg1
 }
 
-func (fake *FakeDirector) StemcellNeedsUploadReturns(result1 bool, result2 bool, result3 error) {
+func (fake *FakeDirector) StemcellNeedsUploadReturns(result1 bool, result2 error) {
 	fake.stemcellNeedsUploadMutex.Lock()
 	defer fake.stemcellNeedsUploadMutex.Unlock()
 	fake.StemcellNeedsUploadStub = nil
 	fake.stemcellNeedsUploadReturns = struct {
 		result1 bool
-		result2 bool
-		result3 error
-	}{result1, result2, result3}
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeDirector) StemcellNeedsUploadReturnsOnCall(i int, result1 bool, result2 bool, result3 error) {
+func (fake *FakeDirector) StemcellNeedsUploadReturnsOnCall(i int, result1 bool, result2 error) {
 	fake.stemcellNeedsUploadMutex.Lock()
 	defer fake.stemcellNeedsUploadMutex.Unlock()
 	fake.StemcellNeedsUploadStub = nil
 	if fake.stemcellNeedsUploadReturnsOnCall == nil {
 		fake.stemcellNeedsUploadReturnsOnCall = make(map[int]struct {
 			result1 bool
-			result2 bool
-			result3 error
+			result2 error
 		})
 	}
 	fake.stemcellNeedsUploadReturnsOnCall[i] = struct {
 		result1 bool
-		result2 bool
-		result3 error
-	}{result1, result2, result3}
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeDirector) Stemcells() ([]director.Stemcell, error) {
@@ -4177,8 +4103,6 @@ func (fake *FakeDirector) Invocations() map[string][][]interface{} {
 	defer fake.findTasksByContextIdMutex.RUnlock()
 	fake.hasReleaseMutex.RLock()
 	defer fake.hasReleaseMutex.RUnlock()
-	fake.hasStemcellMutex.RLock()
-	defer fake.hasStemcellMutex.RUnlock()
 	fake.infoMutex.RLock()
 	defer fake.infoMutex.RUnlock()
 	fake.isAuthenticatedMutex.RLock()

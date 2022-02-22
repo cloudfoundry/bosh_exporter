@@ -3,10 +3,9 @@ package director
 import (
 	"encoding/json"
 	"fmt"
+	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	"io"
 	"net/http"
-
-	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 )
 
 type DirectorImpl struct {
@@ -27,15 +26,18 @@ func (d DirectorImpl) WithContext(id string) Director {
 }
 
 func (c Client) OrphanedVMs() ([]OrphanedVM, error) {
-	var (
-		orphanedVMs []OrphanedVM
-		resps       []OrphanedVMResponse
-	)
+	var resps []OrphanedVMResponse
 
 	err := c.clientRequest.Get("/orphaned_vms", &resps)
 	if err != nil {
 		return nil, bosherr.WrapErrorf(err, "Finding orphaned VMs")
 	}
+
+	return transformOrphanedVMs(resps)
+}
+
+func transformOrphanedVMs(resps []OrphanedVMResponse) ([]OrphanedVM, error) {
+	var orphanedVMs []OrphanedVM
 
 	for _, r := range resps {
 		orphanedAt, err := TimeParser{}.Parse(r.OrphanedAt)
@@ -52,7 +54,6 @@ func (c Client) OrphanedVMs() ([]OrphanedVM, error) {
 			OrphanedAt:     orphanedAt,
 		})
 	}
-
 	return orphanedVMs, nil
 }
 
@@ -62,10 +63,6 @@ func (d DirectorImpl) OrphanedVMs() ([]OrphanedVM, error) {
 
 func (d DirectorImpl) EnableResurrection(enabled bool) error {
 	return d.client.EnableResurrectionAll(enabled)
-}
-
-func (d DirectorImpl) CleanUp(all bool) error {
-	return d.client.CleanUp(all)
 }
 
 func (d DirectorImpl) DownloadResourceUnchecked(blobstoreID string, out io.Writer) error {
@@ -87,28 +84,6 @@ func (c Client) EnableResurrectionAll(enabled bool) error {
 	_, _, err = c.clientRequest.RawPut("/resurrection", reqBody, setHeaders)
 	if err != nil {
 		return bosherr.WrapErrorf(err, "Changing VM resurrection state for all")
-	}
-
-	return nil
-}
-
-func (c Client) CleanUp(all bool) error {
-	body := map[string]interface{}{
-		"config": map[string]bool{"remove_all": all},
-	}
-
-	reqBody, err := json.Marshal(body)
-	if err != nil {
-		return bosherr.WrapErrorf(err, "Marshaling request body")
-	}
-
-	setHeaders := func(req *http.Request) {
-		req.Header.Add("Content-Type", "application/json")
-	}
-
-	_, err = c.taskClientRequest.PostResult("/cleanup", reqBody, setHeaders)
-	if err != nil {
-		return bosherr.WrapErrorf(err, "Cleaning up resources")
 	}
 
 	return nil

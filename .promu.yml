@@ -20,7 +20,6 @@ tarball:
     - NOTICE
 crossbuild:
   platforms:
-    - darwin/386
     - darwin/amd64
     - linux/386
     - linux/amd64

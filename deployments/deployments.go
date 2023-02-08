@@ -9,6 +9,7 @@ type DeploymentInfo struct {
 
 type Instance struct {
 	AgentID            string
+	VMID               string
 	Name               string
 	ID                 string
 	Index              string

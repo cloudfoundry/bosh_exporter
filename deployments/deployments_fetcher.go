@@ -90,6 +90,7 @@ func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]In
 		}
 
 		deploymentInstance := Instance{
+			VMID:               instance.VMID,
 			AgentID:            instance.AgentID,
 			Name:               instance.JobName,
 			ID:                 instance.ID,

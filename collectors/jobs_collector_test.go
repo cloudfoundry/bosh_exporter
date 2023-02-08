@@ -59,6 +59,7 @@ var _ = Describe("JobsCollector", func() {
 		deploymentName                = "fake-deployment-name"
 		jobName                       = "fake-job-name"
 		jobID                         = "fake-job-id"
+		jobVM                         = "fake-vm-name"
 		jobIndex                      = "0"
 		jobIP                         = "1.2.3.4"
 		jobAZ                         = "fake-job-az"
@@ -108,7 +109,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobHealthyMetric.WithLabelValues(
@@ -118,6 +119,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(1))
 
 		jobLoadAvg01Metric = prometheus.NewGaugeVec(
@@ -132,7 +134,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobLoadAvg01Metric.WithLabelValues(
@@ -142,6 +144,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(jobLoadAvg01)
 
 		jobLoadAvg05Metric = prometheus.NewGaugeVec(
@@ -156,7 +159,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobLoadAvg05Metric.WithLabelValues(
@@ -166,6 +169,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(jobLoadAvg05)
 
 		jobLoadAvg15Metric = prometheus.NewGaugeVec(
@@ -180,7 +184,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobLoadAvg15Metric.WithLabelValues(
@@ -190,6 +194,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(jobLoadAvg15)
 
 		jobCPUSysMetric = prometheus.NewGaugeVec(
@@ -204,7 +209,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobCPUSysMetric.WithLabelValues(
@@ -214,6 +219,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(jobCPUSys)
 
 		jobCPUUserMetric = prometheus.NewGaugeVec(
@@ -228,7 +234,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobCPUUserMetric.WithLabelValues(
@@ -238,6 +244,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(jobCPUUser)
 
 		jobCPUWaitMetric = prometheus.NewGaugeVec(
@@ -252,7 +259,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobCPUWaitMetric.WithLabelValues(
@@ -262,6 +269,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(jobCPUWait)
 
 		jobMemKBMetric = prometheus.NewGaugeVec(
@@ -276,7 +284,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobMemKBMetric.WithLabelValues(
@@ -286,6 +294,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobMemKB))
 
 		jobMemPercentMetric = prometheus.NewGaugeVec(
@@ -300,7 +309,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobMemPercentMetric.WithLabelValues(
@@ -310,6 +319,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobMemPercent))
 
 		jobSwapKBMetric = prometheus.NewGaugeVec(
@@ -324,7 +334,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobSwapKBMetric.WithLabelValues(
@@ -334,6 +344,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobSwapKB))
 
 		jobSwapPercentMetric = prometheus.NewGaugeVec(
@@ -348,7 +359,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobSwapPercentMetric.WithLabelValues(
@@ -358,6 +369,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobSwapPercent))
 
 		jobSystemDiskInodePercentMetric = prometheus.NewGaugeVec(
@@ -372,7 +384,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobSystemDiskInodePercentMetric.WithLabelValues(
@@ -382,6 +394,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobSystemDiskInodePercent))
 
 		jobSystemDiskPercentMetric = prometheus.NewGaugeVec(
@@ -396,7 +409,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobSystemDiskPercentMetric.WithLabelValues(
@@ -406,6 +419,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobSystemDiskPercent))
 
 		jobEphemeralDiskInodePercentMetric = prometheus.NewGaugeVec(
@@ -420,7 +434,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobEphemeralDiskInodePercentMetric.WithLabelValues(
@@ -430,6 +444,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobEphemeralDiskInodePercent))
 
 		jobEphemeralDiskPercentMetric = prometheus.NewGaugeVec(
@@ -444,7 +459,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobEphemeralDiskPercentMetric.WithLabelValues(
@@ -454,6 +469,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobEphemeralDiskPercent))
 
 		jobPersistentDiskInodePercentMetric = prometheus.NewGaugeVec(
@@ -468,7 +484,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobPersistentDiskInodePercentMetric.WithLabelValues(
@@ -478,6 +494,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobPersistentDiskInodePercent))
 
 		jobPersistentDiskPercentMetric = prometheus.NewGaugeVec(
@@ -492,7 +509,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id"},
 		)
 
 		jobPersistentDiskPercentMetric.WithLabelValues(
@@ -502,6 +519,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 		).Set(float64(jobPersistentDiskPercent))
 
 		jobProcessHealthyMetric = prometheus.NewGaugeVec(
@@ -516,7 +534,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id", "bosh_job_process_name"},
 		)
 
 		jobProcessHealthyMetric.WithLabelValues(
@@ -526,6 +544,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 			jobProcessName,
 		).Set(float64(1))
 
@@ -541,7 +560,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id", "bosh_job_process_name"},
 		)
 
 		jobProcessUptimeMetric.WithLabelValues(
@@ -551,6 +570,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 			jobProcessName,
 		).Set(float64(jobProcessUptime))
 
@@ -566,7 +586,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id", "bosh_job_process_name"},
 		)
 
 		jobProcessCPUTotalMetric.WithLabelValues(
@@ -576,6 +596,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 			jobProcessName,
 		).Set(jobProcessCPUTotal)
 
@@ -591,7 +612,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id", "bosh_job_process_name"},
 		)
 
 		jobProcessMemKBMetric.WithLabelValues(
@@ -601,6 +622,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 			jobProcessName,
 		).Set(float64(jobProcessMemKB))
 
@@ -616,7 +638,7 @@ var _ = Describe("JobsCollector", func() {
 					"bosh_uuid":   boshUUID,
 				},
 			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
+			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_vm_id", "bosh_job_process_name"},
 		)
 
 		jobProcessMemPercentMetric.WithLabelValues(
@@ -626,6 +648,7 @@ var _ = Describe("JobsCollector", func() {
 			jobIndex,
 			jobAZ,
 			jobIP,
+			jobVM,
 			jobProcessName,
 		).Set(jobProcessMemPercent)
 
@@ -683,6 +706,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -694,6 +718,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -705,6 +730,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -716,6 +742,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -727,6 +754,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -738,6 +766,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -749,6 +778,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -760,6 +790,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -771,6 +802,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -782,6 +814,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -793,6 +826,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -804,6 +838,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -815,6 +850,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -826,6 +862,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -837,6 +874,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -848,6 +886,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -859,6 +898,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			).Desc())))
 		})
 
@@ -870,6 +910,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			).Desc())))
 		})
@@ -882,6 +923,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			).Desc())))
 		})
@@ -894,6 +936,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			).Desc())))
 		})
@@ -906,6 +949,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			).Desc())))
 		})
@@ -918,6 +962,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			).Desc())))
 		})
@@ -990,6 +1035,7 @@ var _ = Describe("JobsCollector", func() {
 			instances = []deployments.Instance{
 				{
 					Name:      jobName,
+					VMID:      jobVM,
 					ID:        jobID,
 					Index:     jobIndex,
 					IPs:       []string{jobIP},
@@ -1027,6 +1073,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1042,6 +1089,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				).Set(float64(0))
 			})
 
@@ -1053,6 +1101,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1066,6 +1115,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1078,6 +1128,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1090,6 +1141,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1107,6 +1159,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobLoadAvg05Metric.WithLabelValues(
 					deploymentName,
@@ -1115,6 +1168,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobLoadAvg15Metric.WithLabelValues(
 					deploymentName,
@@ -1123,6 +1177,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1136,6 +1191,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1156,6 +1212,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1169,6 +1226,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1189,6 +1247,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1202,6 +1261,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1222,6 +1282,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1235,6 +1296,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1254,6 +1316,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1267,6 +1330,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1286,6 +1350,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1299,6 +1364,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1318,6 +1384,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1331,6 +1398,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1350,6 +1418,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1363,6 +1432,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1382,6 +1452,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1395,6 +1466,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1414,6 +1486,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1427,6 +1500,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1446,6 +1520,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1459,6 +1534,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1478,6 +1554,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1491,6 +1568,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1510,6 +1588,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1523,6 +1602,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
@@ -1542,6 +1622,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
@@ -1555,6 +1636,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1571,6 +1653,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 					jobProcessName,
 				).Set(float64(0))
 			})
@@ -1583,6 +1666,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
@@ -1597,6 +1681,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1615,6 +1700,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
@@ -1629,6 +1715,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1647,6 +1734,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
@@ -1661,6 +1749,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1679,6 +1768,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
@@ -1693,6 +1783,7 @@ var _ = Describe("JobsCollector", func() {
 				jobIndex,
 				jobAZ,
 				jobIP,
+				jobVM,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1711,6 +1802,7 @@ var _ = Describe("JobsCollector", func() {
 					jobIndex,
 					jobAZ,
 					jobIP,
+					jobVM,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())

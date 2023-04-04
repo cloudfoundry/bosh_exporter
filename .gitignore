@@ -1,7 +1,3 @@
-/.build
-/.release
-/.tarballs
+/dist
 /bosh_exporter
 *.tar.gz
-*.test
-*-stamp

@@ -1,4 +1,4 @@
-package test_matchers
+package matchers
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 
 func PrometheusMetric(expected prometheus.Metric) types.GomegaMatcher {
 	expectedMetric := &dto.Metric{}
-	expected.Write(expectedMetric)
+	_ = expected.Write(expectedMetric)
 
 	return &PrometheusMetricMatcher{
 		Desc:   expected.Desc(),
@@ -33,7 +33,7 @@ func (matcher *PrometheusMetricMatcher) Match(actual interface{}) (success bool,
 	}
 
 	actualMetric := &dto.Metric{}
-	metric.Write(actualMetric)
+	_ = metric.Write(actualMetric)
 
 	if !reflect.DeepEqual(metric.Desc().String(), matcher.Desc.String()) {
 		return false, nil
@@ -46,7 +46,7 @@ func (matcher *PrometheusMetricMatcher) FailureMessage(actual interface{}) (mess
 	metric, ok := actual.(prometheus.Metric)
 	if ok {
 		actualMetric := &dto.Metric{}
-		metric.Write(actualMetric)
+		_ = metric.Write(actualMetric)
 		return format.Message(
 			fmt.Sprintf("\n%s\nMetric{%s}", metric.Desc().String(), actualMetric.String()),
 			"to equal",

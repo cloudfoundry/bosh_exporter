@@ -1,4 +1,4 @@
-package test_matchers_test
+package matchers_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	. "github.com/bosh-prometheus/bosh_exporter/utils/test_matchers"
+	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
 var _ = Describe("PrometheusMetric", func() {

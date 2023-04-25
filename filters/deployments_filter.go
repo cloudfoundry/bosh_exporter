@@ -1,7 +1,6 @@
 package filters
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -27,7 +26,7 @@ func (f *DeploymentsFilter) GetDeployments() ([]director.Deployment, error) {
 		for _, deploymentName := range f.filters {
 			deployment, err := f.boshClient.FindDeployment(strings.Trim(deploymentName, " "))
 			if err != nil {
-				return deployments, errors.New(fmt.Sprintf("Error while reading deployment `%s`: %v", deploymentName, err))
+				return deployments, fmt.Errorf("error while reading deployment `%s`: %v", deploymentName, err)
 			}
 			deployments = append(deployments, deployment)
 		}
@@ -35,7 +34,7 @@ func (f *DeploymentsFilter) GetDeployments() ([]director.Deployment, error) {
 		log.Debugf("Reading deployments...")
 		deployments, err = f.boshClient.Deployments()
 		if err != nil {
-			return deployments, errors.New(fmt.Sprintf("Error while reading deployments: %v", err))
+			return deployments, fmt.Errorf(fmt.Sprintf("Error while reading deployments: %v", err))
 		}
 	}
 

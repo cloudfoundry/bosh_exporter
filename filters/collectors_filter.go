@@ -1,7 +1,6 @@
 package filters
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -28,7 +27,7 @@ func NewCollectorsFilter(filters []string) (*CollectorsFilter, error) {
 		case ServiceDiscoveryCollector:
 			collectorsEnabled[ServiceDiscoveryCollector] = true
 		default:
-			return &CollectorsFilter{}, errors.New(fmt.Sprintf("Collector filter `%s` is not supported", collectorName))
+			return &CollectorsFilter{}, fmt.Errorf("collector filter `%s` is not supported", collectorName)
 		}
 	}
 

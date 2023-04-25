@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	log.Base().SetLevel("fatal")
+	_ = log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("Fetcher", func() {
@@ -132,17 +132,17 @@ var _ = Describe("Fetcher", func() {
 					strconv.FormatFloat(jobLoadAvg15, 'E', -1, 64),
 				},
 				Disk: map[string]director.VMInfoVitalsDiskSize{
-					"system": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobSystemDiskPercent)),
+					"system": {
+						InodePercent: strconv.Itoa(jobSystemDiskInodePercent),
+						Percent:      strconv.Itoa(jobSystemDiskPercent),
 					},
-					"ephemeral": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobEphemeralDiskPercent)),
+					"ephemeral": {
+						InodePercent: strconv.Itoa(jobEphemeralDiskInodePercent),
+						Percent:      strconv.Itoa(jobEphemeralDiskPercent),
 					},
-					"persistent": director.VMInfoVitalsDiskSize{
-						InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
-						Percent:      strconv.Itoa(int(jobPersistentDiskPercent)),
+					"persistent": {
+						InodePercent: strconv.Itoa(jobPersistentDiskInodePercent),
+						Percent:      strconv.Itoa(jobPersistentDiskPercent),
 					},
 				},
 			}
@@ -190,14 +190,14 @@ var _ = Describe("Fetcher", func() {
 			boshClient.DeploymentsReturns(deployments, nil)
 
 			expectedDeploymentsInfo = []DeploymentInfo{
-				DeploymentInfo{
+				{
 					Name: deploymentName,
 					Instances: []Instance{
-						Instance{
+						{
 							AgentID:            agentID,
 							Name:               jobName,
 							ID:                 jobID,
-							Index:              strconv.Itoa(int(jobIndex)),
+							Index:              strconv.Itoa(jobIndex),
 							Bootstrap:          jobBootstrap,
 							IPs:                []string{jobIP},
 							AZ:                 jobAZ,
@@ -206,7 +206,7 @@ var _ = Describe("Fetcher", func() {
 							ResurrectionPaused: jobResurrectionPause,
 							Healthy:            true,
 							Processes: []Process{
-								Process{
+								{
 									Name:    jobProcessName,
 									Uptime:  &jobProcessUptimeSeconds,
 									Healthy: true,
@@ -235,25 +235,25 @@ var _ = Describe("Fetcher", func() {
 									strconv.FormatFloat(jobLoadAvg15, 'E', -1, 64),
 								},
 								SystemDisk: Disk{
-									InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
-									Percent:      strconv.Itoa(int(jobSystemDiskPercent)),
+									InodePercent: strconv.Itoa(jobSystemDiskInodePercent),
+									Percent:      strconv.Itoa(jobSystemDiskPercent),
 								},
 								EphemeralDisk: Disk{
-									InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
-									Percent:      strconv.Itoa(int(jobEphemeralDiskPercent)),
+									InodePercent: strconv.Itoa(jobEphemeralDiskInodePercent),
+									Percent:      strconv.Itoa(jobEphemeralDiskPercent),
 								},
 								PersistentDisk: Disk{
-									InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
-									Percent:      strconv.Itoa(int(jobPersistentDiskPercent)),
+									InodePercent: strconv.Itoa(jobPersistentDiskInodePercent),
+									Percent:      strconv.Itoa(jobPersistentDiskPercent),
 								},
 							},
 						},
 					},
 					Releases: []Release{
-						Release{Name: releaseName, Version: releaseVersion},
+						{Name: releaseName, Version: releaseVersion},
 					},
 					Stemcells: []Stemcell{
-						Stemcell{Name: stemcellName, Version: stemcellVersion, OSName: stemcellOSName},
+						{Name: stemcellName, Version: stemcellVersion, OSName: stemcellOSName},
 					},
 				},
 			}

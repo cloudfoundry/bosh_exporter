@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/uaa"
@@ -126,12 +127,11 @@ func (h *basicAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.handler(w, r)
-	return
 }
 
 type boshConfigUpdater struct{}
 
-func (cu boshConfigUpdater) UpdateConfigWithToken(environment string, token uaa.AccessToken) error {
+func (cu boshConfigUpdater) UpdateConfigWithToken(_ string, _ uaa.AccessToken) error {
 	return nil
 }
 func (cu boshConfigUpdater) Save() error {
@@ -152,11 +152,11 @@ func prometheusHandler() http.Handler {
 	return handler
 }
 
-func readCACert(CACertFile string, logger logger.Logger) (string, error) {
-	if CACertFile != "" {
+func readCaCert(caCertFile string, logger logger.Logger) (string, error) {
+	if caCertFile != "" {
 		fs := system.NewOsFileSystem(logger)
 
-		CACertFileFullPath, err := fs.ExpandPath(CACertFile)
+		CACertFileFullPath, err := fs.ExpandPath(caCertFile)
 		if err != nil {
 			return "", err
 		}
@@ -185,7 +185,7 @@ func buildBOSHClient() (director.Director, error) {
 		return nil, err
 	}
 
-	boshCACert, err := readCACert(*boshCACertFile, logger)
+	boshCACert, err := readCaCert(*boshCACertFile, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func buildBOSHClient() (director.Director, error) {
 		uaaURL := boshInfo.Auth.Options["url"]
 		uaaURLStr, ok := uaaURL.(string)
 		if !ok {
-			return nil, fmt.Errorf("Expected UAA URL '%s' to be a string", uaaURL)
+			return nil, fmt.Errorf("expected UAA URL '%s' to be a string", uaaURL)
 		}
 
 		uaaConfig, err := uaa.NewConfigFromURL(uaaURLStr)
@@ -235,11 +235,11 @@ func buildBOSHClient() (director.Director, error) {
 			directorConfig.TokenFunc = uaa.NewClientTokenSession(uaaClient).TokenFunc
 		} else {
 			answers := []uaa.PromptAnswer{
-				uaa.PromptAnswer{
+				{
 					Key:   "username",
 					Value: *boshUsername,
 				},
-				uaa.PromptAnswer{
+				{
 					Key:   "password",
 					Value: *boshPassword,
 				},
@@ -349,7 +349,7 @@ func main() {
 
 	http.Handle(*metricsPath, prometheusHandler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
+		_, _ = w.Write([]byte(`<html>
              <head><title>BOSH Exporter</title></head>
              <body>
              <h1>BOSH Exporter</h1>
@@ -358,11 +358,19 @@ func main() {
              </html>`))
 	})
 
+	server := &http.Server{
+		Addr:              *listenAddress,
+		ReadTimeout:       time.Second * 5,
+		ReadHeaderTimeout: time.Second * 10,
+	}
+
 	if *tlsCertFile != "" && *tlsKeyFile != "" {
 		log.Infoln("Listening TLS on", *listenAddress)
-		log.Fatal(http.ListenAndServeTLS(*listenAddress, *tlsCertFile, *tlsKeyFile, nil))
+		err = server.ListenAndServeTLS(*tlsCertFile, *tlsKeyFile)
 	} else {
 		log.Infoln("Listening on", *listenAddress)
-		log.Fatal(http.ListenAndServe(*listenAddress, nil))
+		err = server.ListenAndServe()
 	}
+
+	log.Fatal(err)
 }

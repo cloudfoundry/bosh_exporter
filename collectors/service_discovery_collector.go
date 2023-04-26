@@ -2,7 +2,6 @@ package collectors
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -126,7 +125,6 @@ func (c *ServiceDiscoveryCollector) Describe(ch chan<- *prometheus.Desc) {
 
 func (c *ServiceDiscoveryCollector) getLabelGroupKey(
 	deployment deployments.DeploymentInfo,
-	instance deployments.Instance,
 	process deployments.Process,
 ) LabelGroupKey {
 	return LabelGroupKey{
@@ -149,7 +147,7 @@ func (c *ServiceDiscoveryCollector) createLabelGroups(deployments []deployments.
 				if !c.processesFilter.Enabled(process.Name) {
 					continue
 				}
-				key := c.getLabelGroupKey(deployment, instance, process)
+				key := c.getLabelGroupKey(deployment, process)
 				if _, ok := labelGroups[key]; !ok {
 					labelGroups[key] = []string{}
 				}
@@ -177,13 +175,13 @@ func (c *ServiceDiscoveryCollector) createTargetGroups(labelGroups LabelGroups) 
 func (c *ServiceDiscoveryCollector) writeTargetGroupsToFile(targetGroups TargetGroups) error {
 	targetGroupsJSON, err := json.Marshal(targetGroups)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error while marshalling TargetGroups: %v", err))
+		return fmt.Errorf("error while marshalling TargetGroups: %v", err)
 	}
 
 	dir, name := path.Split(c.serviceDiscoveryFilename)
 	f, err := os.CreateTemp(dir, name)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error creating temp file: %v", err))
+		return fmt.Errorf("error creating temp file: %v", err)
 	}
 
 	_, err = f.Write(targetGroupsJSON)

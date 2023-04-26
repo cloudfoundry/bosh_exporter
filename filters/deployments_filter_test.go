@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	log.Base().SetLevel("fatal")
+	_ = log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("DeploymentsFilter", func() {

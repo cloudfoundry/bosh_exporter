@@ -78,7 +78,7 @@ func NewBoshCollector(
 			Namespace: namespace,
 			Subsystem: "",
 			Name:      "scrape_errors_total",
-			Help:      "Total number of times an error occured scraping BOSH.",
+			Help:      "Total number of times an error occurred scraping BOSH.",
 			ConstLabels: prometheus.Labels{
 				"environment": environment,
 				"bosh_name":   boshName,

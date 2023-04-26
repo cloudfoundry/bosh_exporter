@@ -81,7 +81,7 @@ func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]In
 	log.Debugf("Reading Instances for deployment `%s`:", deployment.Name())
 	instances, err := deployment.InstanceInfos()
 	if err != nil {
-		return deploymentInstances, fmt.Errorf("Error while reading Instances for deployment `%s`: %v", deployment.Name(), err)
+		return deploymentInstances, fmt.Errorf("error while reading Instances for deployment `%s`: %v", deployment.Name(), err)
 	}
 
 	for _, instance := range instances {
@@ -132,7 +132,7 @@ func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]In
 		}
 
 		if instance.Index != nil {
-			deploymentInstance.Index = strconv.Itoa(int(*instance.Index))
+			deploymentInstance.Index = strconv.Itoa(*instance.Index)
 		}
 
 		deploymentProcesses := []Process{}
@@ -165,7 +165,7 @@ func (f *Fetcher) fetchDeploymentReleases(deployment director.Deployment) ([]Rel
 	log.Debugf("Reading Releases for deployment `%s`:", deployment.Name())
 	releases, err := deployment.Releases()
 	if err != nil {
-		return deploymentReleases, fmt.Errorf("Error while reading Releases for deployment `%s`: %v", deployment.Name(), err)
+		return deploymentReleases, fmt.Errorf("error while reading Releases for deployment `%s`: %v", deployment.Name(), err)
 	}
 
 	for _, release := range releases {
@@ -185,7 +185,7 @@ func (f *Fetcher) fetchDeploymentStemcells(deployment director.Deployment) ([]St
 	log.Debugf("Reading Stemcells for deployment `%s`:", deployment.Name())
 	stemcells, err := deployment.Stemcells()
 	if err != nil {
-		return deploymentStemcells, fmt.Errorf("Error while reading Stemcells for deployment `%s`: %v", deployment.Name(), err)
+		return deploymentStemcells, fmt.Errorf("error while reading Stemcells for deployment `%s`: %v", deployment.Name(), err)
 	}
 
 	for _, stemcell := range stemcells {

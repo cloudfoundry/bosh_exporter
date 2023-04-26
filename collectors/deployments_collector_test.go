@@ -10,7 +10,7 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 
 	. "github.com/bosh-prometheus/bosh_exporter/collectors"
-	. "github.com/bosh-prometheus/bosh_exporter/utils/test_matchers"
+	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
 func init() {
@@ -43,10 +43,10 @@ var _ = Describe("DeploymentsCollector", func() {
 	)
 
 	BeforeEach(func() {
-		namespace = "test_exporter"
-		environment = "test_environment"
-		boshName = "test_bosh_name"
-		boshUUID = "test_bosh_uuid"
+		namespace = testNamespace
+		environment = testEnvironment
+		boshName = testBoshName
+		boshUUID = testBoshUUID
 
 		deploymentReleaseInfoMetric = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{

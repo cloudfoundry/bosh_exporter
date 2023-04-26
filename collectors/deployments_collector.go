@@ -113,9 +113,9 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 	c.deploymentInstancesMetric.Reset()
 
 	for _, deployment := range deployments {
-		c.reportDeploymentReleaseInfoMetrics(deployment, ch)
-		c.reportDeploymentStemcellInfoMetrics(deployment, ch)
-		c.reportDeploymentInstancesMetrics(deployment, ch)
+		c.reportDeploymentReleaseInfoMetrics(deployment)
+		c.reportDeploymentStemcellInfoMetrics(deployment)
+		c.reportDeploymentInstancesMetrics(deployment)
 	}
 
 	c.deploymentReleaseInfoMetric.Collect(ch)
@@ -141,7 +141,6 @@ func (c *DeploymentsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 func (c *DeploymentsCollector) reportDeploymentReleaseInfoMetrics(
 	deployment deployments.DeploymentInfo,
-	ch chan<- prometheus.Metric,
 ) {
 	for _, release := range deployment.Releases {
 		c.deploymentReleaseInfoMetric.WithLabelValues(
@@ -154,7 +153,6 @@ func (c *DeploymentsCollector) reportDeploymentReleaseInfoMetrics(
 
 func (c *DeploymentsCollector) reportDeploymentStemcellInfoMetrics(
 	deployment deployments.DeploymentInfo,
-	ch chan<- prometheus.Metric,
 ) {
 	for _, stemcell := range deployment.Stemcells {
 		c.deploymentStemcellInfoMetric.WithLabelValues(
@@ -168,7 +166,6 @@ func (c *DeploymentsCollector) reportDeploymentStemcellInfoMetrics(
 
 func (c *DeploymentsCollector) reportDeploymentInstancesMetrics(
 	deployment deployments.DeploymentInfo,
-	ch chan<- prometheus.Metric,
 ) {
 	for _, instance := range deployment.Instances {
 		c.deploymentInstancesMetric.WithLabelValues(

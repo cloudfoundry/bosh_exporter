@@ -16,11 +16,11 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
 	. "github.com/bosh-prometheus/bosh_exporter/collectors"
-	. "github.com/bosh-prometheus/bosh_exporter/utils/test_matchers"
+	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
 func init() {
-	log.Base().SetLevel("fatal")
+	_ = log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("BoshCollector", func() {
@@ -51,10 +51,10 @@ var _ = Describe("BoshCollector", func() {
 	)
 
 	BeforeEach(func() {
-		namespace = "test_exporter"
-		environment = "test_environment"
-		boshName = "test_bosh_name"
-		boshUUID = "test_bosh_uuid"
+		namespace = testNamespace
+		environment = testEnvironment
+		boshName = testBoshName
+		boshUUID = testBoshUUID
 		tmpfile, err = os.CreateTemp("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
@@ -92,7 +92,7 @@ var _ = Describe("BoshCollector", func() {
 				Namespace: namespace,
 				Subsystem: "",
 				Name:      "scrape_errors_total",
-				Help:      "Total number of times an error occured scraping BOSH.",
+				Help:      "Total number of times an error occurred scraping BOSH.",
 				ConstLabels: prometheus.Labels{
 					"environment": environment,
 					"bosh_name":   boshName,

@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	log.Base().SetLevel("fatal")
+	_ = log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("ServiceDiscoveryCollector", func() {
@@ -39,10 +39,10 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 	)
 
 	BeforeEach(func() {
-		namespace = "test_exporter"
-		environment = "test_environment"
-		boshName = "test_bosh_name"
-		boshUUID = "test_bosh_uuid"
+		namespace = testNamespace
+		environment = testEnvironment
+		boshName = testBoshName
+		boshUUID = testBoshUUID
 		tmpfile, err = os.CreateTemp("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()

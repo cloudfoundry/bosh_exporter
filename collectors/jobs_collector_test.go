@@ -13,11 +13,11 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
 	. "github.com/bosh-prometheus/bosh_exporter/collectors"
-	. "github.com/bosh-prometheus/bosh_exporter/utils/test_matchers"
+	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
 func init() {
-	log.Base().SetLevel("fatal")
+	_ = log.Base().SetLevel("fatal")
 }
 
 var _ = Describe("JobsCollector", func() {
@@ -88,10 +88,10 @@ var _ = Describe("JobsCollector", func() {
 	)
 
 	BeforeEach(func() {
-		namespace = "test_exporter"
-		environment = "test_environment"
-		boshName = "test_bosh_name"
-		boshUUID = "test_bosh_uuid"
+		namespace = testNamespace
+		environment = testEnvironment
+		boshName = testBoshName
+		boshUUID = testBoshUUID
 		azsFilter = filters.NewAZsFilter([]string{})
 		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
 		Expect(err).ToNot(HaveOccurred())
@@ -974,16 +974,16 @@ var _ = Describe("JobsCollector", func() {
 					strconv.FormatFloat(jobLoadAvg15, 'E', -1, 64),
 				},
 				SystemDisk: deployments.Disk{
-					InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
-					Percent:      strconv.Itoa(int(jobSystemDiskPercent)),
+					InodePercent: strconv.Itoa(jobSystemDiskInodePercent),
+					Percent:      strconv.Itoa(jobSystemDiskPercent),
 				},
 				EphemeralDisk: deployments.Disk{
-					InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
-					Percent:      strconv.Itoa(int(jobEphemeralDiskPercent)),
+					InodePercent: strconv.Itoa(jobEphemeralDiskInodePercent),
+					Percent:      strconv.Itoa(jobEphemeralDiskPercent),
 				},
 				PersistentDisk: deployments.Disk{
-					InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
-					Percent:      strconv.Itoa(int(jobPersistentDiskPercent)),
+					InodePercent: strconv.Itoa(jobPersistentDiskInodePercent),
+					Percent:      strconv.Itoa(jobPersistentDiskPercent),
 				},
 			}
 
@@ -1370,7 +1370,7 @@ var _ = Describe("JobsCollector", func() {
 		Context("when there is no system disk inode percent value", func() {
 			BeforeEach(func() {
 				instances[0].Vitals.SystemDisk = deployments.Disk{
-					Percent: strconv.Itoa(int(jobSystemDiskPercent)),
+					Percent: strconv.Itoa(jobSystemDiskPercent),
 				}
 			})
 
@@ -1402,7 +1402,7 @@ var _ = Describe("JobsCollector", func() {
 		Context("when there is no system disk percent value", func() {
 			BeforeEach(func() {
 				instances[0].Vitals.SystemDisk = deployments.Disk{
-					InodePercent: strconv.Itoa(int(jobSystemDiskInodePercent)),
+					InodePercent: strconv.Itoa(jobSystemDiskInodePercent),
 				}
 			})
 
@@ -1434,7 +1434,7 @@ var _ = Describe("JobsCollector", func() {
 		Context("when there is no ephemeral disk inode percent value", func() {
 			BeforeEach(func() {
 				instances[0].Vitals.EphemeralDisk = deployments.Disk{
-					Percent: strconv.Itoa(int(jobEphemeralDiskPercent)),
+					Percent: strconv.Itoa(jobEphemeralDiskPercent),
 				}
 			})
 
@@ -1466,7 +1466,7 @@ var _ = Describe("JobsCollector", func() {
 		Context("when there is no ephemeral disk percent value", func() {
 			BeforeEach(func() {
 				instances[0].Vitals.EphemeralDisk = deployments.Disk{
-					InodePercent: strconv.Itoa(int(jobEphemeralDiskInodePercent)),
+					InodePercent: strconv.Itoa(jobEphemeralDiskInodePercent),
 				}
 			})
 
@@ -1498,7 +1498,7 @@ var _ = Describe("JobsCollector", func() {
 		Context("when there is no persistent disk inode percent value", func() {
 			BeforeEach(func() {
 				instances[0].Vitals.PersistentDisk = deployments.Disk{
-					Percent: strconv.Itoa(int(jobPersistentDiskPercent)),
+					Percent: strconv.Itoa(jobPersistentDiskPercent),
 				}
 			})
 
@@ -1530,7 +1530,7 @@ var _ = Describe("JobsCollector", func() {
 		Context("when there is no persistent disk percent value", func() {
 			BeforeEach(func() {
 				instances[0].Vitals.PersistentDisk = deployments.Disk{
-					InodePercent: strconv.Itoa(int(jobPersistentDiskInodePercent)),
+					InodePercent: strconv.Itoa(jobPersistentDiskInodePercent),
 				}
 			})
 

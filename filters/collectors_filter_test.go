@@ -37,7 +37,7 @@ var _ = Describe("CollectorsFilter", func() {
 
 			It("returns an error", func() {
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("Collector filter `Unknown` is not supported"))
+				Expect(err.Error()).To(Equal("collector filter `Unknown` is not supported"))
 			})
 		})
 

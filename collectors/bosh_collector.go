@@ -33,7 +33,7 @@ func NewBoshCollector(
 	processesFilter *filters.RegexpFilter,
 	cidrsFilter *filters.CidrFilter,
 ) *BoshCollector {
-	enabledCollectors := []Collector{}
+	var enabledCollectors []Collector
 
 	if collectorsFilter.Enabled(filters.DeploymentsCollector) {
 		deploymentsCollector := NewDeploymentsCollector(namespace, environment, boshName, boshUUID)
@@ -59,84 +59,15 @@ func NewBoshCollector(
 		enabledCollectors = append(enabledCollectors, serviceDiscoveryCollector)
 	}
 
-	totalBoshScrapesMetric := prometheus.NewCounter(
-		prometheus.CounterOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "scrapes_total",
-			Help:      "Total number of times BOSH was scraped for metrics.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
-	totalBoshScrapeErrorsMetric := prometheus.NewCounter(
-		prometheus.CounterOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "scrape_errors_total",
-			Help:      "Total number of times an error occurred scraping BOSH.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
-	lastBoshScrapeErrorMetric := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_scrape_error",
-			Help:      "Whether the last scrape of metrics from BOSH resulted in an error (1 for error, 0 for success).",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
-	lastBoshScrapeTimestampMetric := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_scrape_timestamp",
-			Help:      "Number of seconds since 1970 since last scrape from BOSH.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
-	lastBoshScrapeDurationSecondsMetric := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_scrape_duration_seconds",
-			Help:      "Duration of the last scrape from BOSH.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
+	metrics := NewBoshCollectorMetrics(namespace, environment, boshName, boshUUID)
 	return &BoshCollector{
 		enabledCollectors:                   enabledCollectors,
 		deploymentsFetcher:                  deploymentsFetcher,
-		totalBoshScrapesMetric:              totalBoshScrapesMetric,
-		totalBoshScrapeErrorsMetric:         totalBoshScrapeErrorsMetric,
-		lastBoshScrapeErrorMetric:           lastBoshScrapeErrorMetric,
-		lastBoshScrapeTimestampMetric:       lastBoshScrapeTimestampMetric,
-		lastBoshScrapeDurationSecondsMetric: lastBoshScrapeDurationSecondsMetric,
+		totalBoshScrapesMetric:              metrics.NewTotalBoshScrapesMetric(),
+		totalBoshScrapeErrorsMetric:         metrics.NewTotalBoshScrapeErrorsMetric(),
+		lastBoshScrapeErrorMetric:           metrics.NewLastBoshScrapeErrorMetric(),
+		lastBoshScrapeTimestampMetric:       metrics.NewLastBoshScrapeTimestampMetric(),
+		lastBoshScrapeDurationSecondsMetric: metrics.NewLastBoshScrapeDurationSecondsMetric(),
 	}
 }
 
@@ -164,13 +95,13 @@ func (c *BoshCollector) Collect(ch chan<- prometheus.Metric) {
 
 	scrapeError := 0
 	c.totalBoshScrapesMetric.Inc()
-	deployments, err := c.deploymentsFetcher.Deployments()
+	ds, err := c.deploymentsFetcher.Deployments()
 	if err != nil {
 		log.Error(err)
 		scrapeError = 1
 		c.totalBoshScrapeErrorsMetric.Inc()
 	} else {
-		if err := c.executeCollectors(deployments, ch); err != nil {
+		if err := c.executeCollectors(ds, ch); err != nil {
 			log.Error(err)
 			scrapeError = 1
 			c.totalBoshScrapeErrorsMetric.Inc()

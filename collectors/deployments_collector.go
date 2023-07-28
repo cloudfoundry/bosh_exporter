@@ -10,6 +10,8 @@ import (
 
 type DeploymentsCollector struct {
 	deploymentReleaseInfoMetric                *prometheus.GaugeVec
+	deploymentReleaseJobInfoMetric             *prometheus.GaugeVec
+	deploymentReleasePackageInfoMetric         *prometheus.GaugeVec
 	deploymentStemcellInfoMetric               *prometheus.GaugeVec
 	deploymentInstancesMetric                  *prometheus.GaugeVec
 	lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
@@ -22,85 +24,15 @@ func NewDeploymentsCollector(
 	boshName string,
 	boshUUID string,
 ) *DeploymentsCollector {
-	deploymentReleaseInfoMetric := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "deployment",
-			Name:      "release_info",
-			Help:      "Labeled BOSH Deployment Release Info with a constant '1' value.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-		[]string{"bosh_deployment", "bosh_release_name", "bosh_release_version"},
-	)
-
-	deploymentStemcellInfoMetric := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "deployment",
-			Name:      "stemcell_info",
-			Help:      "Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-		[]string{"bosh_deployment", "bosh_stemcell_name", "bosh_stemcell_version", "bosh_stemcell_os_name"},
-	)
-
-	deploymentInstancesMetric := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "deployment",
-			Name:      "instances",
-			Help:      "Number of instances in this deployment",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-		[]string{"bosh_deployment", "bosh_vm_type"},
-	)
-
-	lastDeploymentsScrapeTimestampMetric := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_deployments_scrape_timestamp",
-			Help:      "Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
-	lastDeploymentsScrapeDurationSecondsMetric := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_deployments_scrape_duration_seconds",
-			Help:      "Duration of the last scrape of Deployments metrics from BOSH.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
+	metrics := NewDeploymentsCollectorMetrics(namespace, environment, boshName, boshUUID)
 	collector := &DeploymentsCollector{
-		deploymentReleaseInfoMetric:                deploymentReleaseInfoMetric,
-		deploymentStemcellInfoMetric:               deploymentStemcellInfoMetric,
-		deploymentInstancesMetric:                  deploymentInstancesMetric,
-		lastDeploymentsScrapeTimestampMetric:       lastDeploymentsScrapeTimestampMetric,
-		lastDeploymentsScrapeDurationSecondsMetric: lastDeploymentsScrapeDurationSecondsMetric,
+		deploymentReleaseInfoMetric:                metrics.NewDeploymentReleaseInfoMetric(),
+		deploymentReleaseJobInfoMetric:             metrics.NewDeploymentReleaseJobInfoMetric(),
+		deploymentReleasePackageInfoMetric:         metrics.NewDeploymentReleasePackageInfoMetric(),
+		deploymentStemcellInfoMetric:               metrics.NewDeploymentStemcellInfoMetric(),
+		deploymentInstancesMetric:                  metrics.NewDeploymentInstancesMetric(),
+		lastDeploymentsScrapeTimestampMetric:       metrics.NewLastDeploymentsScrapeTimestampMetric(),
+		lastDeploymentsScrapeDurationSecondsMetric: metrics.NewLastDeploymentsScrapeDurationSecondsMetric(),
 	}
 	return collector
 }
@@ -109,6 +41,8 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 	var begun = time.Now()
 
 	c.deploymentReleaseInfoMetric.Reset()
+	c.deploymentReleaseJobInfoMetric.Reset()
+	c.deploymentReleasePackageInfoMetric.Reset()
 	c.deploymentStemcellInfoMetric.Reset()
 	c.deploymentInstancesMetric.Reset()
 
@@ -119,6 +53,8 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 	}
 
 	c.deploymentReleaseInfoMetric.Collect(ch)
+	c.deploymentReleaseJobInfoMetric.Collect(ch)
+	c.deploymentReleasePackageInfoMetric.Collect(ch)
 	c.deploymentStemcellInfoMetric.Collect(ch)
 	c.deploymentInstancesMetric.Collect(ch)
 
@@ -133,6 +69,8 @@ func (c *DeploymentsCollector) Collect(deployments []deployments.DeploymentInfo,
 
 func (c *DeploymentsCollector) Describe(ch chan<- *prometheus.Desc) {
 	c.deploymentReleaseInfoMetric.Describe(ch)
+	c.deploymentReleaseJobInfoMetric.Describe(ch)
+	c.deploymentReleasePackageInfoMetric.Describe(ch)
 	c.deploymentStemcellInfoMetric.Describe(ch)
 	c.deploymentInstancesMetric.Describe(ch)
 	c.lastDeploymentsScrapeTimestampMetric.Describe(ch)
@@ -148,6 +86,22 @@ func (c *DeploymentsCollector) reportDeploymentReleaseInfoMetrics(
 			release.Name,
 			release.Version,
 		).Set(float64(1))
+		for _, jobName := range release.JobNames {
+			c.deploymentReleaseJobInfoMetric.WithLabelValues(
+				deployment.Name,
+				release.Name,
+				release.Version,
+				jobName,
+			).Set(float64(1))
+		}
+		for _, packageName := range release.PackageNames {
+			c.deploymentReleasePackageInfoMetric.WithLabelValues(
+				deployment.Name,
+				release.Name,
+				release.Version,
+				packageName,
+			).Set(float64(1))
+		}
 	}
 }
 

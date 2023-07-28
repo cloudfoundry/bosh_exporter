@@ -15,6 +15,6 @@ const (
 )
 
 func TestCollectors(t *testing.T) {
-	RegisterFailHandler(Fail)
+	RegisterFailHandler(AbortSuite)
 	RunSpecs(t, "Collectors Suite")
 }

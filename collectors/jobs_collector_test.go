@@ -20,6 +20,21 @@ func init() {
 	_ = log.Base().SetLevel("fatal")
 }
 
+type BaseLabelValues struct {
+	deploymentName string
+	jobName        string
+	jobID          string
+	jobIndex       string
+	jobAZ          string
+	jobIP          string
+}
+
+func (b *BaseLabelValues) AddLabelValues(gaugeVec *prometheus.GaugeVec, lvs ...string) prometheus.Gauge {
+	values := []string{b.deploymentName, b.jobName, b.jobID, b.jobIndex, b.jobAZ, b.jobIP}
+	values = append(values, lvs...)
+	return gaugeVec.WithLabelValues(values...)
+}
+
 var _ = Describe("JobsCollector", func() {
 	var (
 		err           error
@@ -29,6 +44,7 @@ var _ = Describe("JobsCollector", func() {
 		boshUUID      string
 		azsFilter     *filters.AZsFilter
 		cidrsFilter   *filters.CidrFilter
+		metrics       *JobsCollectorMetrics
 		jobsCollector *JobsCollector
 
 		jobHealthyMetric                    *prometheus.GaugeVec
@@ -48,6 +64,7 @@ var _ = Describe("JobsCollector", func() {
 		jobEphemeralDiskPercentMetric       *prometheus.GaugeVec
 		jobPersistentDiskInodePercentMetric *prometheus.GaugeVec
 		jobPersistentDiskPercentMetric      *prometheus.GaugeVec
+		jobProcessInfoMetric                *prometheus.GaugeVec
 		jobProcessHealthyMetric             *prometheus.GaugeVec
 		jobProcessUptimeMetric              *prometheus.GaugeVec
 		jobProcessCPUTotalMetric            *prometheus.GaugeVec
@@ -56,12 +73,14 @@ var _ = Describe("JobsCollector", func() {
 		lastJobsScrapeTimestampMetric       prometheus.Gauge
 		lastJobsScrapeDurationSecondsMetric prometheus.Gauge
 
-		deploymentName                = "fake-deployment-name"
-		jobName                       = "fake-job-name"
-		jobID                         = "fake-job-id"
-		jobIndex                      = "0"
-		jobIP                         = "1.2.3.4"
-		jobAZ                         = "fake-job-az"
+		baseLabelValues = BaseLabelValues{
+			deploymentName: "fake-deployment-name",
+			jobName:        "fake-job-name",
+			jobID:          "fake-job-id",
+			jobIndex:       "0",
+			jobIP:          "1.2.3.4",
+			jobAZ:          "fake-job-az",
+		}
 		jobHealthy                    = true
 		jobCPUSys                     = float64(0.5)
 		jobCPUUser                    = float64(1.0)
@@ -85,6 +104,8 @@ var _ = Describe("JobsCollector", func() {
 		jobProcessCPUTotal            = float64(0.5)
 		jobProcessMemKB               = uint64(2000)
 		jobProcessMemPercent          = float64(20)
+		jobProcessReleaseName         = "fake-process-release-name"
+		jobProcessReleaseVersion      = "fake-process-release-version"
 	)
 
 	BeforeEach(func() {
@@ -92,570 +113,82 @@ var _ = Describe("JobsCollector", func() {
 		environment = testEnvironment
 		boshName = testBoshName
 		boshUUID = testBoshUUID
+		metrics = NewJobsCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
 		azsFilter = filters.NewAZsFilter([]string{})
 		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
 		Expect(err).ToNot(HaveOccurred())
 
-		jobHealthyMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "healthy",
-				Help:      "BOSH Job Healthy (1 for healthy, 0 for unhealthy).",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobHealthyMetric = metrics.NewJobHealthyMetric()
+		baseLabelValues.AddLabelValues(jobHealthyMetric).Set(float64(1))
 
-		jobHealthyMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(1))
+		jobLoadAvg01Metric = metrics.NewJobLoadAvg01Metric()
+		baseLabelValues.AddLabelValues(jobLoadAvg01Metric).Set(jobLoadAvg01)
 
-		jobLoadAvg01Metric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "load_avg01",
-				Help:      "BOSH Job Load avg01.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobLoadAvg05Metric = metrics.NewJobLoadAvg05Metric()
+		baseLabelValues.AddLabelValues(jobLoadAvg05Metric).Set(jobLoadAvg05)
 
-		jobLoadAvg01Metric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(jobLoadAvg01)
+		jobLoadAvg15Metric = metrics.NewJobLoadAvg15Metric()
+		baseLabelValues.AddLabelValues(jobLoadAvg15Metric).Set(jobLoadAvg15)
 
-		jobLoadAvg05Metric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "load_avg05",
-				Help:      "BOSH Job Load avg05.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobCPUSysMetric = metrics.NewJobCPUSysMetric()
+		baseLabelValues.AddLabelValues(jobCPUSysMetric).Set(jobCPUSys)
 
-		jobLoadAvg05Metric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(jobLoadAvg05)
+		jobCPUUserMetric = metrics.NewJobCPUUserMetric()
+		baseLabelValues.AddLabelValues(jobCPUUserMetric).Set(jobCPUUser)
 
-		jobLoadAvg15Metric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "load_avg15",
-				Help:      "BOSH Job Load avg15.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobCPUWaitMetric = metrics.NewJobCPUWaitMetric()
+		baseLabelValues.AddLabelValues(jobCPUWaitMetric).Set(jobCPUWait)
 
-		jobLoadAvg15Metric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(jobLoadAvg15)
+		jobMemKBMetric = metrics.NewJobMemKBMetric()
+		baseLabelValues.AddLabelValues(jobMemKBMetric).Set(float64(jobMemKB))
 
-		jobCPUSysMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "cpu_sys",
-				Help:      "BOSH Job CPU System.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobMemPercentMetric = metrics.NewJobMemPercentMetric()
+		baseLabelValues.AddLabelValues(jobMemPercentMetric).Set(float64(jobMemPercent))
 
-		jobCPUSysMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(jobCPUSys)
+		jobSwapKBMetric = metrics.NewJobSwapKBMetric()
+		baseLabelValues.AddLabelValues(jobSwapKBMetric).Set(float64(jobSwapKB))
 
-		jobCPUUserMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "cpu_user",
-				Help:      "BOSH Job CPU User.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobSwapPercentMetric = metrics.NewJobSwapPercentMetric()
+		baseLabelValues.AddLabelValues(jobSwapPercentMetric).Set(float64(jobSwapPercent))
 
-		jobCPUUserMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(jobCPUUser)
+		jobSystemDiskInodePercentMetric = metrics.NewJobSystemDiskInodePercentMetric()
+		baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric).Set(float64(jobSystemDiskInodePercent))
 
-		jobCPUWaitMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "cpu_wait",
-				Help:      "BOSH Job CPU Wait.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobSystemDiskPercentMetric = metrics.NewJobSystemDiskPercentMetric()
+		baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric).Set(float64(jobSystemDiskPercent))
 
-		jobCPUWaitMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(jobCPUWait)
+		jobEphemeralDiskInodePercentMetric = metrics.NewJobEphemeralDiskInodePercentMetric()
+		baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric).Set(float64(jobEphemeralDiskInodePercent))
 
-		jobMemKBMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "mem_kb",
-				Help:      "BOSH Job Memory KB.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobEphemeralDiskPercentMetric = metrics.NewJobEphemeralDiskPercentMetric()
+		baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric).Set(float64(jobEphemeralDiskPercent))
 
-		jobMemKBMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobMemKB))
+		jobPersistentDiskInodePercentMetric = metrics.NewJobPersistentDiskInodePercentMetric()
+		baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric).Set(float64(jobPersistentDiskInodePercent))
 
-		jobMemPercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "mem_percent",
-				Help:      "BOSH Job Memory Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobPersistentDiskPercentMetric = metrics.NewJobPersistentDiskPercentMetric()
+		baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric).Set(float64(jobPersistentDiskPercent))
 
-		jobMemPercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobMemPercent))
+		jobProcessInfoMetric = metrics.NewJobProcessInfoMetric()
+		baseLabelValues.AddLabelValues(jobProcessInfoMetric, jobProcessName, jobProcessReleaseName, jobProcessReleaseVersion).Set(float64(1))
 
-		jobSwapKBMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "swap_kb",
-				Help:      "BOSH Job Swap KB.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobProcessHealthyMetric = metrics.NewJobProcessHealthyMetric()
+		baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName).Set(float64(1))
 
-		jobSwapKBMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobSwapKB))
+		jobProcessUptimeMetric = metrics.NewJobProcessUptimeMetric()
+		baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName).Set(float64(jobProcessUptime))
 
-		jobSwapPercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "swap_percent",
-				Help:      "BOSH Job Swap Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobProcessCPUTotalMetric = metrics.NewJobProcessCPUTotalMetric()
+		baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric, jobProcessName).Set(jobProcessCPUTotal)
 
-		jobSwapPercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobSwapPercent))
+		jobProcessMemKBMetric = metrics.NewJobProcessMemKBMetric()
+		baseLabelValues.AddLabelValues(jobProcessMemKBMetric, jobProcessName).Set(float64(jobProcessMemKB))
 
-		jobSystemDiskInodePercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "system_disk_inode_percent",
-				Help:      "BOSH Job System Disk Inode Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
+		jobProcessMemPercentMetric = metrics.NewJobProcessMemPercentMetric()
+		baseLabelValues.AddLabelValues(jobProcessMemPercentMetric, jobProcessName).Set(jobProcessMemPercent)
 
-		jobSystemDiskInodePercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobSystemDiskInodePercent))
-
-		jobSystemDiskPercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "system_disk_percent",
-				Help:      "BOSH Job System Disk Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
-
-		jobSystemDiskPercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobSystemDiskPercent))
-
-		jobEphemeralDiskInodePercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "ephemeral_disk_inode_percent",
-				Help:      "BOSH Job Ephemeral Disk Inode Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
-
-		jobEphemeralDiskInodePercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobEphemeralDiskInodePercent))
-
-		jobEphemeralDiskPercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "ephemeral_disk_percent",
-				Help:      "BOSH Job Ephemeral Disk Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
-
-		jobEphemeralDiskPercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobEphemeralDiskPercent))
-
-		jobPersistentDiskInodePercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "persistent_disk_inode_percent",
-				Help:      "BOSH Job Persistent Disk Inode Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
-
-		jobPersistentDiskInodePercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobPersistentDiskInodePercent))
-
-		jobPersistentDiskPercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job",
-				Name:      "persistent_disk_percent",
-				Help:      "BOSH Job Persistent Disk Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip"},
-		)
-
-		jobPersistentDiskPercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-		).Set(float64(jobPersistentDiskPercent))
-
-		jobProcessHealthyMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "healthy",
-				Help:      "BOSH Job Process Healthy (1 for healthy, 0 for unhealthy).",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		)
-
-		jobProcessHealthyMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-			jobProcessName,
-		).Set(float64(1))
-
-		jobProcessUptimeMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "uptime_seconds",
-				Help:      "BOSH Job Process Uptime in seconds.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		)
-
-		jobProcessUptimeMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-			jobProcessName,
-		).Set(float64(jobProcessUptime))
-
-		jobProcessCPUTotalMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "cpu_total",
-				Help:      "BOSH Job Process CPU Total.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		)
-
-		jobProcessCPUTotalMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-			jobProcessName,
-		).Set(jobProcessCPUTotal)
-
-		jobProcessMemKBMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "mem_kb",
-				Help:      "BOSH Job Process Memory KB.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		)
-
-		jobProcessMemKBMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-			jobProcessName,
-		).Set(float64(jobProcessMemKB))
-
-		jobProcessMemPercentMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "job_process",
-				Name:      "mem_percent",
-				Help:      "BOSH Job Process Memory Percent.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_job_name", "bosh_job_id", "bosh_job_index", "bosh_job_az", "bosh_job_ip", "bosh_job_process_name"},
-		)
-
-		jobProcessMemPercentMetric.WithLabelValues(
-			deploymentName,
-			jobName,
-			jobID,
-			jobIndex,
-			jobAZ,
-			jobIP,
-			jobProcessName,
-		).Set(jobProcessMemPercent)
-
-		lastJobsScrapeTimestampMetric = prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_jobs_scrape_timestamp",
-				Help:      "Number of seconds since 1970 since last scrape of Job metrics from BOSH.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-		)
-
-		lastJobsScrapeDurationSecondsMetric = prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_jobs_scrape_duration_seconds",
-				Help:      "Duration of the last scrape of Job metrics from BOSH.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-		)
+		lastJobsScrapeTimestampMetric = metrics.NewLastJobsScrapeTimestampMetric()
+		lastJobsScrapeDurationSecondsMetric = metrics.NewLastJobsScrapeDurationSecondsMetric()
 	})
 
 	JustBeforeEach(func() {
@@ -676,250 +209,95 @@ var _ = Describe("JobsCollector", func() {
 		})
 
 		It("returns a job_healthy metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobHealthyMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobHealthyMetric).Desc())))
 		})
 
 		It("returns a job_load_avg01 metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobLoadAvg01Metric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobLoadAvg01Metric).Desc())))
 		})
 
 		It("returns a job_load_avg05 metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobLoadAvg05Metric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobLoadAvg05Metric).Desc())))
 		})
 
 		It("returns a job_load_avg15 metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobLoadAvg15Metric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobLoadAvg15Metric).Desc())))
 		})
 
 		It("returns a job_cpu_sys metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobCPUSysMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobCPUSysMetric).Desc())))
 		})
 
 		It("returns a job_cpu_user metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobCPUUserMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobCPUUserMetric).Desc())))
 		})
 
 		It("returns a job_cpu_wait metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobCPUWaitMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobCPUWaitMetric).Desc())))
 		})
 
 		It("returns a job_mem_kb metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobMemKBMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobMemKBMetric).Desc())))
 		})
 
 		It("returns a job_mem_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobMemPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobMemPercentMetric).Desc())))
 		})
 
 		It("returns a job_swap_kb metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobSwapKBMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSwapKBMetric).Desc())))
 		})
 
 		It("returns a job_swap_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobSwapPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSwapPercentMetric).Desc())))
 		})
 
 		It("returns a job_system_disk_inode_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobSystemDiskInodePercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric).Desc())))
 		})
 
 		It("returns a job_system_disk_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobSystemDiskPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric).Desc())))
 		})
 
 		It("returns a job_ephemeral_disk_inode_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobEphemeralDiskInodePercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric).Desc())))
 		})
 
 		It("returns a job_ephemeral_disk_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobEphemeralDiskPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric).Desc())))
 		})
 
 		It("returns a job_persistent_disk_inode_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobPersistentDiskInodePercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric).Desc())))
 		})
 
 		It("returns a job_persistent_disk_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobPersistentDiskPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric).Desc())))
+		})
+
+		It("returns a job_process_info metric description", func() {
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessInfoMetric, jobProcessName, jobProcessReleaseName, jobProcessReleaseVersion).Desc())))
 		})
 
 		It("returns a job_process_healthy metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobProcessHealthyMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-				jobProcessName,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName).Desc())))
 		})
 
 		It("returns a job_process_uptime_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobProcessUptimeMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-				jobProcessName,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName).Desc())))
 		})
 
 		It("returns a job_process_cpu_total metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobProcessCPUTotalMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-				jobProcessName,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric, jobProcessName).Desc())))
 		})
 
 		It("returns a job_process_mem_kb metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobProcessMemKBMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-				jobProcessName,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessMemKBMetric, jobProcessName).Desc())))
 		})
 
 		It("returns a job_process_mem_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(jobProcessMemPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-				jobProcessName,
-			).Desc())))
+			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric, jobProcessName).Desc())))
 		})
 
 		It("returns a last_jobs_scrape_timestamp metric description", func() {
@@ -989,11 +367,11 @@ var _ = Describe("JobsCollector", func() {
 
 			instances = []deployments.Instance{
 				{
-					Name:      jobName,
-					ID:        jobID,
-					Index:     jobIndex,
-					IPs:       []string{jobIP},
-					AZ:        jobAZ,
+					Name:      baseLabelValues.jobName,
+					ID:        baseLabelValues.jobID,
+					Index:     baseLabelValues.jobIndex,
+					IPs:       []string{baseLabelValues.jobIP},
+					AZ:        baseLabelValues.jobAZ,
 					Healthy:   jobHealthy,
 					Vitals:    vitals,
 					Processes: processes,
@@ -1001,7 +379,7 @@ var _ = Describe("JobsCollector", func() {
 			}
 
 			deploymentInfo = deployments.DeploymentInfo{
-				Name:      deploymentName,
+				Name:      baseLabelValues.deploymentName,
 				Instances: instances,
 			}
 
@@ -1020,77 +398,34 @@ var _ = Describe("JobsCollector", func() {
 		})
 
 		It("returns a job_process_healthy metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobHealthyMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobHealthyMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when the process is not running", func() {
 			BeforeEach(func() {
 				instances[0].Healthy = false
-
-				jobHealthyMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				).Set(float64(0))
+				baseLabelValues.AddLabelValues(jobHealthyMetric).Set(float64(0))
 			})
 
 			It("returns a job_process_healthy metric", func() {
-				Eventually(metrics).Should(Receive(PrometheusMetric(jobHealthyMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobHealthyMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_load_avg01 metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobLoadAvg01Metric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg01Metric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		It("returns a job_load_avg05 metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobLoadAvg05Metric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg05Metric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		It("returns a job_load_avg15 metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobLoadAvg15Metric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg15Metric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1100,43 +435,15 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return any job_load_avg metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobLoadAvg01Metric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobLoadAvg05Metric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobLoadAvg15Metric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg01Metric))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg05Metric))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg15Metric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_cpu_sys metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobCPUSysMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUSysMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1149,27 +456,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_cpu_sys metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobCPUSysMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUSysMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_cpu_user metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobCPUUserMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUUserMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1182,27 +475,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_cpu_user metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobCPUUserMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUUserMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_cpu_wait metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobCPUWaitMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUWaitMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1215,27 +494,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_cpu_wait metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobCPUWaitMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUWaitMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_mem_kb metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobMemKBMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemKBMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1247,27 +512,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_mem_kb metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobMemKBMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemKBMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_mem_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobMemPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemPercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1279,27 +530,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_mem_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobMemPercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemPercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_swap_kb metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobSwapKBMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapKBMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1311,27 +548,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_swap_kb metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobSwapKBMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapKBMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_swap_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobSwapPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapPercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1343,27 +566,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_swap_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobSwapPercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapPercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_system_disk_inode_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobSystemDiskInodePercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1375,27 +584,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_system_disk_inode_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobSystemDiskInodePercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_system_disk_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobSystemDiskPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1407,27 +602,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_system_disk_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobSystemDiskPercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_ephemeral_disk_inode_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobEphemeralDiskInodePercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1439,27 +620,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_ephemeral_disk_inode_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobEphemeralDiskInodePercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_ephemeral_disk_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobEphemeralDiskPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1471,27 +638,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_Ephemeral_disk_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobEphemeralDiskPercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_persistent_disk_inode_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobPersistentDiskInodePercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1503,27 +656,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_persistent_disk_inode_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobPersistentDiskInodePercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_persistent_disk_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobPersistentDiskPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1535,70 +674,30 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_persistent_disk_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobPersistentDiskPercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a healthy job_process_healthy metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobProcessHealthyMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-				jobProcessName,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
 		Context("when a process is not running", func() {
 			BeforeEach(func() {
 				instances[0].Processes[0].Healthy = false
-
-				jobProcessHealthyMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-					jobProcessName,
-				).Set(float64(0))
+				baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName).Set(float64(0))
 			})
 
 			It("returns an unhealthy job_process_healthy metric", func() {
-				Eventually(metrics).Should(Receive(PrometheusMetric(jobProcessHealthyMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-					jobProcessName,
-				))))
+				Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_process_uptime_seconds metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobProcessUptimeMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
-				jobProcessName,
-			))))
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})
 
@@ -1608,27 +707,13 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_process_uptime_seconds metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobProcessUptimeMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
-					jobProcessName,
-				))))
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName))))
 				Consistently(errMetrics).ShouldNot(Receive())
 			})
 		})
 
 		It("returns a job_process_cpu_total metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobProcessCPUTotalMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1640,13 +725,7 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_process_cpu_total metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobProcessCPUTotalMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
@@ -1654,13 +733,7 @@ var _ = Describe("JobsCollector", func() {
 		})
 
 		It("returns a job_process_mem_kb metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobProcessMemKBMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemKBMetric,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1672,13 +745,7 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_process_mem_kb metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobProcessMemKBMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemKBMetric,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())
@@ -1686,13 +753,7 @@ var _ = Describe("JobsCollector", func() {
 		})
 
 		It("returns a job_process_mem_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(jobProcessMemPercentMetric.WithLabelValues(
-				deploymentName,
-				jobName,
-				jobID,
-				jobIndex,
-				jobAZ,
-				jobIP,
+			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric,
 				jobProcessName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
@@ -1704,13 +765,7 @@ var _ = Describe("JobsCollector", func() {
 			})
 
 			It("does not return a job_process_mem_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(jobProcessMemPercentMetric.WithLabelValues(
-					deploymentName,
-					jobName,
-					jobID,
-					jobIndex,
-					jobAZ,
-					jobIP,
+				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric,
 					jobProcessName,
 				))))
 				Consistently(errMetrics).ShouldNot(Receive())

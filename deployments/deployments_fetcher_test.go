@@ -80,6 +80,10 @@ var _ = Describe("Fetcher", func() {
 			jobProcessMemPercent          = float64(20)
 			releaseName                   = "fake-release-name"
 			releaseVersion                = "1.2.3"
+			releaseJob1Name               = "fake-release-job1-name"
+			releaseJob2Name               = "fake-release-job2-name"
+			releasePackage1Name           = "fake-release-package1-name"
+			releasePackage2Name           = "fake-release-package2-name"
 			stemcellName                  = "fake-stemcell-name"
 			stemcellVersion               = "4.5.6"
 			stemcellOSName                = "fake-stemcell-os-name"
@@ -169,6 +173,12 @@ var _ = Describe("Fetcher", func() {
 			release = &directorfakes.FakeRelease{
 				NameStub:    func() string { return releaseName },
 				VersionStub: func() version.Version { return version.MustNewVersionFromString(releaseVersion) },
+				JobsStub: func() ([]director.Job, error) {
+					return []director.Job{{Name: releaseJob1Name}, {Name: releaseJob2Name}}, nil
+				},
+				PackagesStub: func() ([]director.Package, error) {
+					return []director.Package{{Name: releasePackage1Name}, {Name: releasePackage2Name}}, nil
+				},
 			}
 			releases = []director.Release{release}
 
@@ -250,7 +260,10 @@ var _ = Describe("Fetcher", func() {
 						},
 					},
 					Releases: []Release{
-						{Name: releaseName, Version: releaseVersion},
+						{Name: releaseName, Version: releaseVersion,
+							JobNames:     []string{releaseJob1Name, releaseJob2Name},
+							PackageNames: []string{releasePackage1Name, releasePackage2Name},
+						},
 					},
 					Stemcells: []Stemcell{
 						{Name: stemcellName, Version: stemcellVersion, OSName: stemcellOSName},

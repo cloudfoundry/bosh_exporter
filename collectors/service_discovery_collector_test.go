@@ -32,6 +32,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		azsFilter                 *filters.AZsFilter
 		processesFilter           *filters.RegexpFilter
 		cidrsFilter               *filters.CidrFilter
+		metrics                   *ServiceDiscoveryCollectorMetrics
 		serviceDiscoveryCollector *ServiceDiscoveryCollector
 
 		lastServiceDiscoveryScrapeTimestampMetric       prometheus.Gauge
@@ -43,6 +44,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		environment = testEnvironment
 		boshName = testBoshName
 		boshUUID = testBoshUUID
+		metrics = NewServiceDiscoveryCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
 		tmpfile, err = os.CreateTemp("", "service_discovery_collector_test_")
 		Expect(err).ToNot(HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
@@ -50,33 +52,8 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
 		processesFilter, err = filters.NewRegexpFilter([]string{})
 
-		lastServiceDiscoveryScrapeTimestampMetric = prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_service_discovery_scrape_timestamp",
-				Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-		)
-
-		lastServiceDiscoveryScrapeDurationSecondsMetric = prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_service_discovery_scrape_duration_seconds",
-				Help:      "Duration of the last scrape of Service Discovery from BOSH.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-		)
+		lastServiceDiscoveryScrapeTimestampMetric = metrics.NewLastServiceDiscoveryScrapeTimestampMetric()
+		lastServiceDiscoveryScrapeDurationSecondsMetric = metrics.NewLastServiceDiscoveryScrapeDurationSecondsMetric()
 	})
 
 	AfterEach(func() {
@@ -110,7 +87,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			go serviceDiscoveryCollector.Describe(descriptions)
 		})
 
-		It("returns a last_service_discovery_scrape_duration_seconds metric description", func() {
+		It("returns a last_service_discovery_scrape_timestamp metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(lastServiceDiscoveryScrapeTimestampMetric.Desc())))
 		})
 
@@ -121,20 +98,25 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 	Describe("Collect", func() {
 		var (
-			deployment1Name     = "fake-deployment-1-name"
-			deployment2Name     = "fake-deployment-2-name"
-			job1Name            = "fake-job-1-name"
-			job2Name            = "fake-job-2-name"
-			job1AZ              = "fake-job-1-az"
-			job2AZ              = "fake-job-2-az"
-			job1IP              = "1.2.3.4"
-			job2IP              = "5.6.7.8"
-			jobProcess1Name     = "fake-process-1-name"
-			jobProcess2Name     = "fake-process-2-name"
-			targetGroupsContent = `[
-				{"targets":["1.2.3.4"],"labels":{"__meta_bosh_deployment":"fake-deployment-1-name","__meta_bosh_job_process_name":"fake-process-1-name"}},
-				{"targets":["1.2.3.4"],"labels":{"__meta_bosh_deployment":"fake-deployment-1-name","__meta_bosh_job_process_name":"fake-process-2-name"}},
-				{"targets":["5.6.7.8"],"labels":{"__meta_bosh_deployment":"fake-deployment-2-name","__meta_bosh_job_process_name":"fake-process-2-name"}}
+			deployment1Name          = "fake-deployment-1-name"
+			deployment2Name          = "fake-deployment-2-name"
+			deployment1Release1Name  = "fake-d1-rel1"
+			deployment1Release2Name  = "fake-d1-rel2"
+			deployment2Release1Name  = "fake-d2-rel1"
+			deploymentReleaseVersion = "fake"
+			job1Name                 = "fake-job-1-name"
+			job2Name                 = "fake-job-2-name"
+			job1AZ                   = "fake-job-1-az"
+			job2AZ                   = "fake-job-2-az"
+			job1IP                   = "1.2.3.4"
+			job2IP                   = "5.6.7.8"
+			jobProcess1Name          = "fake-process-1-name"
+			jobProcess2Name          = "fake-process-2-name"
+			jobProcess3Name          = "fake-process-3-name"
+			targetGroupsContent      = `[
+				{"targets":["` + job1IP + `"],"labels":{"__meta_bosh_deployment":"` + deployment1Name + `","__meta_bosh_deployment_releases":"` + deployment1Release1Name + `:` + deploymentReleaseVersion + `,` + deployment1Release2Name + `:` + deploymentReleaseVersion + `","__meta_bosh_job_process_name":"` + jobProcess1Name + `","__meta_bosh_job_process_release":""}},
+				{"targets":["` + job1IP + `"],"labels":{"__meta_bosh_deployment":"` + deployment1Name + `","__meta_bosh_deployment_releases":"` + deployment1Release1Name + `:` + deploymentReleaseVersion + `,` + deployment1Release2Name + `:` + deploymentReleaseVersion + `","__meta_bosh_job_process_name":"` + jobProcess2Name + `","__meta_bosh_job_process_release":""}},
+				{"targets":["` + job2IP + `"],"labels":{"__meta_bosh_deployment":"` + deployment2Name + `","__meta_bosh_deployment_releases":"` + deployment2Release1Name + `:` + deploymentReleaseVersion + `","__meta_bosh_job_process_name":"` + jobProcess3Name + `","__meta_bosh_job_process_release":"` + deployment2Release1Name + `:` + deploymentReleaseVersion + `"}}
 			]`
 
 			deployment1Processes []deployments.Process
@@ -161,7 +143,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 			deployment2Processes = []deployments.Process{
 				{
-					Name: jobProcess2Name,
+					Name: jobProcess3Name,
 				},
 			}
 			deployment1Instances = []deployments.Instance{
@@ -185,11 +167,21 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			deployment1Info = deployments.DeploymentInfo{
 				Name:      deployment1Name,
 				Instances: deployment1Instances,
+				Releases: []deployments.Release{
+					{Name: deployment1Release1Name, Version: deploymentReleaseVersion},
+					{Name: deployment1Release2Name, Version: deploymentReleaseVersion}},
 			}
 
 			deployment2Info = deployments.DeploymentInfo{
 				Name:      deployment2Name,
 				Instances: deployment2Instances,
+				Releases: []deployments.Release{
+					{
+						Name:     deployment2Release1Name,
+						Version:  deploymentReleaseVersion,
+						JobNames: []string{jobProcess3Name},
+					},
+				},
 			}
 
 			deploymentsInfo = []deployments.DeploymentInfo{deployment1Info, deployment2Info}

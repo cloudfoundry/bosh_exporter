@@ -20,7 +20,7 @@ func NewFetcher(deploymentsFilter filters.DeploymentsFilter) *Fetcher {
 }
 
 func (f *Fetcher) Deployments() ([]DeploymentInfo, error) {
-	var deploymentsInfo = []DeploymentInfo{}
+	var deploymentsInfo []DeploymentInfo
 	var mutex = &sync.Mutex{}
 	var wg = &sync.WaitGroup{}
 
@@ -76,7 +76,7 @@ func (f *Fetcher) fetchDeploymentInfo(deployment director.Deployment) (*Deployme
 }
 
 func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]Instance, error) {
-	deploymentInstances := []Instance{}
+	var deploymentInstances []Instance
 
 	log.Debugf("Reading Instances for deployment `%s`:", deployment.Name())
 	instances, err := deployment.InstanceInfos()
@@ -135,7 +135,7 @@ func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]In
 			deploymentInstance.Index = strconv.Itoa(*instance.Index)
 		}
 
-		deploymentProcesses := []Process{}
+		var deploymentProcesses []Process
 		for _, process := range instance.Processes {
 			deploymentProcess := Process{
 				Name:    process.Name,
@@ -160,7 +160,7 @@ func (f *Fetcher) fetchDeploymentInstances(deployment director.Deployment) ([]In
 }
 
 func (f *Fetcher) fetchDeploymentReleases(deployment director.Deployment) ([]Release, error) {
-	deploymentReleases := []Release{}
+	var deploymentReleases []Release
 
 	log.Debugf("Reading Releases for deployment `%s`:", deployment.Name())
 	releases, err := deployment.Releases()
@@ -169,9 +169,16 @@ func (f *Fetcher) fetchDeploymentReleases(deployment director.Deployment) ([]Rel
 	}
 
 	for _, release := range releases {
+		jobNames, err := f.fetchReleaseJobs(release, deployment.Name())
+		packageNames, err := f.fetchReleasePackages(release, deployment.Name())
+		if err != nil {
+			return deploymentReleases, err
+		}
 		deploymentRelease := Release{
-			Name:    release.Name(),
-			Version: release.Version().AsString(),
+			Name:         release.Name(),
+			Version:      release.Version().AsString(),
+			JobNames:     jobNames,
+			PackageNames: packageNames,
 		}
 		deploymentReleases = append(deploymentReleases, deploymentRelease)
 	}
@@ -179,8 +186,32 @@ func (f *Fetcher) fetchDeploymentReleases(deployment director.Deployment) ([]Rel
 	return deploymentReleases, nil
 }
 
+func (f *Fetcher) fetchReleaseJobs(release director.Release, deploymentName string) ([]string, error) {
+	jobs, err := release.Jobs()
+	var jobNames []string
+	if err != nil {
+		return jobNames, fmt.Errorf("error while reading release `%s` (deployment: %s) jobs: %v", release.Name(), deploymentName, err)
+	}
+	for _, job := range jobs {
+		jobNames = append(jobNames, job.Name)
+	}
+	return jobNames, nil
+}
+
+func (f *Fetcher) fetchReleasePackages(release director.Release, deploymentName string) ([]string, error) {
+	packages, err := release.Packages()
+	var packageNames []string
+	if err != nil {
+		return packageNames, fmt.Errorf("error while reading release `%s` (deployment: %s) packages: %v", release.Name(), deploymentName, err)
+	}
+	for _, pkg := range packages {
+		packageNames = append(packageNames, pkg.Name)
+	}
+	return packageNames, nil
+}
+
 func (f *Fetcher) fetchDeploymentStemcells(deployment director.Deployment) ([]Stemcell, error) {
-	deploymentStemcells := []Stemcell{}
+	var deploymentStemcells []Stemcell
 
 	log.Debugf("Reading Stemcells for deployment `%s`:", deployment.Name())
 	stemcells, err := deployment.Stemcells()

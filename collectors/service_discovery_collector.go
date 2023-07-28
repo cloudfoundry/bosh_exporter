@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,21 +17,54 @@ import (
 )
 
 const (
-	boshDeploymentNameLabel = model.MetaLabelPrefix + "bosh_deployment"
-	boshJobProcessNameLabel = model.MetaLabelPrefix + "bosh_job_process_name"
+	boshDeploymentNameLabel     = model.MetaLabelPrefix + "bosh_deployment"
+	boshDeploymentReleasesLabel = model.MetaLabelPrefix + "bosh_deployment_releases"
+	boshJobProcessNameLabel     = model.MetaLabelPrefix + "bosh_job_process_name"
+	boshJobProcessReleaseLabel  = model.MetaLabelPrefix + "bosh_job_process_release"
 )
 
-type LabelGroups map[LabelGroupKey][]string
+type LabelGroups map[LabelGroupKey]*LabelGroupValue
 
 type LabelGroupKey struct {
 	DeploymentName string
 	ProcessName    string
 }
+type LabelGroupValue struct {
+	Targets            []string
+	ProcessRelease     string
+	DeploymentReleases []string
+}
 
-func (k *LabelGroupKey) Labels() model.LabelSet {
+func NewLabelGroupValue(deployment deployments.DeploymentInfo, process deployments.Process) *LabelGroupValue {
+	lgv := &LabelGroupValue{}
+	for _, release := range deployment.Releases {
+		ri := release.ToString()
+		lgv.DeploymentReleases = append(lgv.DeploymentReleases, ri)
+		// warning: works only if release job name == process name
+		if release.HasJobName(process.Name) {
+			lgv.ProcessRelease = ri
+		}
+	}
+	return lgv
+}
+func (labelGroupValue *LabelGroupValue) addTarget(ip string) {
+	labelGroupValue.Targets = append(labelGroupValue.Targets, ip)
+}
+
+func (labelGroupValue *LabelGroupValue) exportReleasesAsString() string {
+	var releases []string
+	for _, release := range labelGroupValue.DeploymentReleases {
+		releases = append(releases, release)
+	}
+	return strings.Join(releases, ",")
+}
+
+func (c *ServiceDiscoveryCollector) createLabels(key LabelGroupKey, value *LabelGroupValue) model.LabelSet {
 	return model.LabelSet{
-		model.LabelName(boshDeploymentNameLabel): model.LabelValue(k.DeploymentName),
-		model.LabelName(boshJobProcessNameLabel): model.LabelValue(k.ProcessName),
+		boshDeploymentNameLabel:     model.LabelValue(key.DeploymentName),
+		boshDeploymentReleasesLabel: model.LabelValue(value.exportReleasesAsString()),
+		boshJobProcessNameLabel:     model.LabelValue(key.ProcessName),
+		boshJobProcessReleaseLabel:  model.LabelValue(value.ProcessRelease),
 	}
 }
 
@@ -61,41 +95,14 @@ func NewServiceDiscoveryCollector(
 	processesFilter *filters.RegexpFilter,
 	cidrsFilter *filters.CidrFilter,
 ) *ServiceDiscoveryCollector {
-	lastServiceDiscoveryScrapeTimestampMetric := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_service_discovery_scrape_timestamp",
-			Help:      "Number of seconds since 1970 since last scrape of Service Discovery from BOSH.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
-	lastServiceDiscoveryScrapeDurationSecondsMetric := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: namespace,
-			Subsystem: "",
-			Name:      "last_service_discovery_scrape_duration_seconds",
-			Help:      "Duration of the last scrape of Service Discovery from BOSH.",
-			ConstLabels: prometheus.Labels{
-				"environment": environment,
-				"bosh_name":   boshName,
-				"bosh_uuid":   boshUUID,
-			},
-		},
-	)
-
+	metrics := NewServiceDiscoveryCollectorMetrics(namespace, environment, boshName, boshUUID)
 	collector := &ServiceDiscoveryCollector{
 		serviceDiscoveryFilename: serviceDiscoveryFilename,
 		azsFilter:                azsFilter,
 		processesFilter:          processesFilter,
 		cidrsFilter:              cidrsFilter,
-		lastServiceDiscoveryScrapeTimestampMetric:       lastServiceDiscoveryScrapeTimestampMetric,
-		lastServiceDiscoveryScrapeDurationSecondsMetric: lastServiceDiscoveryScrapeDurationSecondsMetric,
+		lastServiceDiscoveryScrapeTimestampMetric:       metrics.NewLastServiceDiscoveryScrapeTimestampMetric(),
+		lastServiceDiscoveryScrapeDurationSecondsMetric: metrics.NewLastServiceDiscoveryScrapeDurationSecondsMetric(),
 		mu: &sync.Mutex{},
 	}
 	return collector
@@ -148,10 +155,10 @@ func (c *ServiceDiscoveryCollector) createLabelGroups(deployments []deployments.
 					continue
 				}
 				key := c.getLabelGroupKey(deployment, process)
-				if _, ok := labelGroups[key]; !ok {
-					labelGroups[key] = []string{}
+				if _, found := labelGroups[key]; !found {
+					labelGroups[key] = NewLabelGroupValue(deployment, process)
 				}
-				labelGroups[key] = append(labelGroups[key], ip)
+				labelGroups[key].addTarget(ip)
 			}
 		}
 	}
@@ -162,10 +169,10 @@ func (c *ServiceDiscoveryCollector) createLabelGroups(deployments []deployments.
 func (c *ServiceDiscoveryCollector) createTargetGroups(labelGroups LabelGroups) TargetGroups {
 	targetGroups := TargetGroups{}
 
-	for key, targets := range labelGroups {
+	for key, value := range labelGroups {
 		targetGroups = append(targetGroups, TargetGroup{
-			Labels:  key.Labels(),
-			Targets: targets,
+			Labels:  c.createLabels(key, value),
+			Targets: value.Targets,
 		})
 	}
 
@@ -199,7 +206,7 @@ func (c *ServiceDiscoveryCollector) writeTargetGroupsToFile(targetGroups TargetG
 	}
 
 	if err != nil {
-		os.Remove(f.Name())
+		_ = os.Remove(f.Name())
 	}
 
 	return err

@@ -23,23 +23,28 @@ var _ = Describe("DeploymentsCollector", func() {
 		environment          string
 		boshName             string
 		boshUUID             string
+		metrics              *DeploymentsCollectorMetrics
 		deploymentsCollector *DeploymentsCollector
 
 		deploymentReleaseInfoMetric                *prometheus.GaugeVec
+		deploymentReleaseJobInfoMetric             *prometheus.GaugeVec
+		deploymentReleasePackageInfoMetric         *prometheus.GaugeVec
 		deploymentStemcellInfoMetric               *prometheus.GaugeVec
 		deploymentInstancesMetric                  *prometheus.GaugeVec
 		lastDeploymentsScrapeTimestampMetric       prometheus.Gauge
 		lastDeploymentsScrapeDurationSecondsMetric prometheus.Gauge
 
-		deploymentName  = "fake-deployment-name"
-		releaseName     = "fake-release-name"
-		releaseVersion  = "1.2.3"
-		stemcellName    = "fake-stemcell-name"
-		stemcellVersion = "4.5.6"
-		stemcellOSName  = "fake-stemcell-os-name"
-		vmTypeSmall     = "fake-vm-type-small"
-		vmTypeMedium    = "fake-vm-type-medium"
-		vmTypeLarge     = "fake-vm-type-large"
+		deploymentName     = "fake-deployment-name"
+		releaseName        = "fake-release-name"
+		releaseVersion     = "1.2.3"
+		releaseJobName     = "fake-release-job-name"
+		releasePackageName = "fake-release-package-name"
+		stemcellName       = "fake-stemcell-name"
+		stemcellVersion    = "4.5.6"
+		stemcellOSName     = "fake-stemcell-os-name"
+		vmTypeSmall        = "fake-vm-type-small"
+		vmTypeMedium       = "fake-vm-type-medium"
+		vmTypeLarge        = "fake-vm-type-large"
 	)
 
 	BeforeEach(func() {
@@ -47,43 +52,32 @@ var _ = Describe("DeploymentsCollector", func() {
 		environment = testEnvironment
 		boshName = testBoshName
 		boshUUID = testBoshUUID
+		metrics = NewDeploymentsCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
 
-		deploymentReleaseInfoMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "deployment",
-				Name:      "release_info",
-				Help:      "Labeled BOSH Deployment Release Info with a constant '1' value.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_release_name", "bosh_release_version"},
-		)
-
+		deploymentReleaseInfoMetric = metrics.NewDeploymentReleaseInfoMetric()
 		deploymentReleaseInfoMetric.WithLabelValues(
 			deploymentName,
 			releaseName,
 			releaseVersion,
 		).Set(float64(1))
 
-		deploymentStemcellInfoMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "deployment",
-				Name:      "stemcell_info",
-				Help:      "Labeled BOSH Deployment Stemcell Info with a constant '1' value.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_stemcell_name", "bosh_stemcell_version", "bosh_stemcell_os_name"},
-		)
+		deploymentReleaseJobInfoMetric = metrics.NewDeploymentReleaseJobInfoMetric()
+		deploymentReleaseJobInfoMetric.WithLabelValues(
+			deploymentName,
+			releaseName,
+			releaseVersion,
+			releaseJobName,
+		).Set(float64(1))
 
+		deploymentReleasePackageInfoMetric = metrics.NewDeploymentReleasePackageInfoMetric()
+		deploymentReleasePackageInfoMetric.WithLabelValues(
+			deploymentName,
+			releaseName,
+			releaseVersion,
+			releasePackageName,
+		).Set(float64(1))
+
+		deploymentStemcellInfoMetric = metrics.NewDeploymentStemcellInfoMetric()
 		deploymentStemcellInfoMetric.WithLabelValues(
 			deploymentName,
 			stemcellName,
@@ -91,21 +85,7 @@ var _ = Describe("DeploymentsCollector", func() {
 			stemcellOSName,
 		).Set(float64(1))
 
-		deploymentInstancesMetric = prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "deployment",
-				Name:      "instances",
-				Help:      "Number of instances in this deployment",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-			[]string{"bosh_deployment", "bosh_vm_type"},
-		)
-
+		deploymentInstancesMetric = metrics.NewDeploymentInstancesMetric()
 		deploymentInstancesMetric.WithLabelValues(
 			deploymentName,
 			vmTypeSmall,
@@ -119,33 +99,9 @@ var _ = Describe("DeploymentsCollector", func() {
 			vmTypeLarge,
 		).Set(float64(3))
 
-		lastDeploymentsScrapeTimestampMetric = prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_deployments_scrape_timestamp",
-				Help:      "Number of seconds since 1970 since last scrape of Deployments metrics from BOSH.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-		)
+		lastDeploymentsScrapeTimestampMetric = metrics.NewLastDeploymentsScrapeTimestampMetric()
 
-		lastDeploymentsScrapeDurationSecondsMetric = prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Subsystem: "",
-				Name:      "last_deployments_scrape_duration_seconds",
-				Help:      "Duration of the last scrape of Deployments metrics from BOSH.",
-				ConstLabels: prometheus.Labels{
-					"environment": environment,
-					"bosh_name":   boshName,
-					"bosh_uuid":   boshUUID,
-				},
-			},
-		)
+		lastDeploymentsScrapeDurationSecondsMetric = metrics.NewLastDeploymentsScrapeDurationSecondsMetric()
 	})
 
 	JustBeforeEach(func() {
@@ -178,6 +134,24 @@ var _ = Describe("DeploymentsCollector", func() {
 			).Desc())))
 		})
 
+		It("returns a deployment_release_job_info description", func() {
+			Eventually(descriptions).Should(Receive(Equal(deploymentReleaseJobInfoMetric.WithLabelValues(
+				deploymentName,
+				releaseName,
+				releaseVersion,
+				releaseJobName,
+			).Desc())))
+		})
+
+		It("returns a deployment_release_package_info description", func() {
+			Eventually(descriptions).Should(Receive(Equal(deploymentReleasePackageInfoMetric.WithLabelValues(
+				deploymentName,
+				releaseName,
+				releaseVersion,
+				releasePackageName,
+			).Desc())))
+		})
+
 		It("returns a deployment_stemcell_info metric description", func() {
 			Eventually(descriptions).Should(Receive(Equal(deploymentStemcellInfoMetric.WithLabelValues(
 				deploymentName,
@@ -206,8 +180,10 @@ var _ = Describe("DeploymentsCollector", func() {
 	Describe("Collect", func() {
 		var (
 			release = deployments.Release{
-				Name:    releaseName,
-				Version: releaseVersion,
+				Name:         releaseName,
+				Version:      releaseVersion,
+				JobNames:     []string{releaseJobName},
+				PackageNames: []string{releasePackageName},
 			}
 			releases = []deployments.Release{release}
 
@@ -261,6 +237,26 @@ var _ = Describe("DeploymentsCollector", func() {
 				deploymentName,
 				releaseName,
 				releaseVersion,
+			))))
+			Consistently(errMetrics).ShouldNot(Receive())
+		})
+
+		It("returns a deployment_release_job_info metric", func() {
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentReleaseJobInfoMetric.WithLabelValues(
+				deploymentName,
+				releaseName,
+				releaseVersion,
+				releaseJobName,
+			))))
+			Consistently(errMetrics).ShouldNot(Receive())
+		})
+
+		It("returns a deployment_release_package_info metric", func() {
+			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentReleasePackageInfoMetric.WithLabelValues(
+				deploymentName,
+				releaseName,
+				releaseVersion,
+				releasePackageName,
 			))))
 			Consistently(errMetrics).ShouldNot(Receive())
 		})

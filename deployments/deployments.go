@@ -7,6 +7,15 @@ type DeploymentInfo struct {
 	Stemcells []Stemcell
 }
 
+func (deploymentInfo *DeploymentInfo) FindReleaseByJobName(releaseJobName string) (Release, bool) {
+	for _, release := range deploymentInfo.Releases {
+		if release.HasJobName(releaseJobName) {
+			return release, true
+		}
+	}
+	return Release{}, false
+}
+
 type Instance struct {
 	AgentID            string
 	Name               string
@@ -65,8 +74,23 @@ type Disk struct {
 }
 
 type Release struct {
-	Name    string
-	Version string
+	Name         string
+	Version      string
+	JobNames     []string
+	PackageNames []string
+}
+
+func (release *Release) HasJobName(releaseJobName string) bool {
+	for _, rJobName := range release.JobNames {
+		if releaseJobName == rJobName {
+			return true
+		}
+	}
+	return false
+}
+
+func (release *Release) ToString() string {
+	return release.Name + ":" + release.Version
 }
 
 type Stemcell struct {

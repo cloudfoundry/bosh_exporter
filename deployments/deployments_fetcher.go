@@ -170,6 +170,9 @@ func (f *Fetcher) fetchDeploymentReleases(deployment director.Deployment) ([]Rel
 
 	for _, release := range releases {
 		jobNames, err := f.fetchReleaseJobs(release, deployment.Name())
+		if err != nil {
+			return deploymentReleases, err
+		}
 		packageNames, err := f.fetchReleasePackages(release, deployment.Name())
 		if err != nil {
 			return deploymentReleases, err

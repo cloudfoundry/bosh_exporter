@@ -53,9 +53,7 @@ func (labelGroupValue *LabelGroupValue) addTarget(ip string) {
 
 func (labelGroupValue *LabelGroupValue) exportReleasesAsString() string {
 	var releases []string
-	for _, release := range labelGroupValue.DeploymentReleases {
-		releases = append(releases, release)
-	}
+	releases = append(releases, labelGroupValue.DeploymentReleases...)
 	return strings.Join(releases, ",")
 }
 

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"os"
 
-	. "github.com/benjamintf1/unmarshalledmatchers"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/benjamintf1/unmarshalledmatchers"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -14,14 +14,14 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
-	. "github.com/bosh-prometheus/bosh_exporter/collectors"
+	"github.com/bosh-prometheus/bosh_exporter/collectors"
 )
 
 func init() {
 	_ = log.Base().SetLevel("fatal")
 }
 
-var _ = Describe("ServiceDiscoveryCollector", func() {
+var _ = ginkgo.Describe("ServiceDiscoveryCollector", func() {
 	var (
 		err                       error
 		namespace                 string
@@ -33,21 +33,21 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		azsFilter                 *filters.AZsFilter
 		processesFilter           *filters.RegexpFilter
 		cidrsFilter               *filters.CidrFilter
-		metrics                   *ServiceDiscoveryCollectorMetrics
-		serviceDiscoveryCollector *ServiceDiscoveryCollector
+		metrics                   *collectors.ServiceDiscoveryCollectorMetrics
+		serviceDiscoveryCollector *collectors.ServiceDiscoveryCollector
 
 		lastServiceDiscoveryScrapeTimestampMetric       prometheus.Gauge
 		lastServiceDiscoveryScrapeDurationSecondsMetric prometheus.Gauge
 	)
 
-	BeforeEach(func() {
+	ginkgo.BeforeEach(func() {
 		namespace = testNamespace
 		environment = testEnvironment
 		boshName = testBoshName
 		boshUUID = testBoshUUID
-		metrics = NewServiceDiscoveryCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
+		metrics = collectors.NewServiceDiscoveryCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
 		tmpfile, err = os.CreateTemp("", "service_discovery_collector_test_")
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
 		azsFilter = filters.NewAZsFilter([]string{})
 		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
@@ -57,13 +57,13 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		lastServiceDiscoveryScrapeDurationSecondsMetric = metrics.NewLastServiceDiscoveryScrapeDurationSecondsMetric()
 	})
 
-	AfterEach(func() {
+	ginkgo.AfterEach(func() {
 		err = os.Remove(serviceDiscoveryFilename)
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 	})
 
-	JustBeforeEach(func() {
-		serviceDiscoveryCollector = NewServiceDiscoveryCollector(
+	ginkgo.JustBeforeEach(func() {
+		serviceDiscoveryCollector = collectors.NewServiceDiscoveryCollector(
 			namespace,
 			environment,
 			boshName,
@@ -75,29 +75,29 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 		)
 	})
 
-	Describe("Describe", func() {
+	ginkgo.Describe("ginkgo.Describe", func() {
 		var (
 			descriptions chan *prometheus.Desc
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			descriptions = make(chan *prometheus.Desc)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go serviceDiscoveryCollector.Describe(descriptions)
 		})
 
-		It("returns a last_service_discovery_scrape_timestamp metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastServiceDiscoveryScrapeTimestampMetric.Desc())))
+		ginkgo.It("returns a last_service_discovery_scrape_timestamp metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastServiceDiscoveryScrapeTimestampMetric.Desc())))
 		})
 
-		It("returns a last_service_discovery_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastServiceDiscoveryScrapeDurationSecondsMetric.Desc())))
+		ginkgo.It("returns a last_service_discovery_scrape_duration_seconds metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastServiceDiscoveryScrapeDurationSecondsMetric.Desc())))
 		})
 	})
 
-	Describe("Collect", func() {
+	ginkgo.Describe("Collect", func() {
 		var (
 			deployment1Name                 = "fake-deployment-1-name"
 			deployment2Name                 = "fake-deployment-2-name"
@@ -161,7 +161,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			errMetrics chan error
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			deployment1Processes = []deployments.Process{
 				{
 					Name: jobProcess1Name,
@@ -220,7 +220,7 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			errMetrics = make(chan error, 1)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go func() {
 				if err := serviceDiscoveryCollector.Collect(deploymentsInfo, metrics); err != nil {
 					errMetrics <- err
@@ -228,120 +228,120 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 			}()
 		})
 
-		It("writes a target groups file", func() {
-			Eventually(metrics).Should(Receive())
+		ginkgo.It("writes a target groups file", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive())
 			targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(string(targetGroups)).To(MatchUnorderedJSON(targetGroupsContent))
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			gomega.Expect(string(targetGroups)).To(unmarshalledmatchers.MatchUnorderedJSON(targetGroupsContent))
 		})
 
-		It("returns a last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
-			Eventually(metrics).Should(Receive())
-			Eventually(metrics).Should(Receive())
-			Consistently(metrics).ShouldNot(Receive())
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive())
+			gomega.Eventually(metrics).Should(gomega.Receive())
+			gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there are no deployments", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no deployments", func() {
+			ginkgo.BeforeEach(func() {
 				deploymentsInfo = []deployments.DeploymentInfo{}
 			})
 
-			It("writes an empty target groups file", func() {
-				Eventually(metrics).Should(Receive())
+			ginkgo.It("writes an empty target groups file", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
 				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(targetGroups)).To(Equal("[]"))
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(string(targetGroups)).To(gomega.Equal("[]"))
 			})
 
-			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when there are no instances", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no instances", func() {
+			ginkgo.BeforeEach(func() {
 				deployment1Info.Instances = []deployments.Instance{}
 				deploymentsInfo = []deployments.DeploymentInfo{deployment1Info}
 			})
 
-			It("writes an empty target groups file", func() {
-				Eventually(metrics).Should(Receive())
+			ginkgo.It("writes an empty target groups file", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
 				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(targetGroups)).To(Equal("[]"))
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(string(targetGroups)).To(gomega.Equal("[]"))
 			})
 
-			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when instance has no IP", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when instance has no IP", func() {
+			ginkgo.BeforeEach(func() {
 				deployment1Info.Instances[0].IPs = []string{}
 				deploymentsInfo = []deployments.DeploymentInfo{deployment1Info}
 			})
 
-			It("writes an empty target groups file", func() {
-				Eventually(metrics).Should(Receive())
+			ginkgo.It("writes an empty target groups file", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
 				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(targetGroups)).To(Equal("[]"))
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(string(targetGroups)).To(gomega.Equal("[]"))
 			})
 
-			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when no IP is found for an instance", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when no IP is found for an instance", func() {
+			ginkgo.BeforeEach(func() {
 				cidrsFilter, err = filters.NewCidrFilter([]string{"10.254.0.0/16"})
 			})
 
-			It("writes an empty target groups file", func() {
-				Eventually(metrics).Should(Receive())
+			ginkgo.It("writes an empty target groups file", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
 				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(targetGroups)).To(Equal("[]"))
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(string(targetGroups)).To(gomega.Equal("[]"))
 			})
 
-			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when there are no processes", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no processes", func() {
+			ginkgo.BeforeEach(func() {
 				deployment1Info.Instances[0].Processes = []deployments.Process{}
 				deploymentsInfo = []deployments.DeploymentInfo{deployment1Info}
 			})
 
-			It("writes an empty target groups file", func() {
-				Eventually(metrics).Should(Receive())
+			ginkgo.It("writes an empty target groups file", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
 				targetGroups, err := os.ReadFile(serviceDiscoveryFilename)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(string(targetGroups)).To(Equal("[]"))
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				gomega.Expect(string(targetGroups)).To(gomega.Equal("[]"))
 			})
 
-			It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only last_service_discovery_scrape_timestamp & last_service_discovery_scrape_duration_seconds", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 	})

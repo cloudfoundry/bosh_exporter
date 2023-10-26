@@ -3,8 +3,8 @@ package collectors_test
 import (
 	"strconv"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -12,8 +12,8 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
-	. "github.com/bosh-prometheus/bosh_exporter/collectors"
-	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
+	"github.com/bosh-prometheus/bosh_exporter/collectors"
+	"github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
 func init() {
@@ -35,7 +35,7 @@ func (b *BaseLabelValues) AddLabelValues(gaugeVec *prometheus.GaugeVec, lvs ...s
 	return gaugeVec.WithLabelValues(values...)
 }
 
-var _ = Describe("JobsCollector", func() {
+var _ = ginkgo.Describe("JobsCollector", func() {
 	var (
 		err           error
 		namespace     string
@@ -44,8 +44,8 @@ var _ = Describe("JobsCollector", func() {
 		boshUUID      string
 		azsFilter     *filters.AZsFilter
 		cidrsFilter   *filters.CidrFilter
-		metrics       *JobsCollectorMetrics
-		jobsCollector *JobsCollector
+		metrics       *collectors.JobsCollectorMetrics
+		jobsCollector *collectors.JobsCollector
 
 		jobHealthyMetric                    *prometheus.GaugeVec
 		jobLoadAvg01Metric                  *prometheus.GaugeVec
@@ -108,15 +108,15 @@ var _ = Describe("JobsCollector", func() {
 		jobProcessReleaseVersion      = "fake-process-release-version"
 	)
 
-	BeforeEach(func() {
+	ginkgo.BeforeEach(func() {
 		namespace = testNamespace
 		environment = testEnvironment
 		boshName = testBoshName
 		boshUUID = testBoshUUID
-		metrics = NewJobsCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
+		metrics = collectors.NewJobsCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
 		azsFilter = filters.NewAZsFilter([]string{})
 		cidrsFilter, err = filters.NewCidrFilter([]string{"0.0.0.0/0"})
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 		jobHealthyMetric = metrics.NewJobHealthyMetric()
 		baseLabelValues.AddLabelValues(jobHealthyMetric).Set(float64(1))
@@ -191,125 +191,125 @@ var _ = Describe("JobsCollector", func() {
 		lastJobsScrapeDurationSecondsMetric = metrics.NewLastJobsScrapeDurationSecondsMetric()
 	})
 
-	JustBeforeEach(func() {
-		jobsCollector = NewJobsCollector(namespace, environment, boshName, boshUUID, azsFilter, cidrsFilter)
+	ginkgo.JustBeforeEach(func() {
+		jobsCollector = collectors.NewJobsCollector(namespace, environment, boshName, boshUUID, azsFilter, cidrsFilter)
 	})
 
-	Describe("Describe", func() {
+	ginkgo.Describe("ginkgo.Describe", func() {
 		var (
 			descriptions chan *prometheus.Desc
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			descriptions = make(chan *prometheus.Desc)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go jobsCollector.Describe(descriptions)
 		})
 
-		It("returns a job_healthy metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobHealthyMetric).Desc())))
+		ginkgo.It("returns a job_healthy metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobHealthyMetric).Desc())))
 		})
 
-		It("returns a job_load_avg01 metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobLoadAvg01Metric).Desc())))
+		ginkgo.It("returns a job_load_avg01 metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobLoadAvg01Metric).Desc())))
 		})
 
-		It("returns a job_load_avg05 metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobLoadAvg05Metric).Desc())))
+		ginkgo.It("returns a job_load_avg05 metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobLoadAvg05Metric).Desc())))
 		})
 
-		It("returns a job_load_avg15 metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobLoadAvg15Metric).Desc())))
+		ginkgo.It("returns a job_load_avg15 metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobLoadAvg15Metric).Desc())))
 		})
 
-		It("returns a job_cpu_sys metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobCPUSysMetric).Desc())))
+		ginkgo.It("returns a job_cpu_sys metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobCPUSysMetric).Desc())))
 		})
 
-		It("returns a job_cpu_user metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobCPUUserMetric).Desc())))
+		ginkgo.It("returns a job_cpu_user metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobCPUUserMetric).Desc())))
 		})
 
-		It("returns a job_cpu_wait metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobCPUWaitMetric).Desc())))
+		ginkgo.It("returns a job_cpu_wait metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobCPUWaitMetric).Desc())))
 		})
 
-		It("returns a job_mem_kb metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobMemKBMetric).Desc())))
+		ginkgo.It("returns a job_mem_kb metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobMemKBMetric).Desc())))
 		})
 
-		It("returns a job_mem_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobMemPercentMetric).Desc())))
+		ginkgo.It("returns a job_mem_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobMemPercentMetric).Desc())))
 		})
 
-		It("returns a job_swap_kb metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSwapKBMetric).Desc())))
+		ginkgo.It("returns a job_swap_kb metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobSwapKBMetric).Desc())))
 		})
 
-		It("returns a job_swap_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSwapPercentMetric).Desc())))
+		ginkgo.It("returns a job_swap_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobSwapPercentMetric).Desc())))
 		})
 
-		It("returns a job_system_disk_inode_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric).Desc())))
+		ginkgo.It("returns a job_system_disk_inode_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric).Desc())))
 		})
 
-		It("returns a job_system_disk_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric).Desc())))
+		ginkgo.It("returns a job_system_disk_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric).Desc())))
 		})
 
-		It("returns a job_ephemeral_disk_inode_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric).Desc())))
+		ginkgo.It("returns a job_ephemeral_disk_inode_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric).Desc())))
 		})
 
-		It("returns a job_ephemeral_disk_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric).Desc())))
+		ginkgo.It("returns a job_ephemeral_disk_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric).Desc())))
 		})
 
-		It("returns a job_persistent_disk_inode_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric).Desc())))
+		ginkgo.It("returns a job_persistent_disk_inode_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric).Desc())))
 		})
 
-		It("returns a job_persistent_disk_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric).Desc())))
+		ginkgo.It("returns a job_persistent_disk_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric).Desc())))
 		})
 
-		It("returns a job_process_info metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessInfoMetric, jobProcessName, jobProcessReleaseName, jobProcessReleaseVersion).Desc())))
+		ginkgo.It("returns a job_process_info metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobProcessInfoMetric, jobProcessName, jobProcessReleaseName, jobProcessReleaseVersion).Desc())))
 		})
 
-		It("returns a job_process_healthy metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName).Desc())))
+		ginkgo.It("returns a job_process_healthy metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName).Desc())))
 		})
 
-		It("returns a job_process_uptime_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName).Desc())))
+		ginkgo.It("returns a job_process_uptime_seconds metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName).Desc())))
 		})
 
-		It("returns a job_process_cpu_total metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric, jobProcessName).Desc())))
+		ginkgo.It("returns a job_process_cpu_total metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric, jobProcessName).Desc())))
 		})
 
-		It("returns a job_process_mem_kb metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessMemKBMetric, jobProcessName).Desc())))
+		ginkgo.It("returns a job_process_mem_kb metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobProcessMemKBMetric, jobProcessName).Desc())))
 		})
 
-		It("returns a job_process_mem_percent metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric, jobProcessName).Desc())))
+		ginkgo.It("returns a job_process_mem_percent metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric, jobProcessName).Desc())))
 		})
 
-		It("returns a last_jobs_scrape_timestamp metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastJobsScrapeTimestampMetric.Desc())))
+		ginkgo.It("returns a last_jobs_scrape_timestamp metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastJobsScrapeTimestampMetric.Desc())))
 		})
 
-		It("returns a last_jobs_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastJobsScrapeDurationSecondsMetric.Desc())))
+		ginkgo.It("returns a last_jobs_scrape_duration_seconds metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastJobsScrapeDurationSecondsMetric.Desc())))
 		})
 	})
 
-	Describe("Collect", func() {
+	ginkgo.Describe("Collect", func() {
 		var (
 			processes       []deployments.Process
 			vitals          deployments.Vitals
@@ -321,7 +321,7 @@ var _ = Describe("JobsCollector", func() {
 			errMetrics chan error
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			processes = []deployments.Process{
 				{
 					Name:    jobProcessName,
@@ -389,7 +389,7 @@ var _ = Describe("JobsCollector", func() {
 			errMetrics = make(chan error, 1)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go func() {
 				if err := jobsCollector.Collect(deploymentsInfo, metrics); err != nil {
 					errMetrics <- err
@@ -397,405 +397,405 @@ var _ = Describe("JobsCollector", func() {
 			}()
 		})
 
-		It("returns a job_process_healthy metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobHealthyMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_process_healthy metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobHealthyMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when the process is not running", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when the process is not running", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Healthy = false
 				baseLabelValues.AddLabelValues(jobHealthyMetric).Set(float64(0))
 			})
 
-			It("returns a job_process_healthy metric", func() {
-				Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobHealthyMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns a job_process_healthy metric", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobHealthyMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_load_avg01 metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg01Metric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_load_avg01 metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg01Metric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a job_load_avg05 metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg05Metric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_load_avg05 metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg05Metric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a job_load_avg15 metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg15Metric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_load_avg15 metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg15Metric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no load avg values", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no load avg values", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.Load = []string{}
 			})
 
-			It("does not return any job_load_avg metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg01Metric))))
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg05Metric))))
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg15Metric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return any job_load_avg metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg01Metric))))
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg05Metric))))
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobLoadAvg15Metric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_cpu_sys metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUSysMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_cpu_sys metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUSysMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no cpu sys value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no cpu sys value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.CPU = deployments.CPU{
 					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 				}
 			})
 
-			It("does not return a job_cpu_sys metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUSysMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_cpu_sys metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUSysMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_cpu_user metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUUserMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_cpu_user metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUUserMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no cpu user value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no cpu user value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.CPU = deployments.CPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 					Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 				}
 			})
 
-			It("does not return a job_cpu_user metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUUserMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_cpu_user metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUUserMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_cpu_wait metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUWaitMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_cpu_wait metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUWaitMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no cpu wait value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no cpu wait value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.CPU = deployments.CPU{
 					Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 					User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 				}
 			})
 
-			It("does not return a job_cpu_wait metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUWaitMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_cpu_wait metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobCPUWaitMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_mem_kb metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemKBMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_mem_kb metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobMemKBMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no mem kb value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no mem kb value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.Mem = deployments.Mem{
 					Percent: strconv.Itoa(jobMemPercent),
 				}
 			})
 
-			It("does not return a job_mem_kb metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemKBMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_mem_kb metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobMemKBMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_mem_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemPercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_mem_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobMemPercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no mem percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no mem percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.Mem = deployments.Mem{
 					KB: strconv.Itoa(jobMemKB),
 				}
 			})
 
-			It("does not return a job_mem_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobMemPercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_mem_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobMemPercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_swap_kb metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapKBMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_swap_kb metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapKBMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no swap kb value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no swap kb value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.Swap = deployments.Mem{
 					Percent: strconv.Itoa(jobSwapPercent),
 				}
 			})
 
-			It("does not return a job_swap_kb metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapKBMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_swap_kb metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapKBMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_swap_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapPercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_swap_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapPercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no swap percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no swap percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.Swap = deployments.Mem{
 					KB: strconv.Itoa(jobSwapKB),
 				}
 			})
 
-			It("does not return a job_swap_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapPercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_swap_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSwapPercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_system_disk_inode_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_system_disk_inode_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no system disk inode percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no system disk inode percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.SystemDisk = deployments.Disk{
 					Percent: strconv.Itoa(jobSystemDiskPercent),
 				}
 			})
 
-			It("does not return a job_system_disk_inode_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_system_disk_inode_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskInodePercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_system_disk_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_system_disk_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no system disk percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no system disk percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.SystemDisk = deployments.Disk{
 					InodePercent: strconv.Itoa(jobSystemDiskInodePercent),
 				}
 			})
 
-			It("does not return a job_system_disk_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_system_disk_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobSystemDiskPercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_ephemeral_disk_inode_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_ephemeral_disk_inode_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no ephemeral disk inode percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no ephemeral disk inode percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.EphemeralDisk = deployments.Disk{
 					Percent: strconv.Itoa(jobEphemeralDiskPercent),
 				}
 			})
 
-			It("does not return a job_ephemeral_disk_inode_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_ephemeral_disk_inode_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskInodePercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_ephemeral_disk_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_ephemeral_disk_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no ephemeral disk percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no ephemeral disk percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.EphemeralDisk = deployments.Disk{
 					InodePercent: strconv.Itoa(jobEphemeralDiskInodePercent),
 				}
 			})
 
-			It("does not return a job_Ephemeral_disk_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_Ephemeral_disk_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobEphemeralDiskPercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_persistent_disk_inode_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_persistent_disk_inode_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no persistent disk inode percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no persistent disk inode percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.PersistentDisk = deployments.Disk{
 					Percent: strconv.Itoa(jobPersistentDiskPercent),
 				}
 			})
 
-			It("does not return a job_persistent_disk_inode_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_persistent_disk_inode_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskInodePercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_persistent_disk_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_persistent_disk_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no persistent disk percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no persistent disk percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Vitals.PersistentDisk = deployments.Disk{
 					InodePercent: strconv.Itoa(jobPersistentDiskInodePercent),
 				}
 			})
 
-			It("does not return a job_persistent_disk_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_persistent_disk_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobPersistentDiskPercentMetric))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a healthy job_process_healthy metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a healthy job_process_healthy metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when a process is not running", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when a process is not running", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Processes[0].Healthy = false
 				baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName).Set(float64(0))
 			})
 
-			It("returns an unhealthy job_process_healthy metric", func() {
-				Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns an unhealthy job_process_healthy metric", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessHealthyMetric, jobProcessName))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_process_uptime_seconds metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName))))
-			Consistently(errMetrics).ShouldNot(Receive())
+		ginkgo.It("returns a job_process_uptime_seconds metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName))))
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no process uptime value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no process uptime value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Processes[0].Uptime = nil
 			})
 
-			It("does not return a job_process_uptime_seconds metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName))))
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("does not return a job_process_uptime_seconds metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessUptimeMetric, jobProcessName))))
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_process_cpu_total metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric,
+		ginkgo.It("returns a job_process_cpu_total metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric,
 				jobProcessName,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no process cpu total value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no process cpu total value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Processes[0].CPU = deployments.CPU{}
 			})
 
-			It("does not return a job_process_cpu_total metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric,
+			ginkgo.It("does not return a job_process_cpu_total metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessCPUTotalMetric,
 					jobProcessName,
 				))))
-				Consistently(errMetrics).ShouldNot(Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_process_mem_kb metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemKBMetric,
+		ginkgo.It("returns a job_process_mem_kb metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemKBMetric,
 				jobProcessName,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no process mem kb value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no process mem kb value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Processes[0].Mem = deployments.MemInt{Percent: &jobProcessMemPercent}
 			})
 
-			It("does not return a job_process_mem_kb metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemKBMetric,
+			ginkgo.It("does not return a job_process_mem_kb metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemKBMetric,
 					jobProcessName,
 				))))
-				Consistently(errMetrics).ShouldNot(Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		It("returns a job_process_mem_percent metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric,
+		ginkgo.It("returns a job_process_mem_percent metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric,
 				jobProcessName,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there is no process mem percent value", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no process mem percent value", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].Processes[0].Mem = deployments.MemInt{KB: &jobProcessMemKB}
 			})
 
-			It("does not return a job_process_mem_percent metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric,
+			ginkgo.It("does not return a job_process_mem_percent metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(baseLabelValues.AddLabelValues(jobProcessMemPercentMetric,
 					jobProcessName,
 				))))
-				Consistently(errMetrics).ShouldNot(Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when there are no deployments", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no deployments", func() {
+			ginkgo.BeforeEach(func() {
 				deploymentsInfo = []deployments.DeploymentInfo{}
 			})
 
-			It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when there are no instances", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no instances", func() {
+			ginkgo.BeforeEach(func() {
 				deploymentInfo.Instances = []deployments.Instance{}
 				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
-			It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only a last_jobs_scrape_timestamp & last_jobs_scrape_duration_seconds metric", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 	})

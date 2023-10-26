@@ -4,8 +4,8 @@ import (
 	"errors"
 	"os"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
@@ -15,15 +15,15 @@ import (
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
-	. "github.com/bosh-prometheus/bosh_exporter/collectors"
-	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
+	"github.com/bosh-prometheus/bosh_exporter/collectors"
+	"github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
 func init() {
 	_ = log.Base().SetLevel("fatal")
 }
 
-var _ = Describe("BoshCollector", func() {
+var _ = ginkgo.Describe("BoshCollector", func() {
 	var (
 		err                      error
 		namespace                string
@@ -41,8 +41,8 @@ var _ = Describe("BoshCollector", func() {
 		azsFilter          *filters.AZsFilter
 		processesFilter    *filters.RegexpFilter
 		cidrsFilter        *filters.CidrFilter
-		metrics            *BoshCollectorMetrics
-		boshCollector      *BoshCollector
+		metrics            *collectors.BoshCollectorMetrics
+		boshCollector      *collectors.BoshCollector
 
 		totalBoshScrapesMetric              prometheus.Counter
 		totalBoshScrapeErrorsMetric         prometheus.Counter
@@ -51,14 +51,14 @@ var _ = Describe("BoshCollector", func() {
 		lastBoshScrapeDurationSecondsMetric prometheus.Gauge
 	)
 
-	BeforeEach(func() {
+	ginkgo.BeforeEach(func() {
 		namespace = testNamespace
 		environment = testEnvironment
 		boshName = testBoshName
 		boshUUID = testBoshUUID
-		metrics = NewBoshCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
+		metrics = collectors.NewBoshCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
 		tmpfile, err = os.CreateTemp("", "service_discovery_collector_test_")
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		serviceDiscoveryFilename = tmpfile.Name()
 
 		boshDeployments = []string{}
@@ -66,12 +66,12 @@ var _ = Describe("BoshCollector", func() {
 		deploymentsFilter = filters.NewDeploymentsFilter(boshDeployments, boshClient)
 		deploymentsFetcher = deployments.NewFetcher(*deploymentsFilter)
 		collectorsFilter, err = filters.NewCollectorsFilter([]string{})
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		azsFilter = filters.NewAZsFilter([]string{})
 		cidrsFilter, err = filters.NewCidrFilter([]string{})
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		processesFilter, err = filters.NewRegexpFilter([]string{})
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 		totalBoshScrapesMetric = metrics.NewTotalBoshScrapesMetric()
 		totalBoshScrapesMetric.Inc()
@@ -82,13 +82,13 @@ var _ = Describe("BoshCollector", func() {
 		lastBoshScrapeDurationSecondsMetric = metrics.NewLastBoshScrapeDurationSecondsMetric()
 	})
 
-	AfterEach(func() {
+	ginkgo.AfterEach(func() {
 		err = os.Remove(serviceDiscoveryFilename)
-		Expect(err).ToNot(HaveOccurred())
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 	})
 
-	JustBeforeEach(func() {
-		boshCollector = NewBoshCollector(
+	ginkgo.JustBeforeEach(func() {
+		boshCollector = collectors.NewBoshCollector(
 			namespace,
 			environment,
 			boshName,
@@ -102,79 +102,79 @@ var _ = Describe("BoshCollector", func() {
 		)
 	})
 
-	Describe("Describe", func() {
+	ginkgo.Describe("Describe", func() {
 		var (
 			descriptions chan *prometheus.Desc
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			descriptions = make(chan *prometheus.Desc)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go boshCollector.Describe(descriptions)
 		})
 
-		It("returns a scrapes_total description", func() {
-			Eventually(descriptions).Should(Receive(Equal(totalBoshScrapesMetric.Desc())))
+		ginkgo.It("returns a scrapes_total description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(totalBoshScrapesMetric.Desc())))
 		})
 
-		It("returns a scrape_errors_total description", func() {
-			Eventually(descriptions).Should(Receive(Equal(totalBoshScrapeErrorsMetric.Desc())))
+		ginkgo.It("returns a scrape_errors_total description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(totalBoshScrapeErrorsMetric.Desc())))
 		})
 
-		It("returns a last_scrape_error description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeErrorMetric.Desc())))
+		ginkgo.It("returns a last_scrape_error description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastBoshScrapeErrorMetric.Desc())))
 		})
 
-		It("returns a last_scrape_timestamp metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeTimestampMetric.Desc())))
+		ginkgo.It("returns a last_scrape_timestamp metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastBoshScrapeTimestampMetric.Desc())))
 		})
 
-		It("returns a last_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastBoshScrapeDurationSecondsMetric.Desc())))
+		ginkgo.It("returns a last_scrape_duration_seconds metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastBoshScrapeDurationSecondsMetric.Desc())))
 		})
 	})
 
-	Describe("Collect", func() {
+	ginkgo.Describe("Collect", func() {
 		var (
 			metrics chan prometheus.Metric
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			metrics = make(chan prometheus.Metric)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go boshCollector.Collect(metrics)
 		})
 
-		It("returns a scrapes_total metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(totalBoshScrapesMetric)))
+		ginkgo.It("returns a scrapes_total metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(totalBoshScrapesMetric)))
 		})
 
-		It("returns a scrape_errors_total metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(totalBoshScrapeErrorsMetric)))
+		ginkgo.It("returns a scrape_errors_total metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(totalBoshScrapeErrorsMetric)))
 		})
 
-		It("returns a last_scrape_error metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(lastBoshScrapeErrorMetric)))
+		ginkgo.It("returns a last_scrape_error metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(lastBoshScrapeErrorMetric)))
 		})
 
-		Context("when it fails to get the deployment", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when it fails to get the deployment", func() {
+			ginkgo.BeforeEach(func() {
 				boshClient.DeploymentsReturns([]director.Deployment{}, errors.New("no deployments"))
 
 				totalBoshScrapeErrorsMetric.Inc()
 				lastBoshScrapeErrorMetric.Set(float64(1))
 			})
 
-			It("returns a scrape_errors_total metric", func() {
-				Eventually(metrics).Should(Receive(PrometheusMetric(totalBoshScrapeErrorsMetric)))
+			ginkgo.It("returns a scrape_errors_total metric", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(totalBoshScrapeErrorsMetric)))
 			})
 
-			It("returns a last_scrape_error metric", func() {
-				Eventually(metrics).Should(Receive(PrometheusMetric(lastBoshScrapeErrorMetric)))
+			ginkgo.It("returns a last_scrape_error metric", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(lastBoshScrapeErrorMetric)))
 			})
 		})
 	})

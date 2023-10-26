@@ -1,81 +1,81 @@
 package filters_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
-	. "github.com/bosh-prometheus/bosh_exporter/filters"
+	"github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
-var _ = Describe("CollectorsFilter", func() {
+var _ = ginkgo.Describe("CollectorsFilter", func() {
 	var (
-		err     error
-		filters []string
+		err          error
+		filtersArray []string
 
-		collectorsFilter *CollectorsFilter
+		collectorsFilter *filters.CollectorsFilter
 	)
 
-	JustBeforeEach(func() {
-		collectorsFilter, err = NewCollectorsFilter(filters)
+	ginkgo.JustBeforeEach(func() {
+		collectorsFilter, err = filters.NewCollectorsFilter(filtersArray)
 	})
 
-	Describe("New", func() {
-		Context("when filters are supported", func() {
-			BeforeEach(func() {
-				filters = []string{DeploymentsCollector, JobsCollector, ServiceDiscoveryCollector}
+	ginkgo.Describe("New", func() {
+		ginkgo.Context("when filters are supported", func() {
+			ginkgo.BeforeEach(func() {
+				filtersArray = []string{filters.DeploymentsCollector, filters.JobsCollector, filters.ServiceDiscoveryCollector}
 			})
 
-			It("does not return an error", func() {
-				Expect(err).ToNot(HaveOccurred())
-			})
-		})
-
-		Context("when filters are not supported", func() {
-			BeforeEach(func() {
-				filters = []string{DeploymentsCollector, JobsCollector, "Unknown"}
-			})
-
-			It("returns an error", func() {
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("collector filter `Unknown` is not supported"))
+			ginkgo.It("does not return an error", func() {
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when a filter has leading and/or trailing whitespaces", func() {
-			BeforeEach(func() {
-				filters = []string{"   " + DeploymentsCollector + "  "}
+		ginkgo.Context("when filters are not supported", func() {
+			ginkgo.BeforeEach(func() {
+				filtersArray = []string{filters.DeploymentsCollector, filters.JobsCollector, "Unknown"}
 			})
 
-			It("returns an error", func() {
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("returns an error", func() {
+				gomega.Expect(err).To(gomega.HaveOccurred())
+				gomega.Expect(err.Error()).To(gomega.Equal("collector filter `Unknown` is not supported"))
+			})
+		})
+
+		ginkgo.Context("when a filter has leading and/or trailing whitespaces", func() {
+			ginkgo.BeforeEach(func() {
+				filtersArray = []string{"   " + filters.DeploymentsCollector + "  "}
+			})
+
+			ginkgo.It("returns an error", func() {
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 	})
 
-	Describe("Enabled", func() {
-		BeforeEach(func() {
-			filters = []string{DeploymentsCollector}
+	ginkgo.Describe("Enabled", func() {
+		ginkgo.BeforeEach(func() {
+			filtersArray = []string{filters.DeploymentsCollector}
 		})
 
-		Context("when collector is enabled", func() {
-			It("returns true", func() {
-				Expect(collectorsFilter.Enabled(DeploymentsCollector)).To(BeTrue())
+		ginkgo.Context("when collector is enabled", func() {
+			ginkgo.It("returns true", func() {
+				gomega.Expect(collectorsFilter.Enabled(filters.DeploymentsCollector)).To(gomega.BeTrue())
 			})
 		})
 
-		Context("when collector is not enabled", func() {
-			It("returns false", func() {
-				Expect(collectorsFilter.Enabled(JobsCollector)).To(BeFalse())
+		ginkgo.Context("when collector is not enabled", func() {
+			ginkgo.It("returns false", func() {
+				gomega.Expect(collectorsFilter.Enabled(filters.JobsCollector)).To(gomega.BeFalse())
 			})
 		})
 
-		Context("when there are no filters", func() {
-			BeforeEach(func() {
-				filters = []string{}
+		ginkgo.Context("when there are no filters", func() {
+			ginkgo.BeforeEach(func() {
+				filtersArray = []string{}
 			})
 
-			It("returns true", func() {
-				Expect(collectorsFilter.Enabled(JobsCollector)).To(BeTrue())
+			ginkgo.It("returns true", func() {
+				gomega.Expect(collectorsFilter.Enabled(filters.JobsCollector)).To(gomega.BeTrue())
 			})
 		})
 	})

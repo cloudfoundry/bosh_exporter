@@ -1,8 +1,8 @@
 package collectors_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"testing"
 )
@@ -15,6 +15,6 @@ const (
 )
 
 func TestCollectors(t *testing.T) {
-	RegisterFailHandler(AbortSuite)
-	RunSpecs(t, "Collectors Suite")
+	gomega.RegisterFailHandler(ginkgo.AbortSuite)
+	ginkgo.RunSpecs(t, "Collectors Suite")
 }

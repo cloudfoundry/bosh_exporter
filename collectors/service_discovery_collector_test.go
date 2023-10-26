@@ -1,6 +1,7 @@
 package collectors_test
 
 import (
+	"encoding/json"
 	"os"
 
 	. "github.com/benjamintf1/unmarshalledmatchers"
@@ -98,26 +99,55 @@ var _ = Describe("ServiceDiscoveryCollector", func() {
 
 	Describe("Collect", func() {
 		var (
-			deployment1Name          = "fake-deployment-1-name"
-			deployment2Name          = "fake-deployment-2-name"
-			deployment1Release1Name  = "fake-d1-rel1"
-			deployment1Release2Name  = "fake-d1-rel2"
-			deployment2Release1Name  = "fake-d2-rel1"
-			deploymentReleaseVersion = "fake"
-			job1Name                 = "fake-job-1-name"
-			job2Name                 = "fake-job-2-name"
-			job1AZ                   = "fake-job-1-az"
-			job2AZ                   = "fake-job-2-az"
-			job1IP                   = "1.2.3.4"
-			job2IP                   = "5.6.7.8"
-			jobProcess1Name          = "fake-process-1-name"
-			jobProcess2Name          = "fake-process-2-name"
-			jobProcess3Name          = "fake-process-3-name"
-			targetGroupsContent      = `[
-				{"targets":["` + job1IP + `"],"labels":{"__meta_bosh_deployment":"` + deployment1Name + `","__meta_bosh_deployment_releases":"` + deployment1Release1Name + `:` + deploymentReleaseVersion + `,` + deployment1Release2Name + `:` + deploymentReleaseVersion + `","__meta_bosh_job_process_name":"` + jobProcess1Name + `","__meta_bosh_job_process_release":""}},
-				{"targets":["` + job1IP + `"],"labels":{"__meta_bosh_deployment":"` + deployment1Name + `","__meta_bosh_deployment_releases":"` + deployment1Release1Name + `:` + deploymentReleaseVersion + `,` + deployment1Release2Name + `:` + deploymentReleaseVersion + `","__meta_bosh_job_process_name":"` + jobProcess2Name + `","__meta_bosh_job_process_release":""}},
-				{"targets":["` + job2IP + `"],"labels":{"__meta_bosh_deployment":"` + deployment2Name + `","__meta_bosh_deployment_releases":"` + deployment2Release1Name + `:` + deploymentReleaseVersion + `","__meta_bosh_job_process_name":"` + jobProcess3Name + `","__meta_bosh_job_process_release":"` + deployment2Release1Name + `:` + deploymentReleaseVersion + `"}}
-			]`
+			deployment1Name                 = "fake-deployment-1-name"
+			deployment2Name                 = "fake-deployment-2-name"
+			deployment1Release1Name         = "fake-d1-rel1"
+			deployment1Release2Name         = "fake-d1-rel2"
+			deployment2Release1Name         = "fake-d2-rel1"
+			deploymentReleaseVersion        = "fake"
+			job1Name                        = "fake-job-1-name"
+			job2Name                        = "fake-job-2-name"
+			job1AZ                          = "fake-job-1-az"
+			job2AZ                          = "fake-job-2-az"
+			job1IP                          = "1.2.3.4"
+			job2IP                          = "5.6.7.8"
+			jobProcess1Name                 = "fake-process-1-name"
+			jobProcess2Name                 = "fake-process-2-name"
+			jobProcess3Name                 = "fake-process-3-name"
+			labelBoshDeploymentName         = "__meta_bosh_deployment"
+			labelBoshDeploymentReleasesName = "__meta_bosh_deployment_releases"
+			labelBoshJobProcessName         = "__meta_bosh_job_process_name"
+			labelBoshJobProcessRelease      = "__meta_bosh_job_process_release"
+			targetGroupsContentRaw          = []interface{}{
+				map[string]interface{}{
+					"targets": []interface{}{job1IP},
+					"labels": map[string]interface{}{
+						labelBoshDeploymentName:           deployment1Name,
+						labelBoshDeploymentReleasesName:   deployment1Release1Name + ":" + deploymentReleaseVersion + "," + deployment1Release2Name + ":" + deploymentReleaseVersion,
+						labelBoshJobProcessName:           jobProcess1Name,
+						"__meta_bosh_job_process_release": "",
+					},
+				},
+				map[string]interface{}{
+					"targets": []interface{}{job1IP},
+					"labels": map[string]interface{}{
+						labelBoshDeploymentName:         deployment1Name,
+						labelBoshDeploymentReleasesName: deployment1Release1Name + ":" + deploymentReleaseVersion + "," + deployment1Release2Name + ":" + deploymentReleaseVersion,
+						labelBoshJobProcessName:         jobProcess2Name,
+						labelBoshJobProcessRelease:      "",
+					},
+				},
+				map[string]interface{}{
+					"targets": []interface{}{job2IP},
+					"labels": map[string]interface{}{
+						labelBoshDeploymentName:         deployment2Name,
+						labelBoshDeploymentReleasesName: deployment2Release1Name + ":" + deploymentReleaseVersion,
+						labelBoshJobProcessName:         jobProcess3Name,
+						labelBoshJobProcessRelease:      deployment2Release1Name + ":" + deploymentReleaseVersion,
+					},
+				},
+			}
+			targetGroupsContent, _ = json.Marshal(targetGroupsContentRaw)
 
 			deployment1Processes []deployments.Process
 			deployment2Processes []deployments.Process

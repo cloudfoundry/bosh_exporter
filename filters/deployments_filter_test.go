@@ -3,29 +3,29 @@ package filters_test
 import (
 	"errors"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 	"github.com/prometheus/common/log"
 
-	. "github.com/bosh-prometheus/bosh_exporter/filters"
+	"github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
 func init() {
 	_ = log.Base().SetLevel("fatal")
 }
 
-var _ = Describe("DeploymentsFilter", func() {
+var _ = ginkgo.Describe("DeploymentsFilter", func() {
 	var (
 		err               error
-		filters           []string
+		filtersArray      []string
 		boshClient        *directorfakes.FakeDirector
-		deploymentsFilter *DeploymentsFilter
+		deploymentsFilter *filters.DeploymentsFilter
 	)
 
-	Describe("GetDeployments", func() {
+	ginkgo.Describe("GetDeployments", func() {
 		var (
 			deployment1    director.Deployment
 			deployment2    director.Deployment
@@ -34,8 +34,8 @@ var _ = Describe("DeploymentsFilter", func() {
 			deployments []director.Deployment
 		)
 
-		BeforeEach(func() {
-			filters = []string{}
+		ginkgo.BeforeEach(func() {
+			filtersArray = []string{}
 			boshClient = &directorfakes.FakeDirector{}
 
 			deployment1 = &directorfakes.FakeDeployment{
@@ -47,78 +47,78 @@ var _ = Describe("DeploymentsFilter", func() {
 			allDeployments = []director.Deployment{}
 		})
 
-		JustBeforeEach(func() {
-			deploymentsFilter = NewDeploymentsFilter(filters, boshClient)
+		ginkgo.JustBeforeEach(func() {
+			deploymentsFilter = filters.NewDeploymentsFilter(filtersArray, boshClient)
 			deployments, err = deploymentsFilter.GetDeployments()
 		})
 
-		Context("when there are no filters", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no filters", func() {
+			ginkgo.BeforeEach(func() {
 				boshClient.DeploymentsReturns(allDeployments, nil)
 			})
 
-			It("returns all deployments", func() {
-				Expect(deployments).To(Equal(allDeployments))
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("returns all deployments", func() {
+				gomega.Expect(deployments).To(gomega.Equal(allDeployments))
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 
-			Context("and there are no deployments", func() {
-				BeforeEach(func() {
+			ginkgo.Context("and there are no deployments", func() {
+				ginkgo.BeforeEach(func() {
 					boshClient.DeploymentsReturns([]director.Deployment{}, nil)
 				})
 
-				It("does not return any deployment", func() {
-					Expect(deployments).To(BeEmpty())
-					Expect(err).ToNot(HaveOccurred())
+				ginkgo.It("does not return any deployment", func() {
+					gomega.Expect(deployments).To(gomega.BeEmpty())
+					gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				})
 			})
 
-			Context("and it fails to get the deployments", func() {
-				BeforeEach(func() {
+			ginkgo.Context("and it fails to get the deployments", func() {
+				ginkgo.BeforeEach(func() {
 					boshClient.DeploymentsReturns(nil, errors.New("no deployments"))
 				})
 
-				It("does not return any deployment", func() {
-					Expect(deployments).To(BeEmpty())
-					Expect(err).To(HaveOccurred())
+				ginkgo.It("does not return any deployment", func() {
+					gomega.Expect(deployments).To(gomega.BeEmpty())
+					gomega.Expect(err).To(gomega.HaveOccurred())
 				})
 			})
 		})
 
-		Context("when there are filters", func() {
-			BeforeEach(func() {
-				filters = []string{"fake-deployment-name-1"}
+		ginkgo.Context("when there are filters", func() {
+			ginkgo.BeforeEach(func() {
+				filtersArray = []string{"fake-deployment-name-1"}
 				boshClient.FindDeploymentReturns(deployment1, nil)
 			})
 
-			It("returns the filtered deployments", func() {
-				Expect(boshClient.FindDeploymentArgsForCall(0)).To(Equal("fake-deployment-name-1"))
-				Expect(deployments).To(ContainElement(deployment1))
-				Expect(deployments).ToNot(ContainElement(deployment2))
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("returns the filtered deployments", func() {
+				gomega.Expect(boshClient.FindDeploymentArgsForCall(0)).To(gomega.Equal("fake-deployment-name-1"))
+				gomega.Expect(deployments).To(gomega.ContainElement(deployment1))
+				gomega.Expect(deployments).ToNot(gomega.ContainElement(deployment2))
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 
-			Context("and it fails to get the deployment", func() {
-				BeforeEach(func() {
+			ginkgo.Context("and it fails to get the deployment", func() {
+				ginkgo.BeforeEach(func() {
 					boshClient.FindDeploymentReturns(nil, errors.New("deployment does not exists"))
 				})
 
-				It("does not return any deployment", func() {
-					Expect(deployments).To(BeEmpty())
-					Expect(err).To(HaveOccurred())
+				ginkgo.It("does not return any deployment", func() {
+					gomega.Expect(deployments).To(gomega.BeEmpty())
+					gomega.Expect(err).To(gomega.HaveOccurred())
 				})
 			})
 
-			Context("and the deployment name has leading and/or trailing whitespaces", func() {
-				BeforeEach(func() {
-					filters = []string{"   fake-deployment-name-1  "}
+			ginkgo.Context("and the deployment name has leading and/or trailing whitespaces", func() {
+				ginkgo.BeforeEach(func() {
+					filtersArray = []string{"   fake-deployment-name-1  "}
 				})
 
-				It("returns the filtered deployments", func() {
-					Expect(boshClient.FindDeploymentArgsForCall(0)).To(Equal("fake-deployment-name-1"))
-					Expect(deployments).To(ContainElement(deployment1))
-					Expect(deployments).ToNot(ContainElement(deployment2))
-					Expect(err).ToNot(HaveOccurred())
+				ginkgo.It("returns the filtered deployments", func() {
+					gomega.Expect(boshClient.FindDeploymentArgsForCall(0)).To(gomega.Equal("fake-deployment-name-1"))
+					gomega.Expect(deployments).To(gomega.ContainElement(deployment1))
+					gomega.Expect(deployments).ToNot(gomega.ContainElement(deployment2))
+					gomega.Expect(err).ToNot(gomega.HaveOccurred())
 				})
 			})
 		})

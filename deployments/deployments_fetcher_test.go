@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strconv"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
@@ -14,33 +14,33 @@ import (
 
 	"github.com/bosh-prometheus/bosh_exporter/filters"
 
-	. "github.com/bosh-prometheus/bosh_exporter/deployments"
+	"github.com/bosh-prometheus/bosh_exporter/deployments"
 )
 
 func init() {
 	_ = log.Base().SetLevel("fatal")
 }
 
-var _ = Describe("Fetcher", func() {
+var _ = ginkgo.Describe("Fetcher", func() {
 	var (
 		err                error
 		boshDeployments    []string
 		boshClient         *directorfakes.FakeDirector
 		deploymentsFilter  *filters.DeploymentsFilter
-		deploymentsFetcher *Fetcher
+		deploymentsFetcher *deployments.Fetcher
 	)
 
-	BeforeEach(func() {
+	ginkgo.BeforeEach(func() {
 		boshDeployments = []string{}
 		boshClient = &directorfakes.FakeDirector{}
 	})
 
-	JustBeforeEach(func() {
+	ginkgo.JustBeforeEach(func() {
 		deploymentsFilter = filters.NewDeploymentsFilter(boshDeployments, boshClient)
-		deploymentsFetcher = NewFetcher(*deploymentsFilter)
+		deploymentsFetcher = deployments.NewFetcher(*deploymentsFilter)
 	})
 
-	Describe("Deployments", func() {
+	ginkgo.Describe("Deployments", func() {
 		var (
 			deploymentName                = "fake-deployment-name"
 			agentID                       = "fake-agent-id"
@@ -88,21 +88,21 @@ var _ = Describe("Fetcher", func() {
 			stemcellVersion               = "4.5.6"
 			stemcellOSName                = "fake-stemcell-os-name"
 
-			processes   []director.VMInfoProcess
-			vitals      director.VMInfoVitals
-			instances   []director.VMInfo
-			release     director.Release
-			releases    []director.Release
-			stemcell    director.Stemcell
-			stemcells   []director.Stemcell
-			deployments []director.Deployment
-			deployment  director.Deployment
+			processes  []director.VMInfoProcess
+			vitals     director.VMInfoVitals
+			instances  []director.VMInfo
+			release    director.Release
+			releases   []director.Release
+			stemcell   director.Stemcell
+			stemcells  []director.Stemcell
+			depls      []director.Deployment
+			deployment director.Deployment
 
-			deploymentsInfo         []DeploymentInfo
-			expectedDeploymentsInfo []DeploymentInfo
+			deploymentsInfo         []deployments.DeploymentInfo
+			expectedDeploymentsInfo []deployments.DeploymentInfo
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			processes = []director.VMInfoProcess{
 				{
 					Name:   jobProcessName,
@@ -196,13 +196,13 @@ var _ = Describe("Fetcher", func() {
 				StemcellsStub:     func() ([]director.Stemcell, error) { return stemcells, nil },
 			}
 
-			deployments = []director.Deployment{deployment}
-			boshClient.DeploymentsReturns(deployments, nil)
+			depls = []director.Deployment{deployment}
+			boshClient.DeploymentsReturns(depls, nil)
 
-			expectedDeploymentsInfo = []DeploymentInfo{
+			expectedDeploymentsInfo = []deployments.DeploymentInfo{
 				{
 					Name: deploymentName,
-					Instances: []Instance{
+					Instances: []deployments.Instance{
 						{
 							AgentID:            agentID,
 							Name:               jobName,
@@ -215,26 +215,26 @@ var _ = Describe("Fetcher", func() {
 							ResourcePool:       jobResourcePool,
 							ResurrectionPaused: jobResurrectionPause,
 							Healthy:            true,
-							Processes: []Process{
+							Processes: []deployments.Process{
 								{
 									Name:    jobProcessName,
 									Uptime:  &jobProcessUptimeSeconds,
 									Healthy: true,
-									CPU:     CPU{Total: &jobProcessCPUTotal},
-									Mem:     MemInt{KB: &jobProcessMemKB, Percent: &jobProcessMemPercent},
+									CPU:     deployments.CPU{Total: &jobProcessCPUTotal},
+									Mem:     deployments.MemInt{KB: &jobProcessMemKB, Percent: &jobProcessMemPercent},
 								},
 							},
-							Vitals: Vitals{
-								CPU: CPU{
+							Vitals: deployments.Vitals{
+								CPU: deployments.CPU{
 									Sys:  strconv.FormatFloat(jobCPUSys, 'E', -1, 64),
 									User: strconv.FormatFloat(jobCPUUser, 'E', -1, 64),
 									Wait: strconv.FormatFloat(jobCPUWait, 'E', -1, 64),
 								},
-								Mem: Mem{
+								Mem: deployments.Mem{
 									KB:      strconv.Itoa(jobMemKB),
 									Percent: strconv.Itoa(jobMemPercent),
 								},
-								Swap: Mem{
+								Swap: deployments.Mem{
 									KB:      strconv.Itoa(jobSwapKB),
 									Percent: strconv.Itoa(jobSwapPercent),
 								},
@@ -244,179 +244,179 @@ var _ = Describe("Fetcher", func() {
 									strconv.FormatFloat(jobLoadAvg05, 'E', -1, 64),
 									strconv.FormatFloat(jobLoadAvg15, 'E', -1, 64),
 								},
-								SystemDisk: Disk{
+								SystemDisk: deployments.Disk{
 									InodePercent: strconv.Itoa(jobSystemDiskInodePercent),
 									Percent:      strconv.Itoa(jobSystemDiskPercent),
 								},
-								EphemeralDisk: Disk{
+								EphemeralDisk: deployments.Disk{
 									InodePercent: strconv.Itoa(jobEphemeralDiskInodePercent),
 									Percent:      strconv.Itoa(jobEphemeralDiskPercent),
 								},
-								PersistentDisk: Disk{
+								PersistentDisk: deployments.Disk{
 									InodePercent: strconv.Itoa(jobPersistentDiskInodePercent),
 									Percent:      strconv.Itoa(jobPersistentDiskPercent),
 								},
 							},
 						},
 					},
-					Releases: []Release{
+					Releases: []deployments.Release{
 						{Name: releaseName, Version: releaseVersion,
 							JobNames:     []string{releaseJob1Name, releaseJob2Name},
 							PackageNames: []string{releasePackage1Name, releasePackage2Name},
 						},
 					},
-					Stemcells: []Stemcell{
+					Stemcells: []deployments.Stemcell{
 						{Name: stemcellName, Version: stemcellVersion, OSName: stemcellOSName},
 					},
 				},
 			}
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			deploymentsInfo, err = deploymentsFetcher.Deployments()
 		})
 
-		It("returns the deployments", func() {
-			Expect(deploymentsInfo).To(Equal(expectedDeploymentsInfo))
-			Expect(err).ToNot(HaveOccurred())
+		ginkgo.It("returns the deployments", func() {
+			gomega.Expect(deploymentsInfo).To(gomega.Equal(expectedDeploymentsInfo))
+			gomega.Expect(err).ToNot(gomega.HaveOccurred())
 		})
 
-		Context("when instance has no VMID", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when instance has no VMID", func() {
+			ginkgo.BeforeEach(func() {
 				instances[0].VMID = ""
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
 					ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
 					StemcellsStub: func() ([]director.Stemcell, error) { return stemcells, nil },
 				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				depls = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(depls, nil)
 			})
 
-			It("does not return the instance", func() {
-				Expect(deploymentsInfo[0].Instances).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return the instance", func() {
+				gomega.Expect(deploymentsInfo[0].Instances).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when there are no deployments", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no deployments", func() {
+			ginkgo.BeforeEach(func() {
 				boshClient.DeploymentsReturns([]director.Deployment{}, nil)
 			})
 
-			It("does not return deployments", func() {
-				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return deployments", func() {
+				gomega.Expect(deploymentsInfo).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when it fails to get the deployment", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when it fails to get the deployment", func() {
+			ginkgo.BeforeEach(func() {
 				boshClient.DeploymentsReturns([]director.Deployment{}, errors.New("no deployments"))
 			})
 
-			It("does not return deployments", func() {
-				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).To(HaveOccurred())
+			ginkgo.It("does not return deployments", func() {
+				gomega.Expect(deploymentsInfo).To(gomega.BeEmpty())
+				gomega.Expect(err).To(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when there are no instances", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no instances", func() {
+			ginkgo.BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
 					ReleasesStub:  func() ([]director.Release, error) { return releases, nil },
 					StemcellsStub: func() ([]director.Stemcell, error) { return stemcells, nil },
 				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				depls = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(depls, nil)
 			})
 
-			It("does not return instances", func() {
-				Expect(deploymentsInfo[0].Instances).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return instances", func() {
+				gomega.Expect(deploymentsInfo[0].Instances).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when it fails to get the deployment instances", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when it fails to get the deployment instances", func() {
+			ginkgo.BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return nil, errors.New("no instances") },
 				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				depls = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(depls, nil)
 			})
 
-			It("does not return deployments", func() {
-				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return deployments", func() {
+				gomega.Expect(deploymentsInfo).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when there are no releases", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no releases", func() {
+			ginkgo.BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
 					StemcellsStub:     func() ([]director.Stemcell, error) { return stemcells, nil },
 				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				depls = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(depls, nil)
 			})
 
-			It("does not return releases", func() {
-				Expect(deploymentsInfo[0].Releases).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return releases", func() {
+				gomega.Expect(deploymentsInfo[0].Releases).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when it fails to get the deployment releases", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when it fails to get the deployment releases", func() {
+			ginkgo.BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:     func() string { return deploymentName },
 					ReleasesStub: func() ([]director.Release, error) { return nil, errors.New("no releases") },
 				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				depls = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(depls, nil)
 			})
 
-			It("does not return deployments", func() {
-				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return deployments", func() {
+				gomega.Expect(deploymentsInfo).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when there are no stemcells", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no stemcells", func() {
+			ginkgo.BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:          func() string { return deploymentName },
 					InstanceInfosStub: func() ([]director.VMInfo, error) { return instances, nil },
 					ReleasesStub:      func() ([]director.Release, error) { return releases, nil },
 				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				depls = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(depls, nil)
 			})
 
-			It("does not return stemcells", func() {
-				Expect(deploymentsInfo[0].Stemcells).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return stemcells", func() {
+				gomega.Expect(deploymentsInfo[0].Stemcells).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 
-		Context("when it fails to get the deployment stemcells", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when it fails to get the deployment stemcells", func() {
+			ginkgo.BeforeEach(func() {
 				deployment = &directorfakes.FakeDeployment{
 					NameStub:      func() string { return deploymentName },
 					StemcellsStub: func() ([]director.Stemcell, error) { return nil, errors.New("no stemcells") },
 				}
-				deployments = []director.Deployment{deployment}
-				boshClient.DeploymentsReturns(deployments, nil)
+				depls = []director.Deployment{deployment}
+				boshClient.DeploymentsReturns(depls, nil)
 			})
 
-			It("does not return deployments", func() {
-				Expect(deploymentsInfo).To(BeEmpty())
-				Expect(err).ToNot(HaveOccurred())
+			ginkgo.It("does not return deployments", func() {
+				gomega.Expect(deploymentsInfo).To(gomega.BeEmpty())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 		})
 	})

@@ -1,56 +1,56 @@
 package filters_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
-	. "github.com/bosh-prometheus/bosh_exporter/filters"
+	"github.com/bosh-prometheus/bosh_exporter/filters"
 )
 
-var _ = Describe("AZsFilter", func() {
+var _ = ginkgo.Describe("AZsFilter", func() {
 	var (
 		filter    []string
-		azsFilter *AZsFilter
+		azsFilter *filters.AZsFilter
 	)
 
-	BeforeEach(func() {
+	ginkgo.BeforeEach(func() {
 		filter = []string{"fake-az-1", "fake-az-3"}
 	})
 
-	JustBeforeEach(func() {
-		azsFilter = NewAZsFilter(filter)
+	ginkgo.JustBeforeEach(func() {
+		azsFilter = filters.NewAZsFilter(filter)
 	})
 
-	Describe("Enabled", func() {
-		Context("when az is enabled", func() {
-			It("returns true", func() {
-				Expect(azsFilter.Enabled("fake-az-1")).To(BeTrue())
+	ginkgo.Describe("Enabled", func() {
+		ginkgo.Context("when az is enabled", func() {
+			ginkgo.It("returns true", func() {
+				gomega.Expect(azsFilter.Enabled("fake-az-1")).To(gomega.BeTrue())
 			})
 		})
 
-		Context("when az is not enabled", func() {
-			It("returns false", func() {
-				Expect(azsFilter.Enabled("fake-az-2")).To(BeFalse())
+		ginkgo.Context("when az is not enabled", func() {
+			ginkgo.It("returns false", func() {
+				gomega.Expect(azsFilter.Enabled("fake-az-2")).To(gomega.BeFalse())
 			})
 		})
 
-		Context("when there is no filter", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there is no filter", func() {
+			ginkgo.BeforeEach(func() {
 				filter = []string{}
 			})
 
-			It("returns true", func() {
-				Expect(azsFilter.Enabled("fake-az-2")).To(BeTrue())
+			ginkgo.It("returns true", func() {
+				gomega.Expect(azsFilter.Enabled("fake-az-2")).To(gomega.BeTrue())
 			})
 		})
 
-		Context("when a filter has leading and/or trailing whitespaces", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when a filter has leading and/or trailing whitespaces", func() {
+			ginkgo.BeforeEach(func() {
 				filter = []string{"   fake-az-1  "}
 			})
 
-			It("returns true", func() {
-				Expect(azsFilter.Enabled("fake-az-1")).To(BeTrue())
+			ginkgo.It("returns true", func() {
+				gomega.Expect(azsFilter.Enabled("fake-az-1")).To(gomega.BeTrue())
 			})
 		})
 	})

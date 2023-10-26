@@ -1,15 +1,15 @@
 package matchers_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
+	"github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
-var _ = Describe("PrometheusMetric", func() {
+var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {
 	var (
 		metricNamespace       = "fake_namespace"
 		metricSubsystem       = "fake_sybsystem"
@@ -21,8 +21,8 @@ var _ = Describe("PrometheusMetric", func() {
 		metricConstLabelValue = "fake_constant_label_value"
 	)
 
-	Context("When asserting equality between Counter Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between Counter Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewCounter(
 				prometheus.CounterOpts{
 					Namespace:   metricNamespace,
@@ -43,12 +43,12 @@ var _ = Describe("PrometheusMetric", func() {
 				})
 			actualMetric.Inc()
 
-			Expect(expectedMetric).To(PrometheusMetric(actualMetric))
+			gomega.Expect(expectedMetric).To(matchers.PrometheusMetric(actualMetric))
 		})
 	})
 
-	Context("When asserting equality between CounterVec Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between CounterVec Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewCounterVec(
 				prometheus.CounterOpts{
 					Namespace:   metricNamespace,
@@ -73,12 +73,12 @@ var _ = Describe("PrometheusMetric", func() {
 			)
 			actualMetric.WithLabelValues(metricLabelValue).Inc()
 
-			Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue)))
+			gomega.Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(matchers.PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue)))
 		})
 	})
 
-	Context("When asserting equality between Gauge Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between Gauge Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewGauge(
 				prometheus.GaugeOpts{
 					Namespace:   metricNamespace,
@@ -99,12 +99,12 @@ var _ = Describe("PrometheusMetric", func() {
 				})
 			actualMetric.Inc()
 
-			Expect(expectedMetric).To(PrometheusMetric(actualMetric))
+			gomega.Expect(expectedMetric).To(matchers.PrometheusMetric(actualMetric))
 		})
 	})
 
-	Context("When asserting equality between GaugeVec Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between GaugeVec Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewGaugeVec(
 				prometheus.GaugeOpts{
 					Namespace:   metricNamespace,
@@ -129,12 +129,12 @@ var _ = Describe("PrometheusMetric", func() {
 			)
 			actualMetric.WithLabelValues(metricLabelValue).Inc()
 
-			Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue)))
+			gomega.Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(matchers.PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue)))
 		})
 	})
 
-	Context("When asserting equality between Histogram Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between Histogram Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewHistogram(
 				prometheus.HistogramOpts{
 					Namespace:   metricNamespace,
@@ -155,12 +155,12 @@ var _ = Describe("PrometheusMetric", func() {
 				})
 			actualMetric.Observe(float64(1))
 
-			Expect(expectedMetric).To(PrometheusMetric(actualMetric))
+			gomega.Expect(expectedMetric).To(matchers.PrometheusMetric(actualMetric))
 		})
 	})
 
-	Context("When asserting equality between HistogramVec Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between HistogramVec Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewHistogramVec(
 				prometheus.HistogramOpts{
 					Namespace:   metricNamespace,
@@ -185,12 +185,12 @@ var _ = Describe("PrometheusMetric", func() {
 			)
 			actualMetric.WithLabelValues(metricLabelValue).Observe(float64(1))
 
-			Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Histogram)))
+			gomega.Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(matchers.PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Histogram)))
 		})
 	})
 
-	Context("When asserting equality between Summary Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between Summary Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewSummary(
 				prometheus.SummaryOpts{
 					Namespace:   metricNamespace,
@@ -211,12 +211,12 @@ var _ = Describe("PrometheusMetric", func() {
 				})
 			actualMetric.Observe(float64(1))
 
-			Expect(expectedMetric).To(PrometheusMetric(actualMetric))
+			gomega.Expect(expectedMetric).To(matchers.PrometheusMetric(actualMetric))
 		})
 	})
 
-	Context("When asserting equality between SummaryVec Metrics", func() {
-		It("should do the right thing", func() {
+	ginkgo.Context("When asserting equality between SummaryVec Metrics", func() {
+		ginkgo.It("should do the right thing", func() {
 			expectedMetric := prometheus.NewSummaryVec(
 				prometheus.SummaryOpts{
 					Namespace:   metricNamespace,
@@ -241,7 +241,7 @@ var _ = Describe("PrometheusMetric", func() {
 			)
 			actualMetric.WithLabelValues(metricLabelValue).Observe(float64(1))
 
-			Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Summary)))
+			gomega.Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(matchers.PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Summary)))
 		})
 	})
 })

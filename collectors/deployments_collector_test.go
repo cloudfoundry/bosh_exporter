@@ -1,30 +1,30 @@
 package collectors_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 
 	"github.com/bosh-prometheus/bosh_exporter/deployments"
 
-	. "github.com/bosh-prometheus/bosh_exporter/collectors"
-	. "github.com/bosh-prometheus/bosh_exporter/utils/matchers"
+	"github.com/bosh-prometheus/bosh_exporter/collectors"
+	"github.com/bosh-prometheus/bosh_exporter/utils/matchers"
 )
 
 func init() {
 	_ = log.Base().SetLevel("fatal")
 }
 
-var _ = Describe("DeploymentsCollector", func() {
+var _ = ginkgo.Describe("DeploymentsCollector", func() {
 	var (
 		namespace            string
 		environment          string
 		boshName             string
 		boshUUID             string
-		metrics              *DeploymentsCollectorMetrics
-		deploymentsCollector *DeploymentsCollector
+		metrics              *collectors.DeploymentsCollectorMetrics
+		deploymentsCollector *collectors.DeploymentsCollector
 
 		deploymentReleaseInfoMetric                *prometheus.GaugeVec
 		deploymentReleaseJobInfoMetric             *prometheus.GaugeVec
@@ -47,12 +47,12 @@ var _ = Describe("DeploymentsCollector", func() {
 		vmTypeLarge        = "fake-vm-type-large"
 	)
 
-	BeforeEach(func() {
+	ginkgo.BeforeEach(func() {
 		namespace = testNamespace
 		environment = testEnvironment
 		boshName = testBoshName
 		boshUUID = testBoshUUID
-		metrics = NewDeploymentsCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
+		metrics = collectors.NewDeploymentsCollectorMetrics(testNamespace, testEnvironment, testBoshName, testBoshUUID)
 
 		deploymentReleaseInfoMetric = metrics.NewDeploymentReleaseInfoMetric()
 		deploymentReleaseInfoMetric.WithLabelValues(
@@ -104,8 +104,8 @@ var _ = Describe("DeploymentsCollector", func() {
 		lastDeploymentsScrapeDurationSecondsMetric = metrics.NewLastDeploymentsScrapeDurationSecondsMetric()
 	})
 
-	JustBeforeEach(func() {
-		deploymentsCollector = NewDeploymentsCollector(
+	ginkgo.JustBeforeEach(func() {
+		deploymentsCollector = collectors.NewDeploymentsCollector(
 			namespace,
 			environment,
 			boshName,
@@ -113,29 +113,29 @@ var _ = Describe("DeploymentsCollector", func() {
 		)
 	})
 
-	Describe("Describe", func() {
+	ginkgo.Describe("Describe", func() {
 		var (
 			descriptions chan *prometheus.Desc
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			descriptions = make(chan *prometheus.Desc)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go deploymentsCollector.Describe(descriptions)
 		})
 
-		It("returns a deployment_release_info description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentReleaseInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_release_info description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(deploymentReleaseInfoMetric.WithLabelValues(
 				deploymentName,
 				releaseName,
 				releaseVersion,
 			).Desc())))
 		})
 
-		It("returns a deployment_release_job_info description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentReleaseJobInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_release_job_info description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(deploymentReleaseJobInfoMetric.WithLabelValues(
 				deploymentName,
 				releaseName,
 				releaseVersion,
@@ -143,8 +143,8 @@ var _ = Describe("DeploymentsCollector", func() {
 			).Desc())))
 		})
 
-		It("returns a deployment_release_package_info description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentReleasePackageInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_release_package_info description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(deploymentReleasePackageInfoMetric.WithLabelValues(
 				deploymentName,
 				releaseName,
 				releaseVersion,
@@ -152,8 +152,8 @@ var _ = Describe("DeploymentsCollector", func() {
 			).Desc())))
 		})
 
-		It("returns a deployment_stemcell_info metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentStemcellInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_stemcell_info metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(deploymentStemcellInfoMetric.WithLabelValues(
 				deploymentName,
 				stemcellName,
 				stemcellVersion,
@@ -161,23 +161,23 @@ var _ = Describe("DeploymentsCollector", func() {
 			).Desc())))
 		})
 
-		It("returns a deployment_instances metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(deploymentInstancesMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_instances metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
 				vmTypeSmall,
 			).Desc())))
 		})
 
-		It("returns a last_deployments_scrape_timestamp metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastDeploymentsScrapeTimestampMetric.Desc())))
+		ginkgo.It("returns a last_deployments_scrape_timestamp metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastDeploymentsScrapeTimestampMetric.Desc())))
 		})
 
-		It("returns a last_deployments_scrape_duration_seconds metric description", func() {
-			Eventually(descriptions).Should(Receive(Equal(lastDeploymentsScrapeDurationSecondsMetric.Desc())))
+		ginkgo.It("returns a last_deployments_scrape_duration_seconds metric description", func() {
+			gomega.Eventually(descriptions).Should(gomega.Receive(gomega.Equal(lastDeploymentsScrapeDurationSecondsMetric.Desc())))
 		})
 	})
 
-	Describe("Collect", func() {
+	ginkgo.Describe("Collect", func() {
 		var (
 			release = deployments.Release{
 				Name:         releaseName,
@@ -211,7 +211,7 @@ var _ = Describe("DeploymentsCollector", func() {
 			errMetrics chan error
 		)
 
-		BeforeEach(func() {
+		ginkgo.BeforeEach(func() {
 			deploymentInfo = deployments.DeploymentInfo{
 				Name:      deploymentName,
 				Releases:  releases,
@@ -224,7 +224,7 @@ var _ = Describe("DeploymentsCollector", func() {
 			errMetrics = make(chan error, 1)
 		})
 
-		JustBeforeEach(func() {
+		ginkgo.JustBeforeEach(func() {
 			go func() {
 				if err := deploymentsCollector.Collect(deploymentsInfo, metrics); err != nil {
 					errMetrics <- err
@@ -232,127 +232,127 @@ var _ = Describe("DeploymentsCollector", func() {
 			}()
 		})
 
-		It("returns a deployment_release_info metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentReleaseInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_release_info metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(deploymentReleaseInfoMetric.WithLabelValues(
 				deploymentName,
 				releaseName,
 				releaseVersion,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a deployment_release_job_info metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentReleaseJobInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_release_job_info metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(deploymentReleaseJobInfoMetric.WithLabelValues(
 				deploymentName,
 				releaseName,
 				releaseVersion,
 				releaseJobName,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a deployment_release_package_info metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentReleasePackageInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_release_package_info metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(deploymentReleasePackageInfoMetric.WithLabelValues(
 				deploymentName,
 				releaseName,
 				releaseVersion,
 				releasePackageName,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a deployment_stemcell_info metric", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentStemcellInfoMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_stemcell_info metric", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(deploymentStemcellInfoMetric.WithLabelValues(
 				deploymentName,
 				stemcellName,
 				stemcellVersion,
 				stemcellOSName,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a deployment_instances for small vmType instance", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_instances for small vmType instance", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
 				vmTypeSmall,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a deployment_instances for medium vmType instance", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_instances for medium vmType instance", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
 				vmTypeMedium,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		It("returns a deployment_instances for large vmType instance", func() {
-			Eventually(metrics).Should(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
+		ginkgo.It("returns a deployment_instances for large vmType instance", func() {
+			gomega.Eventually(metrics).Should(gomega.Receive(matchers.PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 				deploymentName,
 				vmTypeLarge,
 			))))
-			Consistently(errMetrics).ShouldNot(Receive())
+			gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 		})
 
-		Context("when there are no deployments", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no deployments", func() {
+			ginkgo.BeforeEach(func() {
 				deploymentsInfo = []deployments.DeploymentInfo{}
 			})
 
-			It("returns only a last_deployments_scrape_timestamp & last_deployments_scrape_duration_seconds metric", func() {
-				Eventually(metrics).Should(Receive())
-				Eventually(metrics).Should(Receive())
-				Consistently(metrics).ShouldNot(Receive())
-				Consistently(errMetrics).ShouldNot(Receive())
+			ginkgo.It("returns only a last_deployments_scrape_timestamp & last_deployments_scrape_duration_seconds metric", func() {
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Eventually(metrics).Should(gomega.Receive())
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when there are no releases", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no releases", func() {
+			ginkgo.BeforeEach(func() {
 				deploymentInfo.Releases = []deployments.Release{}
 				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
-			It("should not return a deployment_release_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentReleaseInfoMetric.WithLabelValues(
+			ginkgo.It("should not return a deployment_release_info metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(deploymentReleaseInfoMetric.WithLabelValues(
 					deploymentName,
 					releaseName,
 					releaseVersion,
 				))))
-				Consistently(errMetrics).ShouldNot(Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when there are no stemcells", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no stemcells", func() {
+			ginkgo.BeforeEach(func() {
 				deploymentInfo.Stemcells = []deployments.Stemcell{}
 				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
-			It("should not return a deployment_stemcell_info metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentStemcellInfoMetric.WithLabelValues(
+			ginkgo.It("should not return a deployment_stemcell_info metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(deploymentStemcellInfoMetric.WithLabelValues(
 					deploymentName,
 					stemcellName,
 					stemcellVersion,
 					stemcellOSName,
 				))))
-				Consistently(errMetrics).ShouldNot(Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 
-		Context("when there are no instances", func() {
-			BeforeEach(func() {
+		ginkgo.Context("when there are no instances", func() {
+			ginkgo.BeforeEach(func() {
 				deploymentInfo.Instances = []deployments.Instance{}
 				deploymentsInfo = []deployments.DeploymentInfo{deploymentInfo}
 			})
 
-			It("should not return a deployment_instances metric", func() {
-				Consistently(metrics).ShouldNot(Receive(PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
+			ginkgo.It("should not return a deployment_instances metric", func() {
+				gomega.Consistently(metrics).ShouldNot(gomega.Receive(matchers.PrometheusMetric(deploymentInstancesMetric.WithLabelValues(
 					deploymentName,
 					vmTypeSmall,
 				))))
-				Consistently(errMetrics).ShouldNot(Receive())
+				gomega.Consistently(errMetrics).ShouldNot(gomega.Receive())
 			})
 		})
 	})

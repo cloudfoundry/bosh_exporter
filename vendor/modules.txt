@@ -30,7 +30,7 @@ github.com/cloudfoundry/bosh-cli/director
 github.com/cloudfoundry/bosh-cli/director/directorfakes
 github.com/cloudfoundry/bosh-cli/io
 github.com/cloudfoundry/bosh-cli/uaa
-# github.com/cloudfoundry/bosh-utils v0.0.409
+# github.com/cloudfoundry/bosh-utils v0.0.412
 ## explicit; go 1.21
 github.com/cloudfoundry/bosh-utils/crypto
 github.com/cloudfoundry/bosh-utils/errors
@@ -70,7 +70,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20231023181126-ff6d637d2a7b
+# github.com/google/pprof v0.0.0-20231101202521-4ca4178f5c7a
 ## explicit; go 1.19
 github.com/google/pprof/profile
 # github.com/jpillora/backoff v1.0.0

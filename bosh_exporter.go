@@ -348,7 +348,7 @@ func main() {
 	prometheus.MustRegister(boshCollector)
 
 	http.Handle(*metricsPath, prometheusHandler())
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`<html>
              <head><title>BOSH Exporter</title></head>
              <body>

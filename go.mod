@@ -12,7 +12,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.33.0
 	github.com/prometheus/client_golang v1.11.1
-	github.com/prometheus/client_model v0.6.0
+	github.com/prometheus/client_model v0.6.1
 	github.com/prometheus/common v0.26.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )

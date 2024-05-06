@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/tlsconfig v0.0.0-20240417163319-a2cf10de323a
+# code.cloudfoundry.org/tlsconfig v0.0.0-20240427164042-d6180ef19863
 ## explicit; go 1.19
 code.cloudfoundry.org/tlsconfig
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
@@ -30,7 +30,7 @@ github.com/cloudfoundry/bosh-cli/director
 github.com/cloudfoundry/bosh-cli/director/directorfakes
 github.com/cloudfoundry/bosh-cli/io
 github.com/cloudfoundry/bosh-cli/uaa
-# github.com/cloudfoundry/bosh-utils v0.0.458
+# github.com/cloudfoundry/bosh-utils v0.0.461
 ## explicit; go 1.21.0
 github.com/cloudfoundry/bosh-utils/crypto
 github.com/cloudfoundry/bosh-utils/errors
@@ -53,9 +53,9 @@ github.com/cppforlife/go-semi-semantic/version
 ## explicit; go 1.18
 github.com/go-logr/logr
 github.com/go-logr/logr/funcr
-# github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
-## explicit; go 1.13
-github.com/go-task/slim-sprig
+# github.com/go-task/slim-sprig/v3 v3.0.0
+## explicit; go 1.20
+github.com/go-task/slim-sprig/v3
 # github.com/golang/protobuf v1.5.3
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
@@ -70,7 +70,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20240416155748-26353dc0451f
+# github.com/google/pprof v0.0.0-20240430035430-e4905b036c4e
 ## explicit; go 1.19
 github.com/google/pprof/profile
 # github.com/jpillora/backoff v1.0.0
@@ -87,7 +87,7 @@ github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 ## explicit
 github.com/nu7hatch/gouuid
-# github.com/onsi/ginkgo/v2 v2.17.1
+# github.com/onsi/ginkgo/v2 v2.17.2
 ## explicit; go 1.20
 github.com/onsi/ginkgo/v2
 github.com/onsi/ginkgo/v2/config

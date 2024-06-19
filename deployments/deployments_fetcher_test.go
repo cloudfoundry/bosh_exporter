@@ -12,9 +12,9 @@ import (
 	"github.com/cppforlife/go-semi-semantic/version"
 	"github.com/prometheus/common/log"
 
-	"github.com/bosh-prometheus/bosh_exporter/filters"
+	"github.com/cloudfoundry/bosh_exporter/filters"
 
-	"github.com/bosh-prometheus/bosh_exporter/deployments"
+	"github.com/cloudfoundry/bosh_exporter/deployments"
 )
 
 func init() {

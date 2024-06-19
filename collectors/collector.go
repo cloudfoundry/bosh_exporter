@@ -3,7 +3,7 @@ package collectors
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/bosh-prometheus/bosh_exporter/deployments"
+	"github.com/cloudfoundry/bosh_exporter/deployments"
 )
 
 type Collector interface {

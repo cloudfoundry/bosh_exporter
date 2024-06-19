@@ -17,9 +17,9 @@ import (
 	"github.com/prometheus/common/version"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/bosh-prometheus/bosh_exporter/collectors"
-	"github.com/bosh-prometheus/bosh_exporter/deployments"
-	"github.com/bosh-prometheus/bosh_exporter/filters"
+	"github.com/cloudfoundry/bosh_exporter/collectors"
+	"github.com/cloudfoundry/bosh_exporter/deployments"
+	"github.com/cloudfoundry/bosh_exporter/filters"
 )
 
 var (

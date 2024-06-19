@@ -9,11 +9,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 
-	"github.com/bosh-prometheus/bosh_exporter/deployments"
-	"github.com/bosh-prometheus/bosh_exporter/filters"
+	"github.com/cloudfoundry/bosh_exporter/deployments"
+	"github.com/cloudfoundry/bosh_exporter/filters"
 
-	"github.com/bosh-prometheus/bosh_exporter/collectors"
-	"github.com/bosh-prometheus/bosh_exporter/utils/matchers"
+	"github.com/cloudfoundry/bosh_exporter/collectors"
+	"github.com/cloudfoundry/bosh_exporter/utils/matchers"
 )
 
 func init() {

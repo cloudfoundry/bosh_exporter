@@ -4,7 +4,7 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 
-	"github.com/bosh-prometheus/bosh_exporter/filters"
+	"github.com/cloudfoundry/bosh_exporter/filters"
 )
 
 var _ = ginkgo.Describe("CollectorsFilter", func() {

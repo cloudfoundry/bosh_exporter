@@ -1,4 +1,4 @@
-module github.com/bosh-prometheus/bosh_exporter
+module github.com/cloudfoundry/bosh_exporter
 
 go 1.22.4
 

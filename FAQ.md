@@ -139,12 +139,12 @@ We will be glad to address any questions not answered here. Please, just open a 
 [bosh_agent]: https://bosh.io/docs/bosh-components/#agent
 [bosh_azs]: https://bosh.io/docs/azs/
 [bosh_director]: https://bosh.io/docs/bosh-components/#director
-[bosh_exporter_metrics]: https://github.com/bosh-prometheus/bosh_exporter#metrics
+[bosh_exporter_metrics]: https://github.com/cloudfoundry/bosh_exporter#metrics
 [bosh_graphite]: https://bosh.io/docs/hm-config/#graphite
 [bosh_hmforwarder]: https://github.com/cloudfoundry-attic/bosh-hm-forwarder
 [bosh_health_monitor]: https://bosh.io/docs/bosh-components/#health-monitor
 [bosh_lite]: https://github.com/cloudfoundry/bosh-lite
-[bosh_lite_ca_cert]: https://github.com/bosh-prometheus/bosh_exporter/blob/master/bosh-lite-ca.crt
+[bosh_lite_ca_cert]: https://github.com/cloudfoundry/bosh_exporter/blob/master/bosh-lite-ca.crt
 [director_certs]: https://bosh.io/docs/director-certs/
 [director_task]: https://bosh.io/docs/director-tasks/
 [file_sd_config]: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#file_sd_config
@@ -153,7 +153,7 @@ We will be glad to address any questions not answered here. Please, just open a 
 [graphite_exporter]: https://github.com/prometheus/graphite_exporter
 [graphite_mapping]: https://github.com/prometheus/graphite_exporter#metric-mapping-and-configuration
 [instance_details]: https://bosh.io/docs/director-api-v1/#list-instances-detailed
-[issues]: https://github.com/bosh-prometheus/bosh_exporter/issues
+[issues]: https://github.com/cloudfoundry/bosh_exporter/issues
 [node_exporter]: https://github.com/prometheus/node_exporter
 [prometheus_github]: https://github.com/prometheus/prometheus
 [relabel_config]: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config

@@ -3,7 +3,7 @@ applications:
   - name: bosh-exporter
     buildpack: go_buildpack
     env:
-      GOPACKAGENAME: github.com/bosh-prometheus/bosh_exporter
+      GOPACKAGENAME: github.com/cloudfoundry/bosh_exporter
       BOSH_EXPORTER_BOSH_URL: "Your BOSH URL"
       BOSH_EXPORTER_BOSH_USERNAME: "Your BOSH Username"
       BOSH_EXPORTER_BOSH_PASSWORD: "Your BOSH Password"

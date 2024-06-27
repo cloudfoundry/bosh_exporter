@@ -6,7 +6,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/bosh-prometheus/bosh_exporter/utils/matchers"
+	"github.com/cloudfoundry/bosh_exporter/utils/matchers"
 )
 
 var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {

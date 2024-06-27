@@ -1,8 +1,6 @@
 module github.com/bosh-prometheus/bosh_exporter
 
-go 1.21.0
-
-toolchain go1.22.0
+go 1.22.4
 
 require (
 	github.com/benjamintf1/unmarshalledmatchers v1.0.0

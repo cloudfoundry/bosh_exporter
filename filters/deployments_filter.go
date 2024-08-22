@@ -34,7 +34,7 @@ func (f *DeploymentsFilter) GetDeployments() ([]director.Deployment, error) {
 		log.Debugf("Reading deployments...")
 		deployments, err = f.boshClient.Deployments()
 		if err != nil {
-			return deployments, fmt.Errorf(fmt.Sprintf("Error while reading deployments: %v", err))
+			return deployments, fmt.Errorf("error while reading deployments: %v", err)
 		}
 	}
 

@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/tlsconfig v0.20.0
+# code.cloudfoundry.org/tlsconfig v0.21.0
 ## explicit; go 1.23.0
 code.cloudfoundry.org/tlsconfig
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
@@ -30,7 +30,7 @@ github.com/cloudfoundry/bosh-cli/director
 github.com/cloudfoundry/bosh-cli/director/directorfakes
 github.com/cloudfoundry/bosh-cli/io
 github.com/cloudfoundry/bosh-cli/uaa
-# github.com/cloudfoundry/bosh-utils v0.0.535
+# github.com/cloudfoundry/bosh-utils v0.0.536
 ## explicit; go 1.23.0
 github.com/cloudfoundry/bosh-utils/crypto
 github.com/cloudfoundry/bosh-utils/errors

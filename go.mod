@@ -14,7 +14,7 @@ require (
 	github.com/prometheus/client_golang v1.11.1
 	github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/common v0.26.0
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.9.3
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
@@ -34,7 +34,6 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pivotal-cf/paraphernalia v0.0.0-20180203224945-a64ae2051c20 // indirect

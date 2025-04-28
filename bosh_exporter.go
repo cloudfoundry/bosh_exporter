@@ -13,8 +13,8 @@ import (
 	"github.com/cloudfoundry/bosh-utils/system"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
+	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/cloudfoundry/bosh_exporter/collectors"
@@ -269,8 +269,7 @@ func buildBOSHClient() (director.Director, error) {
 }
 
 func main() {
-	log.AddFlags(kingpin.CommandLine)
-	kingpin.Version(version.Print("fbosh_exporter"))
+	kingpin.Version(version.Print("bosh_exporter"))
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 

@@ -10,16 +10,11 @@ import (
 	"github.com/cloudfoundry/bosh-cli/director"
 	"github.com/cloudfoundry/bosh-cli/director/directorfakes"
 	"github.com/cppforlife/go-semi-semantic/version"
-	"github.com/prometheus/common/log"
 
 	"github.com/cloudfoundry/bosh_exporter/filters"
 
 	"github.com/cloudfoundry/bosh_exporter/deployments"
 )
-
-func init() {
-	_ = log.Base().SetLevel("fatal")
-}
 
 var _ = ginkgo.Describe("Fetcher", func() {
 	var (

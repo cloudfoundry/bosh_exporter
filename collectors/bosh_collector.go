@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/cloudfoundry/bosh_exporter/deployments"
 	"github.com/cloudfoundry/bosh_exporter/filters"

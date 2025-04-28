@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/cloudfoundry/bosh_exporter/filters"
 )

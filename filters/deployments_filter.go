@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry/bosh-cli/director"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 type DeploymentsFilter struct {

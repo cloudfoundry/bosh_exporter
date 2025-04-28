@@ -7,7 +7,6 @@ import (
 	"github.com/onsi/gomega"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/cloudfoundry/bosh_exporter/deployments"
 	"github.com/cloudfoundry/bosh_exporter/filters"
@@ -15,10 +14,6 @@ import (
 	"github.com/cloudfoundry/bosh_exporter/collectors"
 	"github.com/cloudfoundry/bosh_exporter/utils/matchers"
 )
-
-func init() {
-	_ = log.Base().SetLevel("fatal")
-}
 
 type BaseLabelValues struct {
 	deploymentName string

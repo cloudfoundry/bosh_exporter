@@ -12,8 +12,9 @@ import (
 	"github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/cloudfoundry/bosh-utils/system"
 	"github.com/prometheus/client_golang/prometheus"
+	client_version "github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/version"
+	version "github.com/prometheus/common/version"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
@@ -109,7 +110,7 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(version.NewCollector(*metricsNamespace))
+	prometheus.MustRegister(client_version.NewCollector(*metricsNamespace))
 }
 
 type basicAuthHandler struct {

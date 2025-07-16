@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/tlsconfig v0.30.0
+# code.cloudfoundry.org/tlsconfig v0.31.0
 ## explicit; go 1.23.0
 code.cloudfoundry.org/tlsconfig
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
@@ -30,7 +30,7 @@ github.com/cloudfoundry/bosh-cli/director
 github.com/cloudfoundry/bosh-cli/director/directorfakes
 github.com/cloudfoundry/bosh-cli/io
 github.com/cloudfoundry/bosh-cli/uaa
-# github.com/cloudfoundry/bosh-utils v0.0.548
+# github.com/cloudfoundry/bosh-utils v0.0.549
 ## explicit; go 1.23.0
 github.com/cloudfoundry/bosh-utils/crypto
 github.com/cloudfoundry/bosh-utils/errors
@@ -43,7 +43,7 @@ github.com/cloudfoundry/bosh-utils/uuid
 # github.com/cloudfoundry/go-socks5 v0.0.0-20250423223041-4ad5fea42851
 ## explicit; go 1.21.0
 github.com/cloudfoundry/go-socks5
-# github.com/cloudfoundry/socks5-proxy v0.2.155
+# github.com/cloudfoundry/socks5-proxy v0.2.156
 ## explicit; go 1.23.0
 github.com/cloudfoundry/socks5-proxy
 # github.com/cppforlife/go-semi-semantic v0.0.0-20160921010311-576b6af77ae4
@@ -191,7 +191,7 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
-# golang.org/x/tools v0.34.0
+# golang.org/x/tools v0.35.0
 ## explicit; go 1.23.0
 golang.org/x/tools/cover
 golang.org/x/tools/go/ast/edge

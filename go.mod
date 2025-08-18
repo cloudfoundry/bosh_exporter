@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	github.com/benjamintf1/unmarshalledmatchers v1.0.0
 	github.com/cloudfoundry/bosh-cli v6.4.1+incompatible
-	github.com/cloudfoundry/bosh-utils v0.0.553
+	github.com/cloudfoundry/bosh-utils v0.0.554
 	github.com/cppforlife/go-semi-semantic v0.0.0-20160921010311-576b6af77ae4
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.38.0
@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	code.cloudfoundry.org/tlsconfig v0.32.0 // indirect
+	code.cloudfoundry.org/tlsconfig v0.33.0 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

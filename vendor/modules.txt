@@ -1,6 +1,9 @@
 # code.cloudfoundry.org/tlsconfig v0.33.0
 ## explicit; go 1.23.0
 code.cloudfoundry.org/tlsconfig
+# github.com/Masterminds/semver/v3 v3.3.1
+## explicit; go 1.21
+github.com/Masterminds/semver/v3
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 ## explicit
 github.com/alecthomas/template
@@ -82,7 +85,7 @@ github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 ## explicit
 github.com/nu7hatch/gouuid
-# github.com/onsi/ginkgo/v2 v2.23.4
+# github.com/onsi/ginkgo/v2 v2.24.0
 ## explicit; go 1.23.0
 github.com/onsi/ginkgo/v2
 github.com/onsi/ginkgo/v2/config

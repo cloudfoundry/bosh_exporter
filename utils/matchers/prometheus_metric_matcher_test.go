@@ -43,6 +43,10 @@ var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {
 				})
 			actualMetric.Inc()
 
+			// Ignore creation timestamps
+			matchers.ResetMetricCounterCreationTimestamp(expectedMetric)
+			matchers.ResetMetricCounterCreationTimestamp(actualMetric)
+
 			gomega.Expect(expectedMetric).To(matchers.PrometheusMetric(actualMetric))
 		})
 	})
@@ -72,6 +76,10 @@ var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {
 				[]string{metricLabelName},
 			)
 			actualMetric.WithLabelValues(metricLabelValue).Inc()
+
+			// Ignore creation timestamps
+			matchers.ResetMetricCounterCreationTimestamp(expectedMetric.WithLabelValues(metricLabelValue))
+			matchers.ResetMetricCounterCreationTimestamp(actualMetric.WithLabelValues(metricLabelValue))
 
 			gomega.Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(matchers.PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue)))
 		})
@@ -155,6 +163,10 @@ var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {
 				})
 			actualMetric.Observe(float64(1))
 
+			// Ignore creation timestamps
+			matchers.ResetMetricHistogramCreationTimestamp(expectedMetric)
+			matchers.ResetMetricHistogramCreationTimestamp(actualMetric)
+
 			gomega.Expect(expectedMetric).To(matchers.PrometheusMetric(actualMetric))
 		})
 	})
@@ -185,6 +197,10 @@ var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {
 			)
 			actualMetric.WithLabelValues(metricLabelValue).Observe(float64(1))
 
+			// Ignore creation timestamps
+			matchers.ResetMetricHistogramCreationTimestamp(expectedMetric.WithLabelValues(metricLabelValue).(prometheus.Histogram))
+			matchers.ResetMetricHistogramCreationTimestamp(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Histogram))
+
 			gomega.Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(matchers.PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Histogram)))
 		})
 	})
@@ -210,6 +226,10 @@ var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {
 					ConstLabels: prometheus.Labels{metricConstLabelName: metricConstLabelValue},
 				})
 			actualMetric.Observe(float64(1))
+
+			// Ignore creation timestamps
+			matchers.ResetMetricSummaryCreationTimestamp(expectedMetric)
+			matchers.ResetMetricSummaryCreationTimestamp(actualMetric)
 
 			gomega.Expect(expectedMetric).To(matchers.PrometheusMetric(actualMetric))
 		})
@@ -240,6 +260,10 @@ var _ = ginkgo.Describe("matchers.PrometheusMetric", func() {
 				[]string{metricLabelName},
 			)
 			actualMetric.WithLabelValues(metricLabelValue).Observe(float64(1))
+
+			// Ignore creation timestamps
+			matchers.ResetMetricSummaryCreationTimestamp(expectedMetric.WithLabelValues(metricLabelValue).(prometheus.Summary))
+			matchers.ResetMetricSummaryCreationTimestamp(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Summary))
 
 			gomega.Expect(expectedMetric.WithLabelValues(metricLabelValue)).To(matchers.PrometheusMetric(actualMetric.WithLabelValues(metricLabelValue).(prometheus.Summary)))
 		})

@@ -21,6 +21,29 @@ func PrometheusMetric(expected prometheus.Metric) types.GomegaMatcher {
 	}
 }
 
+func ResetMetricCounterCreationTimestamp(counter prometheus.Metric) {
+	metric := &dto.Metric{}
+	_ = counter.Write(metric)
+
+	metric.Counter.CreatedTimestamp.Reset()
+}
+
+func ResetMetricHistogramCreationTimestamp(histogram prometheus.Metric) {
+	metric := &dto.Metric{}
+	_ = histogram.Write(metric)
+
+	//	fmt.Printf("Before_Stamp: %v", metric.Histogram.CreatedTimestamp)
+	metric.Histogram.CreatedTimestamp.Reset()
+	// fmt.Printf("After_stamp: %v", metric.Histogram.CreatedTimestamp)
+}
+
+func ResetMetricSummaryCreationTimestamp(summary prometheus.Metric) {
+	metric := &dto.Metric{}
+	_ = summary.Write(metric)
+
+	metric.Summary.CreatedTimestamp.Reset()
+}
+
 type PrometheusMetricMatcher struct {
 	Desc   *prometheus.Desc
 	Metric *dto.Metric

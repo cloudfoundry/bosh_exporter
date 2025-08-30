@@ -35,6 +35,21 @@ func (matcher *PrometheusMetricMatcher) Match(actual interface{}) (success bool,
 	actualMetric := &dto.Metric{}
 	_ = metric.Write(actualMetric)
 
+	if actualMetric.Counter != nil && matcher.Metric.Counter != nil {
+		actualMetric.Counter.CreatedTimestamp.Reset()
+		matcher.Metric.Counter.CreatedTimestamp.Reset()
+	}
+
+	if actualMetric.Histogram != nil && matcher.Metric.Histogram != nil {
+		actualMetric.Histogram.CreatedTimestamp.Reset()
+		matcher.Metric.Histogram.CreatedTimestamp.Reset()
+	}
+
+	if actualMetric.Summary != nil && matcher.Metric.Summary != nil {
+		actualMetric.Summary.CreatedTimestamp.Reset()
+		matcher.Metric.Summary.CreatedTimestamp.Reset()
+	}
+
 	if !reflect.DeepEqual(metric.Desc().String(), matcher.Desc.String()) {
 		return false, nil
 	}

@@ -1,5 +1,5 @@
-# code.cloudfoundry.org/tlsconfig v0.34.0
-## explicit; go 1.23.0
+# code.cloudfoundry.org/tlsconfig v0.40.0
+## explicit; go 1.24.0
 code.cloudfoundry.org/tlsconfig
 # github.com/Masterminds/semver/v3 v3.4.0
 ## explicit; go 1.21
@@ -32,8 +32,8 @@ github.com/cloudfoundry/bosh-cli/director
 github.com/cloudfoundry/bosh-cli/director/directorfakes
 github.com/cloudfoundry/bosh-cli/io
 github.com/cloudfoundry/bosh-cli/uaa
-# github.com/cloudfoundry/bosh-utils v0.0.569
-## explicit; go 1.23.0
+# github.com/cloudfoundry/bosh-utils v0.0.571
+## explicit; go 1.24.0
 github.com/cloudfoundry/bosh-utils/crypto
 github.com/cloudfoundry/bosh-utils/errors
 github.com/cloudfoundry/bosh-utils/httpclient
@@ -45,8 +45,8 @@ github.com/cloudfoundry/bosh-utils/uuid
 # github.com/cloudfoundry/go-socks5 v0.0.0-20250423223041-4ad5fea42851
 ## explicit; go 1.21.0
 github.com/cloudfoundry/go-socks5
-# github.com/cloudfoundry/socks5-proxy v0.2.159
-## explicit; go 1.23.0
+# github.com/cloudfoundry/socks5-proxy v0.2.162
+## explicit; go 1.24.0
 github.com/cloudfoundry/socks5-proxy
 # github.com/cppforlife/go-semi-semantic v0.0.0-20160921010311-576b6af77ae4
 ## explicit
@@ -65,7 +65,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20250820193118-f64d9cf942d6
+# github.com/google/pprof v0.0.0-20251114195745-4902fdda35c8
 ## explicit; go 1.24.0
 github.com/google/pprof/profile
 # github.com/jpillora/backoff v1.0.0
@@ -160,7 +160,7 @@ golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/mod v0.29.0
+# golang.org/x/mod v0.30.0
 ## explicit; go 1.24.0
 golang.org/x/mod/semver
 # golang.org/x/net v0.47.0
@@ -198,7 +198,7 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
-# golang.org/x/tools v0.38.0
+# golang.org/x/tools v0.39.0
 ## explicit; go 1.24.0
 golang.org/x/tools/cover
 golang.org/x/tools/go/ast/edge

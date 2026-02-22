@@ -16,8 +16,11 @@ jobs:
         with:
           go-version: stable
 
-      - name: Bump go directive in go.mod
-        run: go mod edit -go=${{ steps.setup-go.outputs.go-version }}
+      - name: Get current go toolchain version
+        id: current-go-version
+        uses: paketo-buildpacks/github-config/actions/update-go-mod-version@main
+        with:
+          go-version: ${{ steps.setup-go.outputs.go-version }}
 
       - name: Tidy dependencies
         run: go mod tidy

@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/tlsconfig v0.68.0
+# code.cloudfoundry.org/tlsconfig v0.69.0
 ## explicit; go 1.26.0
 code.cloudfoundry.org/tlsconfig
 # github.com/Masterminds/semver/v3 v3.5.0
@@ -29,7 +29,7 @@ github.com/cloudfoundry/bosh-cli/director
 github.com/cloudfoundry/bosh-cli/director/directorfakes
 github.com/cloudfoundry/bosh-cli/io
 github.com/cloudfoundry/bosh-cli/uaa
-# github.com/cloudfoundry/bosh-utils v0.0.658
+# github.com/cloudfoundry/bosh-utils v0.0.661
 ## explicit; go 1.26.0
 github.com/cloudfoundry/bosh-utils/crypto
 github.com/cloudfoundry/bosh-utils/errors
@@ -42,7 +42,7 @@ github.com/cloudfoundry/bosh-utils/uuid
 # github.com/cloudfoundry/go-socks5 v0.0.0-20250423223041-4ad5fea42851
 ## explicit; go 1.21.0
 github.com/cloudfoundry/go-socks5
-# github.com/cloudfoundry/socks5-proxy v0.2.190
+# github.com/cloudfoundry/socks5-proxy v0.2.192
 ## explicit; go 1.26.0
 github.com/cloudfoundry/socks5-proxy
 # github.com/cppforlife/go-semi-semantic v0.0.0-20160921010311-576b6af77ae4
@@ -62,8 +62,8 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20261002000307-77d3b59017a0
-## explicit; go 1.25.0
+# github.com/google/pprof v0.0.0-20261016150608-1facf8f91b50
+## explicit; go 1.26.0
 github.com/google/pprof/profile
 # github.com/jpillora/backoff v1.0.0
 ## explicit; go 1.13
@@ -153,7 +153,7 @@ golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/mod v0.41.0
+# golang.org/x/mod v0.42.0
 ## explicit; go 1.26.0
 golang.org/x/mod/semver
 # golang.org/x/net v0.61.0
@@ -191,7 +191,7 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
-# golang.org/x/tools v0.51.0
+# golang.org/x/tools v0.52.0
 ## explicit; go 1.26.0
 golang.org/x/tools/cover
 golang.org/x/tools/go/ast/edge
